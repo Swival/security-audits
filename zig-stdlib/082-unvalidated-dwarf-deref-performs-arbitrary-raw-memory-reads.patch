@@ -1,0 +1,51 @@
+diff --git a/lib/std/debug/Dwarf/expression.zig b/lib/std/debug/Dwarf/expression.zig
+index 626af96d4a..e426ac3a3e 100644
+--- a/lib/std/debug/Dwarf/expression.zig
++++ b/lib/std/debug/Dwarf/expression.zig
+@@ -28,6 +28,8 @@ pub const Context = struct {
+     object_address: ?*const anyopaque = null,
+     /// .debug_addr section
+     debug_addr: ?[]const u8 = null,
++    /// Validated memory reader used by dereference opcodes.
++    memory_read: ?*const fn (addr: usize, out: []u8) Error!void = null,
+     cpu_context: ?*std.debug.cpu_context.Native = null,
+     /// Call frame address, if in a CFI context
+     cfa: ?usize = null,
+@@ -454,11 +456,17 @@ pub fn StackMachine(comptime options: Options) type {
+                         else => unreachable,
+                     };
+ 
++                    const memory_read = context.memory_read orelse return error.IncompleteExpressionContext;
++                    if (size != 1 and size != 2 and size != 4 and size != 8) return error.InvalidExpression;
++                    var bytes: [8]u8 = undefined;
++                    const read_buf = bytes[0..size];
++                    try memory_read(addr, read_buf);
++
+                     const value: addr_type = std.math.cast(addr_type, @as(u64, switch (size) {
+-                        1 => @as(*const u8, @ptrFromInt(addr)).*,
+-                        2 => @as(*const u16, @ptrFromInt(addr)).*,
+-                        4 => @as(*const u32, @ptrFromInt(addr)).*,
+-                        8 => @as(*const u64, @ptrFromInt(addr)).*,
++                        1 => mem.readInt(u8, read_buf[0..1], options.endian),
++                        2 => mem.readInt(u16, read_buf[0..2], options.endian),
++                        4 => mem.readInt(u32, read_buf[0..4], options.endian),
++                        8 => mem.readInt(u64, read_buf[0..8], options.endian),
+                         else => return error.InvalidExpression,
+                     })) orelse return error.InvalidExpression;
+ 
+@@ -1179,7 +1187,14 @@ test "basics" {
+ 
+     // Stack operations
+     {
+-        var context = Context{};
++        const TestMemoryReader = struct {
++            fn read(addr: usize, out: []u8) Error!void {
++                const src: [*]const u8 = @ptrFromInt(addr);
++                @memcpy(out, src[0..out.len]);
++            }
++        };
++
++        var context = Context{ .memory_read = TestMemoryReader.read };
+ 
+         stack_machine.reset();
+         program.clearRetainingCapacity();

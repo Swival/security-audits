@@ -1,0 +1,40 @@
+diff --git a/lib/std/crypto/codecs/asn1/Oid.zig b/lib/std/crypto/codecs/asn1/Oid.zig
+index be5bc7e7ff..19db7e0f18 100644
+--- a/lib/std/crypto/codecs/asn1/Oid.zig
++++ b/lib/std/crypto/codecs/asn1/Oid.zig
+@@ -47,7 +47,7 @@ test fromDot {
+     }
+ }
+ 
+-pub fn toDot(self: Oid, writer: anytype) @TypeOf(writer).Error!void {
++pub fn toDot(self: Oid, writer: anytype) (@TypeOf(writer).Error || error{TruncatedArc})!void {
+     const encoded = self.encoded;
+     const first = @divTrunc(encoded[0], 40);
+     const second = encoded[0] - first * 40;
+@@ -58,10 +58,11 @@ pub fn toDot(self: Oid, writer: anytype) @TypeOf(writer).Error!void {
+         const n_bytes: usize = brk: {
+             var res: usize = 1;
+             var j: usize = i;
+-            while (encoded[j] & 0x80 != 0) {
++            while (j < encoded.len and encoded[j] & 0x80 != 0) {
+                 res += 1;
+                 j += 1;
+             }
++            if (j == encoded.len) return error.TruncatedArc;
+             break :brk res;
+         };
+ 
+@@ -85,6 +86,13 @@ test toDot {
+     }
+ }
+ 
++test toDot truncated arc {
++    var buf: [256]u8 = undefined;
++    var stream: std.Io.Writer = .fixed(&buf);
++
++    try std.testing.expectError(error.TruncatedArc, toDot(Oid{ .encoded = &.{ 0x2a, 0x86 } }, &stream));
++}
++
+ const TestCase = struct {
+     encoded: []const u8,
+     dot_notation: []const u8,

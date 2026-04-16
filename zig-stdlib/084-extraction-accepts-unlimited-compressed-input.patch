@@ -1,0 +1,24 @@
+diff --git a/lib/std/zip.zig b/lib/std/zip.zig
+index ff95587e7a..644441dc99 100644
+--- a/lib/std/zip.zig
++++ b/lib/std/zip.zig
+@@ -577,8 +577,6 @@ pub const Iterator = struct {
+                 local_data_header_offset;
+             try stream.seekTo(local_data_file_offset);
+ 
+-            // TODO limit based on self.compressed_size
+-
+             switch (self.compression_method) {
+                 .store => {
+                     stream.interface.streamExact64(&file_writer.interface, self.uncompressed_size) catch |err| switch (err) {
+@@ -588,8 +586,9 @@ pub const Iterator = struct {
+                     };
+                 },
+                 .deflate => {
++                    var limited_stream = stream.interface.limited(.limited64(self.compressed_size), &.{});
+                     var flate_buffer: [flate.max_window_len]u8 = undefined;
+-                    var decompress: flate.Decompress = .init(&stream.interface, .raw, &flate_buffer);
++                    var decompress: flate.Decompress = .init(&limited_stream.interface, .raw, &flate_buffer);
+                     decompress.reader.streamExact64(&file_writer.interface, self.uncompressed_size) catch |err| switch (err) {
+                         error.ReadFailed => return stream.err.?,
+                         error.WriteFailed => return file_writer.err orelse decompress.err.?,

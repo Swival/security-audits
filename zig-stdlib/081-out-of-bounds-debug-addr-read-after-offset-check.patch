@@ -1,0 +1,21 @@
+diff --git a/lib/std/debug/Dwarf/expression.zig b/lib/std/debug/Dwarf/expression.zig
+index 626af96d4a..e10aff2064 100644
+--- a/lib/std/debug/Dwarf/expression.zig
++++ b/lib/std/debug/Dwarf/expression.zig
+@@ -340,10 +340,14 @@ pub fn StackMachine(comptime options: Options) type {
+                 => {
+                     if (context.compile_unit == null) return error.IncompleteExpressionContext;
+                     if (context.debug_addr == null) return error.IncompleteExpressionContext;
++                    const debug_addr = context.debug_addr.?;
+                     const debug_addr_index = operand.?.generic;
+-                    const offset = context.compile_unit.?.addr_base + debug_addr_index;
+-                    if (offset >= context.debug_addr.?.len) return error.InvalidExpression;
+-                    const value = mem.readInt(usize, context.debug_addr.?[offset..][0..@sizeOf(usize)], native_endian);
++                    const offset = std.math.add(usize, context.compile_unit.?.addr_base, debug_addr_index) catch
++                        return error.InvalidExpression;
++                    if (debug_addr.len < @sizeOf(usize) or offset > debug_addr.len - @sizeOf(usize)) {
++                        return error.InvalidExpression;
++                    }
++                    const value = mem.readInt(usize, debug_addr[offset..][0..@sizeOf(usize)], native_endian);
+                     try self.stack.append(allocator, .{ .generic = value });
+                 },

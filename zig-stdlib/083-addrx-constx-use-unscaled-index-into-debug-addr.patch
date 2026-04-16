@@ -1,0 +1,26 @@
+diff --git a/lib/std/debug/Dwarf/expression.zig b/lib/std/debug/Dwarf/expression.zig
+index 626af96d4a..2e3bcc3a04 100644
+--- a/lib/std/debug/Dwarf/expression.zig
++++ b/lib/std/debug/Dwarf/expression.zig
+@@ -341,8 +341,8 @@ pub fn StackMachine(comptime options: Options) type {
+                     if (context.compile_unit == null) return error.IncompleteExpressionContext;
+                     if (context.debug_addr == null) return error.IncompleteExpressionContext;
+                     const debug_addr_index = operand.?.generic;
+-                    const offset = context.compile_unit.?.addr_base + debug_addr_index;
+-                    if (offset >= context.debug_addr.?.len) return error.InvalidExpression;
++                    const offset = try std.math.add(usize, context.compile_unit.?.addr_base, try std.math.mul(usize, debug_addr_index, @sizeOf(usize)));
++                    if (offset + @sizeOf(usize) > context.debug_addr.?.len) return error.InvalidExpression;
+                     const value = mem.readInt(usize, context.debug_addr.?[offset..][0..@sizeOf(usize)], native_endian);
+                     try self.stack.append(allocator, .{ .generic = value });
+                 },
+@@ -1110,8 +1110,8 @@ test "basics" {
+             .debug_addr = mock_debug_addr.written(),
+         };
+ 
+-        try b.writeConstx(writer, @as(usize, 1));
+-        try b.writeAddrx(writer, @as(usize, 1 + @sizeOf(usize)));
++        try b.writeConstx(writer, @as(usize, 0));
++        try b.writeAddrx(writer, @as(usize, 1));
+ 
+         const die_offset: usize = @truncate(0xaabbccdd);
+         const type_bytes: []const u8 = &.{ 1, 2, 3, 4 };
