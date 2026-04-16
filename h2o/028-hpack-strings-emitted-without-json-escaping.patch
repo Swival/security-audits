@@ -1,0 +1,56 @@
+diff --git a/lib/http2/http2_debug_state.c b/lib/http2/http2_debug_state.c
+index 8b90152f8..7528e2e4f 100644
+--- a/lib/http2/http2_debug_state.c
++++ b/lib/http2/http2_debug_state.c
+@@ -84,6 +84,37 @@ __attribute__((format(printf, 3, 4))) static void append_chunk(h2o_mem_pool_t *p
+     chunks->entries[chunks->size++] = v;
+ }
+ 
++static void append_json_escaped(h2o_mem_pool_t *pool, h2o_iovec_vector_t *chunks, const char *src, size_t len)
++{
++    static const char hex[] = "0123456789abcdef";
++    h2o_iovec_t v;
++    char *dst;
++    const unsigned char *s = (const unsigned char *)src, *end = s + len;
++
++    v.base = h2o_mem_alloc_pool(pool, char, len * 6 + 1);
++    dst = v.base;
++
++    for (; s != end; ++s) {
++        if (' ' <= *s && *s < 0x7f) {
++            if (*s == '"' || *s == '\\')
++                *dst++ = '\\';
++            *dst++ = *s;
++        } else {
++            *dst++ = '\\';
++            *dst++ = 'u';
++            *dst++ = '0';
++            *dst++ = '0';
++            *dst++ = hex[(*s >> 4) & 0xf];
++            *dst++ = hex[*s & 0xf];
++        }
++    }
++    *dst = '\0';
++    v.len = dst - v.base;
++
++    h2o_vector_reserve(pool, chunks, chunks->size + 1);
++    chunks->entries[chunks->size++] = v;
++}
++
+ static void append_header_table_chunks(h2o_mem_pool_t *pool, h2o_iovec_vector_t *chunks, h2o_hpack_header_table_t *header_table)
+ {
+     int i;
+@@ -91,8 +122,11 @@ static void append_header_table_chunks(h2o_mem_pool_t *pool, h2o_iovec_vector_t
+         h2o_hpack_header_table_entry_t *entry = h2o_hpack_header_table_get(header_table, i);
+         append_chunk(pool, chunks,
+                      "\n"
+-                     "      [ \"%.*s\", \"%.*s\" ],",
+-                     (int)entry->name->len, entry->name->base, (int)entry->value->len, entry->value->base);
++                     "      [ \"");
++        append_json_escaped(pool, chunks, entry->name->base, entry->name->len);
++        append_chunk(pool, chunks, "\", \"");
++        append_json_escaped(pool, chunks, entry->value->base, entry->value->len);
++        append_chunk(pool, chunks, "\" ],");
+     }
+ 
+     if (i > 0) {

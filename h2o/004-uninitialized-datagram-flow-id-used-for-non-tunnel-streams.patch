@@ -1,0 +1,12 @@
+diff --git a/lib/http3/server.c b/lib/http3/server.c
+index 98d50f445..fcc91e06e 100644
+--- a/lib/http3/server.c
++++ b/lib/http3/server.c
+@@ -1820,6 +1820,7 @@ static quicly_error_t stream_open_cb(quicly_stream_open_t *self, quicly_stream_t
+     stream->req_disposed = 0;
+     stream->req_streaming = 0;
+     stream->req_body = NULL;
++    stream->datagram_flow_id = UINT64_MAX;
+ 
+     h2o_init_request(&stream->req, &conn->super, NULL);
+     stream->req.version = 0x0300;

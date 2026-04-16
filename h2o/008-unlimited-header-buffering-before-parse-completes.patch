@@ -1,0 +1,42 @@
+diff --git a/lib/handler/fastcgi.c b/lib/handler/fastcgi.c
+index dfe5b1825..e15697e5b 100644
+--- a/lib/handler/fastcgi.c
++++ b/lib/handler/fastcgi.c
+@@ -596,8 +596,16 @@ static int handle_stdin_record(struct st_fcgi_generator_t *generator, struct st_
+         parse_result = phr_parse_headers(input->bytes + FCGI_RECORD_HEADER_SIZE, header->contentLength, headers, &num_headers, 0);
+     } else {
+         size_t prevlen = generator->resp.receiving->size;
+-        memcpy(h2o_buffer_reserve(&generator->resp.receiving, header->contentLength).base, input->bytes + FCGI_RECORD_HEADER_SIZE,
+-               header->contentLength);
++        h2o_iovec_t reserved;
++        if (prevlen > H2O_MAX_REQLEN - header->contentLength) {
++            h2o_req_log_error(generator->req, MODULE_NAME, "received response headers too large");
++            return -1;
++        }
++        if ((reserved = h2o_buffer_try_reserve(&generator->resp.receiving, header->contentLength)).base == NULL) {
++            h2o_req_log_error(generator->req, MODULE_NAME, "failed to allocate memory");
++            return -1;
++        }
++        memcpy(reserved.base, input->bytes + FCGI_RECORD_HEADER_SIZE, header->contentLength);
+         generator->resp.receiving->size = prevlen + header->contentLength;
+         parse_result =
+             phr_parse_headers(generator->resp.receiving->bytes, generator->resp.receiving->size, headers, &num_headers, prevlen);
+@@ -606,8 +614,16 @@ static int handle_stdin_record(struct st_fcgi_generator_t *generator, struct st_
+         if (parse_result == -2) {
+             /* incomplete */
+             if (generator->resp.receiving->size == 0) {
+-                memcpy(h2o_buffer_reserve(&generator->resp.receiving, header->contentLength).base,
+-                       input->bytes + FCGI_RECORD_HEADER_SIZE, header->contentLength);
++                h2o_iovec_t reserved;
++                if (header->contentLength > H2O_MAX_REQLEN) {
++                    h2o_req_log_error(generator->req, MODULE_NAME, "received response headers too large");
++                    return -1;
++                }
++                if ((reserved = h2o_buffer_try_reserve(&generator->resp.receiving, header->contentLength)).base == NULL) {
++                    h2o_req_log_error(generator->req, MODULE_NAME, "failed to allocate memory");
++                    return -1;
++                }
++                memcpy(reserved.base, input->bytes + FCGI_RECORD_HEADER_SIZE, header->contentLength);
+                 generator->resp.receiving->size = header->contentLength;
+             }
+             return 0;

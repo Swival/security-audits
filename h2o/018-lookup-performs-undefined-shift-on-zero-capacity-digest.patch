@@ -1,0 +1,13 @@
+diff --git a/lib/http2/cache_digests.c b/lib/http2/cache_digests.c
+index 57a90e78f..3348f5f8f 100644
+--- a/lib/http2/cache_digests.c
++++ b/lib/http2/cache_digests.c
+@@ -76,6 +76,8 @@ static void load_digest(h2o_cache_digests_t **digests, const char *gcs_base64, s
+     if (golombset_decode_bits(&ctx, 5, &nbits) != 0 || golombset_decode_bits(&ctx, 5, &pbits) != 0)
+         goto Exit;
+     frame.capacity_bits = (unsigned)(nbits + pbits);
++    if (frame.capacity_bits == 0)
++        goto Exit;
+ 
+     /* decode the values */
+     uint64_t value = UINT64_MAX, decoded;

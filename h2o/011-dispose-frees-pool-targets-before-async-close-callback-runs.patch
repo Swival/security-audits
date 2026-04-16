@@ -1,0 +1,35 @@
+diff --git a/include/h2o/socketpool.h b/include/h2o/socketpool.h
+index 89846bab8..dffb83544 100644
+--- a/include/h2o/socketpool.h
++++ b/include/h2o/socketpool.h
+@@ -109,6 +109,7 @@ typedef struct st_h2o_socketpool_t {
+      * specifies required address family used for the connection. AF_UNSPEC if none (default).
+      */
+     int address_family;
++    int _is_disposed;
+ 
+     /**
+      * variables shared between threads. Unless otherwise noted, the mutex should be acquired before accessing them.
+diff --git a/lib/common/socketpool.c b/lib/common/socketpool.c
+index 2f803ce2a..cebccd7a8 100644
+--- a/lib/common/socketpool.c
++++ b/lib/common/socketpool.c
+@@ -243,6 +243,8 @@ void h2o_socketpool_dispose(h2o_socketpool_t *pool)
+ {
+     size_t i;
+ 
++    __sync_lock_test_and_set(&pool->_is_disposed, 1);
++
+     pthread_mutex_lock(&pool->_shared.mutex);
+     while (!h2o_linklist_is_empty(&pool->_shared.sockets)) {
+         struct pool_entry_t *entry = H2O_STRUCT_FROM_MEMBER(struct pool_entry_t, all_link, pool->_shared.sockets.next);
+@@ -393,7 +395,8 @@ static void on_close(void *data)
+ {
+     struct on_close_data_t *close_data = data;
+     h2o_socketpool_t *pool = close_data->pool;
+-    __sync_sub_and_fetch(&pool->targets.entries[close_data->target]->_shared.leased_count, 1);
++    if (!__sync_fetch_and_add(&pool->_is_disposed, 0))
++        __sync_sub_and_fetch(&pool->targets.entries[close_data->target]->_shared.leased_count, 1);
+     free(close_data);
+     __sync_sub_and_fetch(&pool->_shared.count, 1);
+ }

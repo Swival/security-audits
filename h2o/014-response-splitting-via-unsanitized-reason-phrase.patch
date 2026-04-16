@@ -1,0 +1,82 @@
+diff --git a/lib/http1.c b/lib/http1.c
+index c6e9c1e7b..f9136885e 100644
+--- a/lib/http1.c
++++ b/lib/http1.c
+@@ -923,8 +923,9 @@ static void on_upgrade_complete(h2o_socket_t *socket, const char *err)
+ 
+ static size_t flatten_headers_estimate_size(h2o_req_t *req, size_t server_name_and_connection_len)
+ {
+-    size_t len = sizeof("HTTP/1.1  \r\nserver: \r\nconnection: \r\ncontent-length: \r\n\r\n") + 3 + strlen(req->res.reason) +
+-                 server_name_and_connection_len + sizeof(H2O_UINT64_LONGEST_STR) - 1 + sizeof("cache-control: private") - 1;
++    size_t len = sizeof("HTTP/1.1  \r\nserver: \r\nconnection: \r\ncontent-length: \r\n\r\n") + 3 +
++                 sanitized_reason_phrase_len(req->res.reason) + server_name_and_connection_len +
++                 sizeof(H2O_UINT64_LONGEST_STR) - 1 + sizeof("cache-control: private") - 1;
+     const h2o_header_t *header, *end;
+ 
+     for (header = req->res.headers.entries, end = header + req->res.headers.size; header != end; ++header)
+@@ -952,6 +953,26 @@ static size_t flatten_res_headers(char *buf, h2o_req_t *req)
+     return dst - buf;
+ }
+ 
++static size_t sanitized_reason_phrase_len(const char *reason)
++{
++    size_t len = 0;
++    for (; *reason != '\0'; ++reason) {
++        if (*reason != '\r' && *reason != '\n')
++            ++len;
++    }
++    return len;
++}
++
++static size_t emit_sanitized_reason_phrase(char *dst, const char *reason)
++{
++    char *start = dst;
++    for (; *reason != '\0'; ++reason) {
++        if (*reason != '\r' && *reason != '\n')
++            *dst++ = *reason;
++    }
++    return dst - start;
++}
++
+ static size_t flatten_headers(char *buf, h2o_req_t *req, const char *connection)
+ {
+     h2o_context_t *ctx = req->conn->ctx;
+@@ -960,11 +981,14 @@ static size_t flatten_headers(char *buf, h2o_req_t *req, const char *connection)
+     assert(req->res.status <= 999);
+ 
+     /* send essential headers with the first chars uppercased for max. interoperability (#72) */
++    dst += sprintf(dst, "HTTP/1.1 %d ", req->res.status);
++    dst += emit_sanitized_reason_phrase(dst, req->res.reason);
++    *dst++ = '\r';
++    *dst++ = '\n';
+     if (req->res.content_length != SIZE_MAX) {
+-        dst += sprintf(dst, "HTTP/1.1 %d %s\r\nConnection: %s\r\nContent-Length: %zu\r\n", req->res.status, req->res.reason,
+-                       connection, req->res.content_length);
++        dst += sprintf(dst, "Connection: %s\r\nContent-Length: %zu\r\n", connection, req->res.content_length);
+     } else {
+-        dst += sprintf(dst, "HTTP/1.1 %d %s\r\nConnection: %s\r\n", req->res.status, req->res.reason, connection);
++        dst += sprintf(dst, "Connection: %s\r\n", connection);
+     }
+     if (ctx->globalconf->server_name.len) {
+         dst += sprintf(dst, "Server: %s\r\n", ctx->globalconf->server_name.base);
+@@ -1141,7 +1165,7 @@ static void finalostream_send_informational(h2o_ostream_t *_self, h2o_req_t *req
+     struct st_h2o_http1_conn_t *conn = (struct st_h2o_http1_conn_t *)req->conn;
+     assert(_self == &conn->_ostr_final.super);
+ 
+-    size_t len = sizeof("HTTP/1.1  \r\n\r\n") + 3 + strlen(req->res.reason) - 1;
++    size_t len = sizeof("HTTP/1.1  \r\n\r\n") + 3 + sanitized_reason_phrase_len(req->res.reason) - 1;
+     h2o_iovec_t buf = h2o_iovec_init(NULL, len);
+ 
+     int i;
+@@ -1150,7 +1174,10 @@ static void finalostream_send_informational(h2o_ostream_t *_self, h2o_req_t *req
+ 
+     buf.base = h2o_mem_alloc_pool(&req->pool, char, buf.len);
+     char *dst = buf.base;
+-    dst += sprintf(dst, "HTTP/1.1 %d %s\r\n", req->res.status, req->res.reason);
++    dst += sprintf(dst, "HTTP/1.1 %d ", req->res.status);
++    dst += emit_sanitized_reason_phrase(dst, req->res.reason);
++    *dst++ = '\r';
++    *dst++ = '\n';
+     dst += flatten_res_headers(dst, req);
+     *dst++ = '\r';
+     *dst++ = '\n';

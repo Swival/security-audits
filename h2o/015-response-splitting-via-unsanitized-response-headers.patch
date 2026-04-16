@@ -1,0 +1,31 @@
+diff --git a/lib/http1.c b/lib/http1.c
+index c6e9c1e7b..98bb2fa8a 100644
+--- a/lib/http1.c
++++ b/lib/http1.c
+@@ -547,6 +547,14 @@ static void on_continue_sent(h2o_socket_t *sock, const char *err)
+     conn->_req_entity_reader->handle_incoming_entity(conn);
+ }
+ 
++static int contains_crlf(const char *s, size_t len)
++{
++    for (; len != 0; ++s, --len)
++        if (*s == '\r' || *s == '\n')
++            return 1;
++    return 0;
++}
++
+ static int contains_crlf_only(const char *s, size_t len)
+ {
+     for (; len != 0; ++s, --len)
+@@ -939,7 +947,10 @@ static size_t flatten_res_headers(char *buf, h2o_req_t *req)
+     size_t i;
+     for (i = 0; i != req->res.headers.size; ++i) {
+         const h2o_header_t *header = req->res.headers.entries + i;
+-        memcpy(dst, header->orig_name ? header->orig_name : header->name->base, header->name->len);
++        const char *name = header->orig_name ? header->orig_name : header->name->base;
++        if (contains_crlf(name, header->name->len) || contains_crlf(header->value.base, header->value.len))
++            continue;
++        memcpy(dst, name, header->name->len);
+         dst += header->name->len;
+         *dst++ = ':';
+         *dst++ = ' ';

@@ -1,0 +1,23 @@
+diff --git a/lib/http3/server.c b/lib/http3/server.c
+index 98d50f445..212bce01e 100644
+--- a/lib/http3/server.c
++++ b/lib/http3/server.c
+@@ -1431,10 +1431,16 @@ static quicly_error_t handle_input_expect_headers(struct st_h2o_http3_server_str
+                 *err_desc = "unexpected h3 datagram";
+                 return H2O_HTTP3_ERROR_GENERAL_PROTOCOL;
+             }
++            if (datagram_flow_id_field.len == 0) {
++                *err_desc = "invalid datagram-flow-id";
++                return H2O_HTTP3_ERROR_GENERAL_PROTOCOL;
++            }
+             datagram_flow_id = 0;
+             for (const char *p = datagram_flow_id_field.base; p != datagram_flow_id_field.base + datagram_flow_id_field.len; ++p) {
+-                if (!('0' <= *p && *p <= '9'))
+-                    break;
++                if (!('0' <= *p && *p <= '9')) {
++                    *err_desc = "invalid datagram-flow-id";
++                    return H2O_HTTP3_ERROR_GENERAL_PROTOCOL;
++                }
+                 datagram_flow_id = datagram_flow_id * 10 + *p - '0';
+             }
+         }

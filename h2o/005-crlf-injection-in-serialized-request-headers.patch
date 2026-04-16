@@ -1,0 +1,27 @@
+diff --git a/lib/common/http1client.c b/lib/common/http1client.c
+index 3d404a4a2..551a4e3b9 100644
+--- a/lib/common/http1client.c
++++ b/lib/common/http1client.c
+@@ -840,6 +840,22 @@ static void start_request(struct st_h2o_http1client_t *client, h2o_iovec_t metho
+     if (props->send_own_expect && (client->proceed_req != NULL || body.len != 0) && client->super.upgrade_to == NULL)
+         client->_send_own_expect = 1; /* this must be set before calling build_request */
+ 
++    if (props->connection_header->base != NULL &&
++        (memchr(props->connection_header->base, '\r', props->connection_header->len) != NULL ||
++         memchr(props->connection_header->base, '\n', props->connection_header->len) != NULL)) {
++        on_error(client, h2o_httpclient_error_protocol_violation);
++        return;
++    }
++    for (size_t i = 0; i != num_headers; ++i) {
++        const h2o_header_t *h = headers + i;
++        const char *name = h->orig_name != NULL ? h->orig_name : h->name->base;
++        if (memchr(name, '\r', h->name->len) != NULL || memchr(name, '\n', h->name->len) != NULL ||
++            memchr(h->value.base, '\r', h->value.len) != NULL || memchr(h->value.base, '\n', h->value.len) != NULL) {
++            on_error(client, h2o_httpclient_error_protocol_violation);
++            return;
++        }
++    }
++
+     h2o_iovec_t header = build_request(client, method, url, *props->connection_header, headers, num_headers);
+     reqbufs[reqbufcnt++] = header;
+     client->super.bytes_written.header = header.len;

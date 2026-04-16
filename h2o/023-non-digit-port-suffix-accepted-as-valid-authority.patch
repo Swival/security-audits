@@ -1,0 +1,13 @@
+diff --git a/lib/common/url.c b/lib/common/url.c
+index 8b0c8258b..a8701cfb7 100644
+--- a/lib/common/url.c
++++ b/lib/common/url.c
+@@ -232,6 +232,8 @@ const char *h2o_url_parse_hostport(const char *s, size_t len, h2o_iovec_t *host,
+                     return NULL;
+             } else if (*token_start == '/' || *token_start == '?') {
+                 break;
++            } else {
++                return NULL;
+             }
+         }
+         *port = (uint16_t)p;

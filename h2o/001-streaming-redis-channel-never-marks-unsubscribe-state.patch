@@ -1,0 +1,12 @@
+diff --git a/lib/handler/mruby/embedded.c.h b/lib/handler/mruby/embedded.c.h
+index a78cba5e7..504679e7a 100644
+--- a/lib/handler/mruby/embedded.c.h
++++ b/lib/handler/mruby/embedded.c.h
+@@ -477,6 +477,7 @@
+     "\n"                                                                                                                           \
+     "            kind, channel, message = reply\n"                                                                                 \
+     "            if kind == 'unsubscribe'\n"                                                                                       \
++    "              @unsubscribed = true\n"                                                                                         \
+     "              return nil\n"                                                                                                   \
+     "            elsif kind != 'message'\n"                                                                                        \
+     "              raise \"unexpected kind of message: #{reply[0]}\"\n"                                                            \
