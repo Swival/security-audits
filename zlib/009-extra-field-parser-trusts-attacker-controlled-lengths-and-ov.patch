@@ -1,0 +1,50 @@
+diff --git a/contrib/minizip/zip.c b/contrib/minizip/zip.c
+index 0bbdf77..53900b1 100644
+--- a/contrib/minizip/zip.c
++++ b/contrib/minizip/zip.c
+@@ -2212,24 +2212,40 @@ extern int ZEXPORT zipRemoveExtraInfoBlock(char* pData, int* dataLen, short sHea
+ 
+   while(p < (pData + *dataLen))
+   {
++    int blockSize;
++    int remaining = (int)((pData + *dataLen) - p);
++
++    if (remaining < 4)
++    {
++      retVal = ZIP_ERRNO;
++      break;
++    }
++
+     header = *(short*)p;
+     dataSize = *(((short*)p)+1);
++    blockSize = (int)(unsigned short)dataSize + 4;
++
++    if (blockSize > remaining)
++    {
++      retVal = ZIP_ERRNO;
++      break;
++    }
+ 
+     if( header == sHeader ) /* Header found. */
+     {
+-      p += dataSize + 4; /* skip it. do not copy to temp buffer */
++      p += blockSize; /* skip it. do not copy to temp buffer */
+     }
+     else
+     {
+       /* Extra Info block should not be removed, So copy it to the temp buffer. */
+-      memcpy(pTmp, p, dataSize + 4);
+-      p += dataSize + 4;
+-      size += dataSize + 4;
++      memcpy(pTmp, p, blockSize);
++      p += blockSize;
++      size += blockSize;
+     }
+ 
+   }
+ 
+-  if(size < *dataLen)
++  if(retVal == ZIP_OK && size < *dataLen)
+   {
+     /* clean old extra info block. */
+     memset(pData,0, *dataLen);

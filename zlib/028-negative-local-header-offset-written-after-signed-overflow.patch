@@ -1,0 +1,137 @@
+diff --git a/contrib/minizip/mztools.c b/contrib/minizip/mztools.c
+index 1e2bb56..cfa602c 100644
+--- a/contrib/minizip/mztools.c
++++ b/contrib/minizip/mztools.c
+@@ -30,6 +30,15 @@
+   WRITE_16((unsigned char*)(buff) + 2, (n) >> 16); \
+ } while(0)
+ 
++#define ADD_SIZE_TO_ZIP32_OFFSET(offset, size, err) do { \
++  unsigned long long nextOffset = (unsigned long long)(offset) + (unsigned long long)(size); \
++  if (nextOffset > 0xffffffffULL) { \
++    (err) = Z_STREAM_ERROR; \
++  } else { \
++    (offset) = (uLong)nextOffset; \
++  } \
++} while(0)
++
+ extern int ZEXPORT unzRepair(const char* file, const char* fileOut, const char* fileOutTmp, uLong* nRecovered, uLong* bytesRecovered) {
+   int err = Z_OK;
+   FILE* fpZip = fopen(file, "rb");
+@@ -41,10 +50,10 @@ extern int ZEXPORT unzRepair(const char* file, const char* fileOut, const char*
+     char header[30];
+     char filename[1024];
+     char extra[1024];
+-    int offset = 0;
+-    int offsetCD = 0;
++    uLong offset = 0;
++    uLong offsetCD = 0;
+     while ( fread(header, 1, 30, fpZip) == 30 ) {
+-      int currentOffset = offset;
++      uLong currentOffset = offset;
+ 
+       /* File entry */
+       if (READ_32(header) == 0x04034b50) {
+@@ -62,7 +71,10 @@ extern int ZEXPORT unzRepair(const char* file, const char* fileOut, const char*
+ 
+         /* Header */
+         if (fwrite(header, 1, 30, fpOut) == 30) {
+-          offset += 30;
++          ADD_SIZE_TO_ZIP32_OFFSET(offset, 30, err);
++          if (err != Z_OK) {
++            break;
++          }
+         } else {
+           err = Z_ERRNO;
+           break;
+@@ -73,7 +85,10 @@ extern int ZEXPORT unzRepair(const char* file, const char* fileOut, const char*
+           if (fnsize < sizeof(filename)) {
+             if (fread(filename, 1, fnsize, fpZip) == fnsize) {
+                 if (fwrite(filename, 1, fnsize, fpOut) == fnsize) {
+-                offset += fnsize;
++                ADD_SIZE_TO_ZIP32_OFFSET(offset, fnsize, err);
++                if (err != Z_OK) {
++                  break;
++                }
+               } else {
+                 err = Z_ERRNO;
+                 break;
+@@ -96,7 +111,10 @@ extern int ZEXPORT unzRepair(const char* file, const char* fileOut, const char*
+           if (extsize < sizeof(extra)) {
+             if (fread(extra, 1, extsize, fpZip) == extsize) {
+               if (fwrite(extra, 1, extsize, fpOut) == extsize) {
+-                offset += extsize;
++                ADD_SIZE_TO_ZIP32_OFFSET(offset, extsize, err);
++                if (err != Z_OK) {
++                  break;
++                }
+                 } else {
+                 err = Z_ERRNO;
+                 break;
+@@ -122,8 +140,10 @@ extern int ZEXPORT unzRepair(const char* file, const char* fileOut, const char*
+             if (data != NULL) {
+               if ((int)fread(data, 1, dataSize, fpZip) == dataSize) {
+                 if ((int)fwrite(data, 1, dataSize, fpOut) == dataSize) {
+-                  offset += dataSize;
+-                  totalBytes += dataSize;
++                  ADD_SIZE_TO_ZIP32_OFFSET(offset, dataSize, err);
++                  if (err == Z_OK) {
++                    totalBytes += dataSize;
++                  }
+                 } else {
+                   err = Z_ERRNO;
+                 }
+@@ -165,12 +185,18 @@ extern int ZEXPORT unzRepair(const char* file, const char* fileOut, const char*
+           WRITE_32(central + 42, currentOffset);
+           /* Header */
+           if (fwrite(central, 1, 46, fpOutCD) == 46) {
+-            offsetCD += 46;
++            ADD_SIZE_TO_ZIP32_OFFSET(offsetCD, 46, err);
++            if (err != Z_OK) {
++              break;
++            }
+ 
+             /* Filename */
+             if (fnsize > 0) {
+               if (fwrite(filename, 1, fnsize, fpOutCD) == fnsize) {
+-                offsetCD += fnsize;
++                ADD_SIZE_TO_ZIP32_OFFSET(offsetCD, fnsize, err);
++                if (err != Z_OK) {
++                  break;
++                }
+               } else {
+                 err = Z_ERRNO;
+                 break;
+@@ -183,7 +209,10 @@ extern int ZEXPORT unzRepair(const char* file, const char* fileOut, const char*
+             /* Extra field */
+             if (extsize > 0) {
+               if (fwrite(extra, 1, extsize, fpOutCD) == extsize) {
+-                offsetCD += extsize;
++                ADD_SIZE_TO_ZIP32_OFFSET(offsetCD, extsize, err);
++                if (err != Z_OK) {
++                  break;
++                }
+               } else {
+                 err = Z_ERRNO;
+                 break;
+@@ -193,7 +222,10 @@ extern int ZEXPORT unzRepair(const char* file, const char* fileOut, const char*
+             /* Comment field */
+             if (comsize > 0) {
+               if ((int)fwrite(comment, 1, comsize, fpOutCD) == comsize) {
+-                offsetCD += comsize;
++                ADD_SIZE_TO_ZIP32_OFFSET(offsetCD, comsize, err);
++                if (err != Z_OK) {
++                  break;
++                }
+               } else {
+                 err = Z_ERRNO;
+                 break;
+@@ -216,7 +248,7 @@ extern int ZEXPORT unzRepair(const char* file, const char* fileOut, const char*
+     }
+ 
+     /* Final central directory  */
+-    {
++    if (err == Z_OK) {
+       int entriesZip = entries;
+       char end[22];
+       char* comment = ""; /* "ZIP File recovered by zlib/minizip/mztools"; */

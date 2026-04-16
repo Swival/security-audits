@@ -1,0 +1,79 @@
+diff --git a/contrib/dotzlib/DotZLib/DotZLib.cs b/contrib/dotzlib/DotZLib/DotZLib.cs
+index b3b64b2..642f0b1 100644
+--- a/contrib/dotzlib/DotZLib/DotZLib.cs
++++ b/contrib/dotzlib/DotZLib/DotZLib.cs
+@@ -216,16 +216,52 @@ namespace DotZLib
+     public class Info
+     {
+         #region DLL imports
+-        [DllImport("ZLIB1.dll", CallingConvention=CallingConvention.Cdecl)]
+-        private static extern uint zlibCompileFlags();
++        [DllImport("kernel32", CharSet=CharSet.Ansi, SetLastError=true)]
++        private static extern IntPtr LoadLibrary(string lpFileName);
+ 
+-        [DllImport("ZLIB1.dll", CallingConvention=CallingConvention.Cdecl)]
+-        private static extern string zlibVersion();
++        [DllImport("kernel32", CharSet=CharSet.Ansi, SetLastError=true)]
++        private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+         #endregion
+ 
+         #region Private stuff
++        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
++        private delegate uint ZLibCompileFlagsDelegate();
++
++        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
++        private delegate IntPtr ZLibVersionDelegate();
++
++        private static readonly IntPtr _zlibModule = loadZLibModule();
++        private static readonly ZLibCompileFlagsDelegate _zlibCompileFlags = bindCompileFlags();
++        private static readonly ZLibVersionDelegate _zlibVersion = bindVersion();
++
+         private uint _flags;
+ 
++        private static IntPtr loadZLibModule()
++        {
++            string assemblyDir = Path.GetDirectoryName(typeof(Info).Assembly.Location);
++            string zlibPath = Path.Combine(assemblyDir, "ZLIB1.dll");
++            IntPtr module = LoadLibrary(zlibPath);
++            if (module == IntPtr.Zero)
++                throw new DllNotFoundException(zlibPath);
++            return module;
++        }
++
++        private static ZLibCompileFlagsDelegate bindCompileFlags()
++        {
++            IntPtr proc = GetProcAddress(_zlibModule, "zlibCompileFlags");
++            if (proc == IntPtr.Zero)
++                throw new EntryPointNotFoundException("zlibCompileFlags");
++            return (ZLibCompileFlagsDelegate)Marshal.GetDelegateForFunctionPointer(proc, typeof(ZLibCompileFlagsDelegate));
++        }
++
++        private static ZLibVersionDelegate bindVersion()
++        {
++            IntPtr proc = GetProcAddress(_zlibModule, "zlibVersion");
++            if (proc == IntPtr.Zero)
++                throw new EntryPointNotFoundException("zlibVersion");
++            return (ZLibVersionDelegate)Marshal.GetDelegateForFunctionPointer(proc, typeof(ZLibVersionDelegate));
++        }
++
+         // helper function that unpacks a bitsize mask
+         private static int bitSize(uint bits)
+         {
+@@ -244,7 +280,7 @@ namespace DotZLib
+         /// </summary>
+         public Info()
+         {
+-            _flags = zlibCompileFlags();
++            _flags = _zlibCompileFlags();
+         }
+ 
+         /// <summary>
+@@ -280,7 +316,7 @@ namespace DotZLib
+         /// <summary>
+         /// Gets the version of ZLib as a string, e.g. "1.2.1"
+         /// </summary>
+-        public static string Version { get { return zlibVersion(); } }
++        public static string Version { get { return Marshal.PtrToStringAnsi(_zlibVersion()); } }
+     }
+ 
+     #endregion

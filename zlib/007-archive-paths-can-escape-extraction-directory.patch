@@ -1,0 +1,68 @@
+diff --git a/contrib/minizip/miniunz.c b/contrib/minizip/miniunz.c
+index cd577ea..d713f98 100644
+--- a/contrib/minizip/miniunz.c
++++ b/contrib/minizip/miniunz.c
+@@ -184,6 +184,25 @@ static int makedir(const char *newdir) {
+   return 1;
+ }
+ 
++static int contains_relative_path_component(const char *path) {
++  const char *segment = path;
++
++  while (1)
++  {
++    if ((*path == '\\') || (*path == '/') || (*path == '\0'))
++    {
++      if ((path - segment == 2) && (segment[0] == '.') && (segment[1] == '.'))
++        return 1;
++      if (*path == '\0')
++        break;
++      segment = path + 1;
++    }
++    path++;
++  }
++
++  return 0;
++}
++
+ static void do_banner(void) {
+     printf("MiniUnz 1.1, demo of zLib + Unz package written by Gilles Vollant\n");
+     printf("more info at https://www.winimage.com/zLibDll/unzip.html\n\n");
+@@ -341,6 +360,12 @@ static int do_extract_currentfile(unzFile uf, const int* popt_extract_without_pa
+     {
+         if ((*popt_extract_without_path)==0)
+         {
++            if (contains_relative_path_component(filename_inzip))
++            {
++                printf("skipping insecure path %s\n", filename_inzip);
++                free(buf);
++                return UNZ_BADZIPFILE;
++            }
+             printf("creating directory: %s\n",filename_inzip);
+             mymkdir(filename_inzip);
+         }
+@@ -355,20 +380,13 @@ static int do_extract_currentfile(unzFile uf, const int* popt_extract_without_pa
+         else
+             write_filename = filename_withoutpath;
+ 
+-        if (write_filename[0]!='\0')
++        if (contains_relative_path_component(write_filename))
+         {
+-            const char* relative_check = write_filename;
+-            while (relative_check[1]!='\0')
+-            {
+-                if (relative_check[0]=='.' && relative_check[1]=='.')
+-                    write_filename = relative_check;
+-                relative_check++;
+-            }
++            printf("skipping insecure path %s\n", write_filename);
++            free(buf);
++            return UNZ_BADZIPFILE;
+         }
+ 
+-        while (write_filename[0]=='/' || write_filename[0]=='.')
+-            write_filename++;
+-
+         err = unzOpenCurrentFilePassword(uf,password);
+         if (err!=UNZ_OK)
+         {

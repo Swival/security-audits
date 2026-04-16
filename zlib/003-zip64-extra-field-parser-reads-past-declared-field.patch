@@ -1,0 +1,101 @@
+diff --git a/contrib/minizip/unzip.c b/contrib/minizip/unzip.c
+index 827c23a..532bed8 100644
+--- a/contrib/minizip/unzip.c
++++ b/contrib/minizip/unzip.c
+@@ -914,6 +914,14 @@ local int unz64local_GetCurrentFileInfoInternal(unzFile file,
+         {
+             uLong headerId;
+                                                 uLong dataSize;
++            uLong dataRead = 0;
++            uLong extraFieldRemaining = file_info.size_file_extra - acc;
++
++            if (extraFieldRemaining < 4)
++            {
++                err = UNZ_BADZIPFILE;
++                break;
++            }
+ 
+             if (unz64local_getShort(&s->z_filefunc, s->filestream,&headerId) != UNZ_OK)
+                 err=UNZ_ERRNO;
+@@ -921,35 +929,63 @@ local int unz64local_GetCurrentFileInfoInternal(unzFile file,
+             if (unz64local_getShort(&s->z_filefunc, s->filestream,&dataSize) != UNZ_OK)
+                 err=UNZ_ERRNO;
+ 
++            extraFieldRemaining -= 4;
++            if ((err == UNZ_OK) && (dataSize > extraFieldRemaining))
++            {
++                err = UNZ_BADZIPFILE;
++                break;
++            }
++
+             /* ZIP64 extra fields */
+             if (headerId == 0x0001)
+             {
+-                if(file_info.uncompressed_size == MAXU32)
++                if ((err == UNZ_OK) && (file_info.uncompressed_size == MAXU32))
+                 {
+-                    if (unz64local_getLong64(&s->z_filefunc, s->filestream,&file_info.uncompressed_size) != UNZ_OK)
++                    if ((dataRead + 8 > dataSize) || (dataRead + 8 > extraFieldRemaining))
++                        err = UNZ_BADZIPFILE;
++                    else if (unz64local_getLong64(&s->z_filefunc, s->filestream,&file_info.uncompressed_size) != UNZ_OK)
+                         err=UNZ_ERRNO;
++                    else
++                        dataRead += 8;
+                 }
+ 
+-                if(file_info.compressed_size == MAXU32)
++                if ((err == UNZ_OK) && (file_info.compressed_size == MAXU32))
+                 {
+-                    if (unz64local_getLong64(&s->z_filefunc, s->filestream,&file_info.compressed_size) != UNZ_OK)
++                    if ((dataRead + 8 > dataSize) || (dataRead + 8 > extraFieldRemaining))
++                        err = UNZ_BADZIPFILE;
++                    else if (unz64local_getLong64(&s->z_filefunc, s->filestream,&file_info.compressed_size) != UNZ_OK)
+                         err=UNZ_ERRNO;
++                    else
++                        dataRead += 8;
+                 }
+ 
+-                if(file_info_internal.offset_curfile == MAXU32)
++                if ((err == UNZ_OK) && (file_info_internal.offset_curfile == MAXU32))
+                 {
+                     /* Relative Header offset */
+-                    if (unz64local_getLong64(&s->z_filefunc, s->filestream,&file_info_internal.offset_curfile) != UNZ_OK)
++                    if ((dataRead + 8 > dataSize) || (dataRead + 8 > extraFieldRemaining))
++                        err = UNZ_BADZIPFILE;
++                    else if (unz64local_getLong64(&s->z_filefunc, s->filestream,&file_info_internal.offset_curfile) != UNZ_OK)
+                         err=UNZ_ERRNO;
++                    else
++                        dataRead += 8;
+                 }
+ 
+-                if(file_info.disk_num_start == 0xffff)
++                if ((err == UNZ_OK) && (file_info.disk_num_start == 0xffff))
+                 {
+                     /* Disk Start Number */
+-                    if (unz64local_getLong(&s->z_filefunc, s->filestream,&file_info.disk_num_start) != UNZ_OK)
++                    if ((dataRead + 4 > dataSize) || (dataRead + 4 > extraFieldRemaining))
++                        err = UNZ_BADZIPFILE;
++                    else if (unz64local_getLong(&s->z_filefunc, s->filestream,&file_info.disk_num_start) != UNZ_OK)
+                         err=UNZ_ERRNO;
++                    else
++                        dataRead += 4;
+                 }
+ 
++                if ((err == UNZ_OK) && (dataRead < dataSize))
++                {
++                    if (ZSEEK64(s->z_filefunc, s->filestream,dataSize - dataRead,ZLIB_FILEFUNC_SEEK_CUR)!=0)
++                        err=UNZ_ERRNO;
++                }
+             }
+             else
+             {
+@@ -957,6 +993,9 @@ local int unz64local_GetCurrentFileInfoInternal(unzFile file,
+                     err=UNZ_ERRNO;
+             }
+ 
++            if (err != UNZ_OK)
++                break;
++
+             acc += 2 + 2 + dataSize;
+         }
+     }

@@ -1,0 +1,38 @@
+diff --git a/contrib/testzlib/testzlib.c b/contrib/testzlib/testzlib.c
+index 6fc4131..181d54e 100644
+--- a/contrib/testzlib/testzlib.c
++++ b/contrib/testzlib/testzlib.c
+@@ -119,23 +119,25 @@ DWORD GetMsecSincePerfCounter(LARGE_INTEGER beginTime64,BOOL fComputeTimeQueryPe
+ int ReadFileMemory(const char* filename,long* plFileSize,unsigned char** pFilePtr)
+ {
+     FILE* stream;
+-    unsigned char* ptr;
++    unsigned char* ptr=NULL;
+     int retVal=1;
+     stream=fopen(filename, "rb");
+     if (stream==NULL)
+         return 0;
+ 
+-    fseek(stream,0,SEEK_END);
+-
+-    *plFileSize=ftell(stream);
+-    fseek(stream,0,SEEK_SET);
+-    ptr=malloc((*plFileSize)+1);
+-    if (ptr==NULL)
++    if ((fseek(stream,0,SEEK_END) != 0) || ((*plFileSize=ftell(stream)) < 0) ||
++        (fseek(stream,0,SEEK_SET) != 0))
+         retVal=0;
+     else
+     {
+-        if (fread(ptr, 1, *plFileSize,stream) != (*plFileSize))
++        ptr=malloc((*plFileSize)+1);
++        if (ptr==NULL)
+             retVal=0;
++        else
++        {
++            if (fread(ptr, 1, *plFileSize,stream) != (*plFileSize))
++                retVal=0;
++        }
+     }
+     fclose(stream);
+     *pFilePtr=ptr;
