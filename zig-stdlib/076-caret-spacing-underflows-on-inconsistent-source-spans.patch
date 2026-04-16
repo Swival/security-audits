@@ -1,0 +1,13 @@
+diff --git a/lib/std/zig/ErrorBundle.zig b/lib/std/zig/ErrorBundle.zig
+index ef3cd3d783..17ccddec4a 100644
+--- a/lib/std/zig/ErrorBundle.zig
++++ b/lib/std/zig/ErrorBundle.zig
+@@ -255,7 +255,7 @@ fn renderErrorMessage(
+             const before_caret = src.data.span_main - src.data.span_start;
+             // -1 since span.main includes the caret
+             const after_caret = src.data.span_end -| src.data.span_main -| 1;
+-            try w.splatByteAll(' ', src.data.column - before_caret);
++            try w.splatByteAll(' ', src.data.column -| before_caret);
+             try t.setColor(.green);
+             try w.splatByteAll('~', before_caret);
+             try w.writeByte('^');

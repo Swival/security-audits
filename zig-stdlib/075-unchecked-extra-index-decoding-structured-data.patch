@@ -1,0 +1,91 @@
+diff --git a/lib/std/zig/ErrorBundle.zig b/lib/std/zig/ErrorBundle.zig
+index ef3cd3d783..d5a8d0a4cb 100644
+--- a/lib/std/zig/ErrorBundle.zig
++++ b/lib/std/zig/ErrorBundle.zig
+@@ -98,12 +98,22 @@ pub fn errorMessageCount(eb: ErrorBundle) u32 {
+ }
+ 
+ pub fn getErrorMessageList(eb: ErrorBundle) ErrorMessageList {
+-    return eb.extraData(ErrorMessageList, 0).data;
++    var list = eb.extraData(ErrorMessageList, 0).data;
++    const start: usize = list.start;
++    if (start > eb.extra.len) {
++        list.len = 0;
++        list.start = 0;
++    } else {
++        const available = eb.extra.len - start;
++        const available_u32: u32 = if (available > std.math.maxInt(u32)) std.math.maxInt(u32) else @intCast(available);
++        list.len = @min(list.len, available_u32);
++    }
++    return list;
+ }
+ 
+ pub fn getMessages(eb: ErrorBundle) []const MessageIndex {
+     const list = eb.getErrorMessageList();
+-    return @as([]const MessageIndex, @ptrCast(eb.extra[list.start..][0..list.len]));
++    return eb.extraSlice(MessageIndex, list.start, list.len);
+ }
+ 
+ pub fn getErrorMessage(eb: ErrorBundle, index: MessageIndex) ErrorMessage {
+@@ -112,13 +122,17 @@ pub fn getErrorMessage(eb: ErrorBundle, index: MessageIndex) ErrorMessage {
+ 
+ pub fn getSourceLocation(eb: ErrorBundle, index: SourceLocationIndex) SourceLocation {
+     assert(index != .none);
+-    return eb.extraData(SourceLocation, @intFromEnum(index)).data;
++    var source_location = eb.extraData(SourceLocation, @intFromEnum(index));
++    const trailing = eb.extra.len -| source_location.end;
++    const available = trailing / @typeInfo(ReferenceTrace).@"struct".fields.len;
++    const available_u32: u32 = if (available > std.math.maxInt(u32)) std.math.maxInt(u32) else @intCast(available);
++    source_location.data.reference_trace_len = @min(source_location.data.reference_trace_len, available_u32);
++    return source_location.data;
+ }
+ 
+ pub fn getNotes(eb: ErrorBundle, index: MessageIndex) []const MessageIndex {
+-    const notes_len = eb.getErrorMessage(index).notes_len;
+-    const start = @intFromEnum(index) + @typeInfo(ErrorMessage).@"struct".fields.len;
+-    return @as([]const MessageIndex, @ptrCast(eb.extra[start..][0..notes_len]));
++    const message = eb.extraData(ErrorMessage, @intFromEnum(index));
++    return eb.extraSlice(MessageIndex, message.end, message.data.notes_len);
+ }
+ 
+ pub fn getCompileLogOutput(eb: ErrorBundle) [:0]const u8 {
+@@ -129,6 +143,13 @@ pub fn getCompileLogOutput(eb: ErrorBundle) [:0]const u8 {
+ /// trailers for the object.
+ fn extraData(eb: ErrorBundle, comptime T: type, index: usize) struct { data: T, end: usize } {
+     const fields = @typeInfo(T).@"struct".fields;
++    if (index > eb.extra.len or fields.len > eb.extra.len - index) {
++        return .{
++            .data = std.mem.zeroes(T),
++            .end = eb.extra.len,
++        };
++    }
++
+     var i: usize = index;
+     var result: T = undefined;
+     inline for (fields) |field| {
+@@ -146,6 +167,12 @@ fn extraData(eb: ErrorBundle, comptime T: type, index: usize) struct { data: T,
+     };
+ }
+ 
++fn extraSlice(eb: ErrorBundle, comptime T: type, start: usize, len: u32) []const T {
++    const len_usize: usize = len;
++    if (start > eb.extra.len or len_usize > eb.extra.len - start) return &.{};
++    return @as([]const T, @ptrCast(eb.extra[start..][0..len_usize]));
++}
++
+ /// Given an index into `string_bytes` returns the null-terminated string found there.
+ pub fn nullTerminatedString(eb: ErrorBundle, index: String) [:0]const u8 {
+     const string_bytes = eb.string_bytes;
+@@ -208,7 +235,11 @@ fn renderErrorMessage(
+     const w = t.writer;
+     const err_msg = eb.getErrorMessage(err_msg_index);
+     if (err_msg.src_loc != .none) {
+-        const src = eb.extraData(SourceLocation, @intFromEnum(err_msg.src_loc));
++        var src = eb.extraData(SourceLocation, @intFromEnum(err_msg.src_loc));
++        const trailing = eb.extra.len -| src.end;
++        const available = trailing / @typeInfo(ReferenceTrace).@"struct".fields.len;
++        const available_u32: u32 = if (available > std.math.maxInt(u32)) std.math.maxInt(u32) else @intCast(available);
++        src.data.reference_trace_len = @min(src.data.reference_trace_len, available_u32);
+         var prefix: Writer.Discarding = .init(&.{});
+         try w.splatByteAll(' ', indent);
+         prefix.count += indent;

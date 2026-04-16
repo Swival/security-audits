@@ -1,0 +1,60 @@
+diff --git a/lib/std/compress/xz/Decompress.zig b/lib/std/compress/xz/Decompress.zig
+index 2fff561c73..9a90d51fb9 100644
+--- a/lib/std/compress/xz/Decompress.zig
++++ b/lib/std/compress/xz/Decompress.zig
+@@ -134,6 +134,7 @@ fn readIndirect(r: *Reader) Reader.Error!usize {
+     if (d.err != null) return error.ReadFailed;
+     if (d.block_count == std.math.maxInt(usize)) return error.EndOfStream;
+ 
++    const unpacked_start = allocating.writer.end;
+     readBlock(input, &allocating) catch |err| switch (err) {
+         error.WriteFailed => {
+             d.err = error.OutOfMemory;
+@@ -152,30 +153,33 @@ fn readIndirect(r: *Reader) Reader.Error!usize {
+             return error.ReadFailed;
+         },
+     };
++    const unpacked_bytes = allocating.writer.buffer[unpacked_start..allocating.writer.end];
+     switch (d.check) {
+         .none => {},
+         .crc32 => {
+             const declared_checksum = try input.takeInt(u32, .little);
+-            // TODO
+-            //const hash_a = Crc32.hash(unpacked_bytes);
+-            //if (hash_a != hash_b) return error.WrongChecksum;
+-            _ = declared_checksum;
++            const computed_checksum = Crc32.hash(unpacked_bytes);
++            if (computed_checksum != declared_checksum) {
++                d.err = error.WrongChecksum;
++                return error.ReadFailed;
++            }
+         },
+         .crc64 => {
+             const declared_checksum = try input.takeInt(u64, .little);
+-            // TODO
+-            //const hash_a = Crc64.hash(unpacked_bytes);
+-            //if (hash_a != hash_b) return error.WrongChecksum;
+-            _ = declared_checksum;
++            const computed_checksum = Crc64.hash(unpacked_bytes);
++            if (computed_checksum != declared_checksum) {
++                d.err = error.WrongChecksum;
++                return error.ReadFailed;
++            }
+         },
+         .sha256 => {
+             const declared_hash = try input.take(Sha256.digest_length);
+-            // TODO
+-            //var hash_a: [Sha256.digest_length]u8 = undefined;
+-            //Sha256.hash(unpacked_bytes, &hash_a, .{});
+-            //if (!std.mem.eql(u8, &hash_a, &hash_b))
+-            //    return error.WrongChecksum;
+-            _ = declared_hash;
++            var computed_hash: [Sha256.digest_length]u8 = undefined;
++            Sha256.hash(unpacked_bytes, &computed_hash, .{});
++            if (!std.mem.eql(u8, &computed_hash, declared_hash)) {
++                d.err = error.WrongChecksum;
++                return error.ReadFailed;
++            }
+         },
+         else => {
+             d.err = error.Unsupported;
