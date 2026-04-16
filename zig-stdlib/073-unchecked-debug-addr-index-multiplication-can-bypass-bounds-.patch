@@ -1,0 +1,19 @@
+diff --git a/lib/std/debug/Dwarf.zig b/lib/std/debug/Dwarf.zig
+index fe28baf8bf..7d2d1e532c 100644
+--- a/lib/std/debug/Dwarf.zig
++++ b/lib/std/debug/Dwarf.zig
+@@ -1263,9 +1263,12 @@ fn readDebugAddr(di: Dwarf, endian: Endian, compile_unit: *const CompileUnit, in
+ 
+     const addr_size = debug_addr[compile_unit.addr_base - 2];
+     const seg_size = debug_addr[compile_unit.addr_base - 1];
++    const entry_size = std.math.add(usize, addr_size, seg_size) catch return bad();
++    const entry_offset = std.math.mul(usize, entry_size, cast(usize, index) orelse return bad()) catch return bad();
++    const byte_offset = std.math.add(usize, compile_unit.addr_base, entry_offset) catch return bad();
++    const end_offset = std.math.add(usize, byte_offset, addr_size) catch return bad();
+ 
+-    const byte_offset = compile_unit.addr_base + (addr_size + seg_size) * index;
+-    if (byte_offset + addr_size > debug_addr.len) return bad();
++    if (end_offset > debug_addr.len) return bad();
+     return switch (addr_size) {
+         1 => debug_addr[@intCast(byte_offset)],
+         2 => mem.readInt(u16, debug_addr[@intCast(byte_offset)..][0..2], endian),
