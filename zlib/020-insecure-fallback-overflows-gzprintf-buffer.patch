@@ -1,0 +1,17 @@
+diff --git a/gzwrite.c b/gzwrite.c
+index 13a3700..0a19090 100644
+--- a/gzwrite.c
++++ b/gzwrite.c
+@@ -401,10 +401,9 @@ local int gz_vacate(gz_statep state) {
+ 
+ /* -- see zlib.h -- */
+ int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va) {
+-#if defined(NO_vsnprintf) && !defined(ZLIB_INSECURE)
++#if defined(NO_vsnprintf)
+ #warning "vsnprintf() not available -- gzprintf() stub returns Z_STREAM_ERROR"
+-#warning "you can recompile with ZLIB_INSECURE defined to use vsprintf()"
+-    /* prevent use of insecure vsprintf(), unless purposefully requested */
++    /* prevent use of insecure vsprintf() */
+     (void)file, (void)format, (void)va;
+     return Z_STREAM_ERROR;
+ #else

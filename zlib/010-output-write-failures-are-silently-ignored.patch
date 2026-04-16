@@ -1,0 +1,25 @@
+diff --git a/examples/gzjoin.c b/examples/gzjoin.c
+index 89e8098..e869f47 100644
+--- a/examples/gzjoin.c
++++ b/examples/gzjoin.c
+@@ -70,6 +70,20 @@ local int bail(char *why1, char *why2)
+     return 0;
+ }
+ 
++/* write bytes, bailing out on error */
++local void writen(const void *buf, size_t len, FILE *out)
++{
++    if (fwrite(buf, 1, len, out) != len)
++        bail("write error on ", "stdout");
++}
++
++/* write a byte, bailing out on error */
++local void put1(int byte, FILE *out)
++{
++    if (putc(byte, out) == EOF)
++        bail("write error on ", "stdout");
++}
++
+ /* -- simple buffered file input with access to the buffer -- */
+ 
+ #define CHUNK 32768         /* must be a power of two and fit in unsigned */

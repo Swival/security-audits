@@ -1,0 +1,42 @@
+diff --git a/contrib/puff/bin-writer.c b/contrib/puff/bin-writer.c
+index cfd8306..d8c8fd7 100644
+--- a/contrib/puff/bin-writer.c
++++ b/contrib/puff/bin-writer.c
+@@ -1,5 +1,6 @@
+ #include "stdio.h"
+ #include "stdlib.h"
++#include "ctype.h"
+ 
+ /**
+  * Reads hexadecimal values from stdin and writes binary bytes to stdout.
+@@ -10,16 +11,25 @@ int main(void) {
+     char hexStr[3]; // Two hex digits + null terminator
+     int ch;
+ 
+-    // Read characters until EOF
+-    while((ch = getchar()) != EOF) {
++    // Skip separators before each byte and require a full hex pair.
++    while(1) {
++        while((ch = getchar()) != EOF && !isxdigit((unsigned char)ch)) {
++        }
++        if(ch == EOF) {
++            break;
++        }
++
+         hexStr[0] = (char)ch;
+-        hexStr[1] = (char)getchar();
++        ch = getchar();
++        if(ch == EOF || !isxdigit((unsigned char)ch)) {
++            break;
++        }
++
++        hexStr[1] = (char)ch;
+         hexStr[2] = '\0'; // Null-terminate string
+         char *endptr;
+         unsigned char byte = (unsigned char)strtol(hexStr, &endptr, 16);
+         fwrite(&byte, 1, 1, stdout);
+-        if((ch = getchar()) == EOF) // Read seaparating space
+-          break;
+     }
+ 
+     return 0;

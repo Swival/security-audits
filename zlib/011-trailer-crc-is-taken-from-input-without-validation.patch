@@ -1,0 +1,11 @@
+diff --git a/examples/gzjoin.c b/examples/gzjoin.c
+index 89e8098..716cbcc 100644
+--- a/examples/gzjoin.c
++++ b/examples/gzjoin.c
+@@ -285,6 +285,7 @@ local void gzcopy(char *name, int clr, unsigned long *crc, unsigned long *tot,
+     bin *in;                /* buffered input file */
+     unsigned char *start;   /* start of compressed data in buffer */
+     unsigned char *junk;    /* buffer for uncompressed data -- discarded */
++    unsigned long part;     /* crc of uncompressed data in this member */
+     z_off_t len;            /* length of uncompressed data (support > 4 GB) */
+     z_stream strm;          /* zlib inflate stream */
