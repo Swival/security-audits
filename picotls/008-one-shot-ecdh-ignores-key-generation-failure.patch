@@ -1,0 +1,16 @@
+diff --git a/lib/uecc.c b/lib/uecc.c
+index 111b8dc..a52c1f4 100644
+--- a/lib/uecc.c
++++ b/lib/uecc.c
+@@ -116,7 +116,10 @@ static int secp256r1_key_exchange(ptls_key_exchange_algorithm_t *algo, ptls_iove
+     }
+ 
+     pub[0] = TYPE_UNCOMPRESSED_PUBLIC_KEY;
+-    uECC_make_key(pub + 1, priv, uECC_secp256r1());
++    if (!uECC_make_key(pub + 1, priv, uECC_secp256r1())) {
++        ret = PTLS_ERROR_LIBRARY;
++        goto Exit;
++    }
+     if (!uECC_shared_secret(peerkey.base + 1, priv, secbytes, uECC_secp256r1())) {
+         ret = PTLS_ALERT_DECRYPT_ERROR;
+         goto Exit;

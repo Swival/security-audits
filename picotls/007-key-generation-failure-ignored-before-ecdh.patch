@@ -1,0 +1,17 @@
+diff --git a/lib/uecc.c b/lib/uecc.c
+index 111b8dc..34bbd9c 100644
+--- a/lib/uecc.c
++++ b/lib/uecc.c
+@@ -90,7 +90,11 @@ static int secp256r1_create_key_exchange(ptls_key_exchange_algorithm_t *algo, pt
+ 
+     /* RNG function must be set before calling uECC_make_key() */
+     assert(uECC_get_rng() != NULL);
+-    uECC_make_key(ctx->pub + 1, ctx->priv, uECC_secp256r1());
++    if (!uECC_make_key(ctx->pub + 1, ctx->priv, uECC_secp256r1())) {
++        ptls_clear_memory(ctx, sizeof(*ctx));
++        free(ctx);
++        return PTLS_ERROR_LIBRARY;
++    }
+ 
+     *_ctx = &ctx->super;
+     return 0;

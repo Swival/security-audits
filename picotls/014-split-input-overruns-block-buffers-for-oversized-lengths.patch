@@ -1,0 +1,22 @@
+diff --git a/lib/quiclb-impl.h b/lib/quiclb-impl.h
+index 228447b..59ac45f 100644
+--- a/lib/quiclb-impl.h
++++ b/lib/quiclb-impl.h
+@@ -71,12 +71,14 @@ static inline void picotls_quiclb_one_round(void (*aesecb_func)(void *aesecb, un
+ static inline void picotls_quiclb_split_input(union picotls_quiclb_block *l, union picotls_quiclb_block *r, const uint8_t *input,
+                                               size_t len)
+ {
+-    size_t i;
+-    for (i = 0; i < (len + 1) / 2; ++i)
++    size_t half_len = (len + 1) / 2, i;
++    if (half_len > PTLS_ELEMENTSOF(l->bytes))
++        half_len = PTLS_ELEMENTSOF(l->bytes);
++    for (i = 0; i < half_len; ++i)
+         l->bytes[i] = input[i];
+     for (; i < PTLS_ELEMENTSOF(l->bytes); ++i)
+         l->bytes[i] = 0;
+-    for (i = 0; i < (len + 1) / 2; ++i)
++    for (i = 0; i < half_len; ++i)
+         r->bytes[i] = input[i + len / 2];
+     for (; i < PTLS_ELEMENTSOF(r->bytes); ++i)
+         r->bytes[i] = 0;

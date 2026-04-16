@@ -1,0 +1,13 @@
+diff --git a/lib/picotls.c b/lib/picotls.c
+index e176249..325a955 100644
+--- a/lib/picotls.c
++++ b/lib/picotls.c
+@@ -5949,7 +5949,7 @@ ServerSkipEarlyData:
+ static int handle_input_tls12(ptls_t *tls, ptls_buffer_t *decryptbuf, const void *input, size_t *inlen)
+ {
+     struct st_ptls_record_t rec;
+-    int ret;
++    int ret = 0;
+ 
+     /* extract the record, or bail out */
+     if ((ret = parse_record(tls, &rec, input, inlen)) != 0)
