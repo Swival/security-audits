@@ -1,0 +1,26 @@
+diff --git a/lib/std/Io/Threaded.zig b/lib/std/Io/Threaded.zig
+index 90d74d4b37..5580d2f117 100644
+--- a/lib/std/Io/Threaded.zig
++++ b/lib/std/Io/Threaded.zig
+@@ -13048,7 +13048,7 @@ fn netReceivePosix(
+         switch (posix.errno(rc)) {
+             .SUCCESS => {
+                 syscall.finish();
+-                const data = data_buffer[0..@intCast(rc)];
++                const data = data_buffer[0..@min(@as(usize, @intCast(rc)), data_buffer.len)];
+                 message.* = .{
+                     .from = addressFromPosix(&storage),
+                     .data = data,
+diff --git a/lib/std/Io/Uring.zig b/lib/std/Io/Uring.zig
+index 9184cd5741..67a178f940 100644
+--- a/lib/std/Io/Uring.zig
++++ b/lib/std/Io/Uring.zig
+@@ -5116,7 +5116,7 @@ fn netReceive(
+         const completion = cancel_region.completion();
+         switch (completion.errno()) {
+             .SUCCESS => {
+-                const data = remaining_data_buffer[0..@intCast(completion.result)];
++                const data = remaining_data_buffer[0..@min(@as(usize, @intCast(completion.result)), remaining_data_buffer.len)];
+                 data_i += data.len;
+                 message.* = .{
+                     .from = addressFromPosix(&storage),

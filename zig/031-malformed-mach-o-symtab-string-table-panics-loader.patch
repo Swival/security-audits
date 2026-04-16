@@ -1,0 +1,14 @@
+diff --git a/lib/std/debug/MachOFile.zig b/lib/std/debug/MachOFile.zig
+index 4b2fb524bc..8016a3cf12 100644
+--- a/lib/std/debug/MachOFile.zig
++++ b/lib/std/debug/MachOFile.zig
+@@ -106,6 +106,9 @@ pub fn load(gpa: Allocator, io: Io, path: []const u8, arch: std.Target.Cpu.Arch)
+         };
+     };
+ 
++    if (symtab.strsize == 0) return error.InvalidMachO;
++    if (symtab.stroff > mapped_macho.len or symtab.strsize > mapped_macho.len - symtab.stroff) return error.InvalidMachO;
++    if (mapped_macho[symtab.stroff + symtab.strsize - 1] != 0) return error.InvalidMachO;
+     const strings = mapped_macho[symtab.stroff..][0 .. symtab.strsize - 1];
+ 
+     var symbols: std.ArrayList(Symbol) = try .initCapacity(gpa, symtab.nsyms);

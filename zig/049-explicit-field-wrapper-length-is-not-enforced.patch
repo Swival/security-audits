@@ -1,0 +1,28 @@
+diff --git a/lib/std/crypto/codecs/asn1/der/Decoder.zig b/lib/std/crypto/codecs/asn1/der/Decoder.zig
+index 25a4139d6e..b24cc8f7f4 100644
+--- a/lib/std/crypto/codecs/asn1/der/Decoder.zig
++++ b/lib/std/crypto/codecs/asn1/der/Decoder.zig
+@@ -28,11 +28,13 @@ pub fn any(self: *Decoder, comptime T: type) !T {
+             inline for (info.field_names, info.field_types, info.field_attrs) |f_name, f_type, f_attrs| {
+                 self.field_tag = FieldTag.fromContainer(T, f_name);
+ 
++                var explicit_end: ?Index = null;
+                 if (self.field_tag) |ft| {
+                     if (ft.explicit) {
+                         const seq = try self.element(ft.toTag().toExpected());
+                         self.index = seq.slice.start;
+                         self.field_tag = null;
++                        explicit_end = seq.slice.end;
+                     }
+                 }
+ 
+@@ -42,6 +44,9 @@ pub fn any(self: *Decoder, comptime T: type) !T {
+                     }
+                     return err;
+                 };
++                if (explicit_end) |end| {
++                    if (self.index != end) return error.UnexpectedElement;
++                }
+                 // DER encodes null values by skipping them.
+                 if (@typeInfo(f_type) == .optional and @field(res, f_name) == null) {
+                     if (f_attrs.defaultValue(f_type)) |d| @field(res, f_name) = d;

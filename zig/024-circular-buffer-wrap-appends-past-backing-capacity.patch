@@ -1,0 +1,17 @@
+diff --git a/lib/std/compress/lzma.zig b/lib/std/compress/lzma.zig
+index 4e3c614616..0059cb2971 100644
+--- a/lib/std/compress/lzma.zig
++++ b/lib/std/compress/lzma.zig
+@@ -369,7 +369,11 @@ pub const Decode = struct {
+             while (self.buf.items.len < index) {
+                 self.buf.appendAssumeCapacity(0);
+             }
+-            self.buf.appendAssumeCapacity(value);
++            if (index == self.buf.items.len) {
++                self.buf.appendAssumeCapacity(value);
++            } else {
++                self.buf.items[index] = value;
++            }
+         }
+ 
+         /// Retrieve the last byte or return a default

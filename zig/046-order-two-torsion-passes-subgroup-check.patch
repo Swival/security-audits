@@ -1,0 +1,13 @@
+diff --git a/lib/std/crypto/25519/edwards25519.zig b/lib/std/crypto/25519/edwards25519.zig
+index a966f7ada0..a15c5e9414 100644
+--- a/lib/std/crypto/25519/edwards25519.zig
++++ b/lib/std/crypto/25519/edwards25519.zig
+@@ -74,7 +74,7 @@ pub const Edwards25519 = struct {
+ 
+     /// Reject the neutral element.
+     pub fn rejectIdentity(p: Edwards25519) IdentityElementError!void {
+-        if (p.x.isZero()) {
++        if (p.x.isZero() and p.y.sub(p.z).isZero()) {
+             return error.IdentityElement;
+         }
+     }

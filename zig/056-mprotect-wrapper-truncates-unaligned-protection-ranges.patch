@@ -1,0 +1,13 @@
+diff --git a/lib/c/sys/mman.zig b/lib/c/sys/mman.zig
+index 3783cc4197..1cfece5e5b 100644
+--- a/lib/c/sys/mman.zig
++++ b/lib/c/sys/mman.zig
+@@ -44,7 +44,7 @@ fn mlockallLinux(flags: c_int) callconv(.c) c_int {
+ fn mprotectLinux(addr: *anyopaque, len: usize, prot: c_int) callconv(.c) c_int {
+     const page_size = std.heap.pageSize();
+     const start = std.mem.alignBackward(usize, @intFromPtr(addr), page_size);
+-    const aligned_len = std.mem.alignForward(usize, len, page_size);
++    const aligned_len = std.mem.alignForward(usize, @intFromPtr(addr) - start + len, page_size);
+     return errno(std.os.linux.mprotect(@ptrFromInt(start), aligned_len, @bitCast(prot)));
+ }
+ 

@@ -1,0 +1,12 @@
+diff --git a/lib/std/crypto/tls/Client.zig b/lib/std/crypto/tls/Client.zig
+index 3f96531e94..8f57368ce6 100644
+--- a/lib/std/crypto/tls/Client.zig
++++ b/lib/std/crypto/tls/Client.zig
+@@ -1202,6 +1202,7 @@ fn readIndirect(c: *Client) Reader.Error!usize {
+             .tls_1_2 => {
+                 const pv = &p.tls_1_2;
+                 const P = @TypeOf(p.*);
++                if (record_len < P.record_iv_length + P.mac_length) return failRead(c, error.TlsRecordOverflow);
+                 const message_len: u16 = record_len - P.record_iv_length - P.mac_length;
+                 const ad_header = input.take(tls.record_header_len) catch unreachable; // already peeked
+                 const ad = mem.toBytes(big(c.read_seq)) ++

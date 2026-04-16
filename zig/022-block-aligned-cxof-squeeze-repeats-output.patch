@@ -1,0 +1,13 @@
+diff --git a/lib/std/crypto/ascon.zig b/lib/std/crypto/ascon.zig
+index 3142bc0a89..371d24d2cf 100644
+--- a/lib/std/crypto/ascon.zig
++++ b/lib/std/crypto/ascon.zig
+@@ -928,7 +928,7 @@ pub const AsconCxof128 = struct {
+             @memcpy(out[i..][0..to_copy], block[0..to_copy]);
+             i += to_copy;
+ 
+-            if (i < out.len) {
++            if (to_copy == 8) {
+                 self.st.permuteR(12);
+             }
+         }

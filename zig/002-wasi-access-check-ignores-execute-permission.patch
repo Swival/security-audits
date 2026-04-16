@@ -1,0 +1,14 @@
+diff --git a/lib/std/Io/Threaded.zig b/lib/std/Io/Threaded.zig
+index 90d74d4b37..dd196fe8a5 100644
+--- a/lib/std/Io/Threaded.zig
++++ b/lib/std/Io/Threaded.zig
+@@ -4188,7 +4188,8 @@ fn dirAccessWasi(
+     if (options.write)
+         rights.FD_WRITE = true;
+ 
+-    // No validation for execution.
++    if (options.execute)
++        return error.AccessDenied;
+ 
+     // https://github.com/ziglang/zig/issues/18882
+     const rights_int: u64 = @bitCast(rights);

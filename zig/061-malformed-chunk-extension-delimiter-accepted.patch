@@ -1,0 +1,38 @@
+diff --git a/lib/std/http/ChunkParser.zig b/lib/std/http/ChunkParser.zig
+index 7c628ec327..756129d8d4 100644
+--- a/lib/std/http/ChunkParser.zig
++++ b/lib/std/http/ChunkParser.zig
+@@ -62,10 +62,14 @@ pub fn feed(p: *ChunkParser, bytes: []const u8) usize {
+                     p.state = .data;
+                     return i + 1;
+                 },
+-                else => {
++                ';' => {
+                     p.state = .head_ext;
+                     continue;
+                 },
++                else => {
++                    p.state = .invalid;
++                    return i;
++                },
+             };
+ 
+             const new_len = p.chunk_len *% 16 +% digit;
+@@ -103,7 +107,7 @@ pub fn feed(p: *ChunkParser, bytes: []const u8) usize {
+ test feed {
+     const testing = std.testing;
+ 
+-    const data = "Ff\r\nf0f000 ; ext\n0\r\nffffffffffffffffffffffffffffffffffffffff\r\n";
++    const data = "Ff\r\nf0f000;ext\n0\r\nffffffffffffffffffffffffffffffffffffffff\r\n";
+ 
+     var p = init;
+     const first = p.feed(data[0..]);
+@@ -113,7 +117,7 @@ test feed {
+ 
+     p = init;
+     const second = p.feed(data[first..]);
+-    try testing.expectEqual(@as(u32, 13), second);
++    try testing.expectEqual(@as(u32, 11), second);
+     try testing.expectEqual(@as(u64, 0xf0f000), p.chunk_len);
+     try testing.expectEqual(.data, p.state);
+ 

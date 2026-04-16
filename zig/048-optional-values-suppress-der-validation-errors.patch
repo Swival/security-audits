@@ -1,0 +1,16 @@
+diff --git a/lib/std/crypto/codecs/asn1/der/Decoder.zig b/lib/std/crypto/codecs/asn1/der/Decoder.zig
+index 25a4139d6e..3eae856e1b 100644
+--- a/lib/std/crypto/codecs/asn1/der/Decoder.zig
++++ b/lib/std/crypto/codecs/asn1/der/Decoder.zig
+@@ -74,7 +74,10 @@ pub fn any(self: *Decoder, comptime T: type) !T {
+             }
+             return @enumFromInt(try int(e.tag_type, bytes));
+         },
+-        .optional => |o| return self.any(o.child) catch return null,
++        .optional => |o| return self.any(o.child) catch |err| switch (err) {
++            error.UnexpectedElement => null,
++            else => return err,
++        },
+         else => @compileError("cannot decode type " ++ @typeName(T)),
+     }
+ }

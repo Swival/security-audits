@@ -1,0 +1,12 @@
+diff --git a/lib/std/crypto/bcrypt.zig b/lib/std/crypto/bcrypt.zig
+index 55d00c1d27..27eeab920b 100644
+--- a/lib/std/crypto/bcrypt.zig
++++ b/lib/std/crypto/bcrypt.zig
+@@ -755,6 +755,7 @@ const CryptFormatHasher = struct {
+         const rounds_log_str = str[4..][0..2];
+         const rounds_log = fmt.parseInt(u6, rounds_log_str[0..], 10) catch
+             return HasherError.InvalidEncoding;
++        if (rounds_log < 4 or rounds_log > 31) return HasherError.InvalidEncoding;
+ 
+         const salt_str = str[7..][0..salt_str_length];
+         var salt: [salt_length]u8 = undefined;

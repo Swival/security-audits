@@ -1,0 +1,12 @@
+diff --git a/lib/std/crypto/tls/Client.zig b/lib/std/crypto/tls/Client.zig
+index 3f96531e94..7a40e68c3e 100644
+--- a/lib/std/crypto/tls/Client.zig
++++ b/lib/std/crypto/tls/Client.zig
+@@ -1254,6 +1254,7 @@ fn readIndirect(c: *Client) Reader.Error!usize {
+         .handshake => {
+             var ct_i: usize = 0;
+             while (true) {
++                if (ct_i + 4 > cleartext.len) return failRead(c, error.TlsBadLength);
+                 const handshake_type: tls.HandshakeType = @enumFromInt(cleartext[ct_i]);
+                 ct_i += 1;
+                 const handshake_len = mem.readInt(u24, cleartext[ct_i..][0..3], .big);

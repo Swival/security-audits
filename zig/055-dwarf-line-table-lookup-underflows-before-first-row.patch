@@ -1,0 +1,15 @@
+diff --git a/lib/std/debug/Coverage.zig b/lib/std/debug/Coverage.zig
+index b3e16382cc..2422f99ffa 100644
+--- a/lib/std/debug/Coverage.zig
++++ b/lib/std/debug/Coverage.zig
+@@ -206,6 +206,10 @@ pub fn resolveAddressesDwarf(
+         const slc = &cu.src_loc_cache.?;
+         const table_addrs = slc.line_table.keys();
+         while (line_table_i < table_addrs.len and table_addrs[line_table_i] <= pc) line_table_i += 1;
++        if (line_table_i == 0) {
++            out.* = SourceLocation.invalid;
++            continue :next_pc;
++        }
+ 
+         const entry = slc.line_table.values()[line_table_i - 1];
+         const corrected_file_index = entry.file - @intFromBool(slc.version < 5);

@@ -1,0 +1,12 @@
+diff --git a/lib/std/debug/MachOFile.zig b/lib/std/debug/MachOFile.zig
+index 4b2fb524bc..77b2082ee3 100644
+--- a/lib/std/debug/MachOFile.zig
++++ b/lib/std/debug/MachOFile.zig
+@@ -137,6 +137,7 @@ pub fn load(gpa: Allocator, io: Io, path: []const u8, arch: std.Target.Cpu.Arch)
+             error.ReadFailed => unreachable,
+             error.EndOfStream => return error.InvalidMachO,
+         };
++        if (sym.n_strx > strings.len) return error.InvalidMachO;
+         if (sym.n_type.bits.is_stab == 0) {
+             if (sym.n_strx == 0) continue;
+             switch (sym.n_type.bits.type) {

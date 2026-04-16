@@ -1,0 +1,14 @@
+diff --git a/lib/std/crypto/ecdsa.zig b/lib/std/crypto/ecdsa.zig
+index b111b8e52a..709f97a04a 100644
+--- a/lib/std/crypto/ecdsa.zig
++++ b/lib/std/crypto/ecdsa.zig
+@@ -168,7 +168,8 @@ pub fn Ecdsa(comptime Curve: type, comptime Hash: type) type {
+                 }
+                 const out_slice = out[out.len - expected_len ..];
+                 reader.readSliceAll(out_slice) catch return error.InvalidEncoding;
+-                if (@intFromBool(has_top_bit) != out[0] >> 7) return error.InvalidEncoding;
++                if (@intFromBool(has_top_bit) != out_slice[0] >> 7) return error.InvalidEncoding;
++                if (!has_top_bit and out_slice[0] == 0 and expected_len > 1 and out_slice[1] >> 7 == 0) return error.InvalidEncoding;
+             }
+ 
+             /// Create a signature from a DER representation.

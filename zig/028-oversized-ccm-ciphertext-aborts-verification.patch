@@ -1,0 +1,15 @@
+diff --git a/lib/std/crypto/aes_ccm.zig b/lib/std/crypto/aes_ccm.zig
+index 2f14e61d60..130afffba5 100644
+--- a/lib/std/crypto/aes_ccm.zig
++++ b/lib/std/crypto/aes_ccm.zig
+@@ -122,6 +122,10 @@ fn AesCcm(comptime BlockCipher: type, comptime tag_len: usize, comptime nonce_le
+         ) AuthenticationError!void {
+             assert(m.len == c.len);
+ 
++            // Validate ciphertext length fits in L bytes
++            const max_msg_len: u64 = if (L >= 8) std.math.maxInt(u64) else (@as(u64, 1) << @as(u6, @intCast(L * 8))) - 1;
++            if (c.len > max_msg_len) return error.AuthenticationFailed;
++
+             const cipher_ctx = BlockCipher.initEnc(key);
+ 
+             // Decrypt the ciphertext using CTR mode (starting from counter = 1)

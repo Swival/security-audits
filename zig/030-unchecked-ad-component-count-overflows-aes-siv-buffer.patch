@@ -1,0 +1,12 @@
+diff --git a/lib/std/crypto/aes_siv.zig b/lib/std/crypto/aes_siv.zig
+index 4cbbca2eeb..f50e773ed1 100644
+--- a/lib/std/crypto/aes_siv.zig
++++ b/lib/std/crypto/aes_siv.zig
+@@ -263,6 +263,7 @@ fn AesSiv(comptime Aes: anytype) type {
+         /// an arbitrary vector of associated data strings as specified in RFC 5297.
+         pub fn decryptWithAdVector(m: []u8, c: []const u8, tag: [tag_length]u8, ad: []const []const u8, key: [key_length]u8) AuthenticationError!void {
+             assert(c.len == m.len);
++            if (ad.len >= 127) return error.AuthenticationFailed;
+ 
+             // Split key into K1 (for S2V) and K2 (for CTR)
+             const k1 = key[0 .. Aes.key_bits / 8];

@@ -1,0 +1,21 @@
+diff --git a/lib/std/crypto/aes_ocb.zig b/lib/std/crypto/aes_ocb.zig
+index 36e2aaa84c..92cc266bc4 100644
+--- a/lib/std/crypto/aes_ocb.zig
++++ b/lib/std/crypto/aes_ocb.zig
+@@ -186,6 +186,7 @@ fn AesOcb(comptime Aes: anytype) type {
+             const x_max = if (full_blocks > 0) math.log2_int(usize, full_blocks) else 0;
+             var lx = Lx.init(aes_enc_ctx);
+             const lt = lx.precomp(x_max);
++            const ad_hash = hash(aes_enc_ctx, &lx, ad);
+ 
+             var offset = getOffset(aes_enc_ctx, npub);
+             var sum: [16]u8 = @splat(0);
+@@ -233,7 +234,7 @@ fn AesOcb(comptime Aes: anytype) type {
+             }
+             var e = xorBlocks(xorBlocks(sum, offset), lx.dol);
+             aes_enc_ctx.encrypt(&e, &e);
+-            var computed_tag = xorBlocks(e, hash(aes_enc_ctx, &lx, ad));
++            var computed_tag = xorBlocks(e, ad_hash);
+             const verify = crypto.timing_safe.eql([tag_length]u8, computed_tag, tag);
+             if (!verify) {
+                 crypto.secureZero(u8, &computed_tag);

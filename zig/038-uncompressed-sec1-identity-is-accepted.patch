@@ -1,0 +1,12 @@
+diff --git a/lib/std/crypto/pcurves/secp256k1.zig b/lib/std/crypto/pcurves/secp256k1.zig
+index 1c1caae19a..1b36344598 100644
+--- a/lib/std/crypto/pcurves/secp256k1.zig
++++ b/lib/std/crypto/pcurves/secp256k1.zig
+@@ -149,6 +149,7 @@ pub const Secp256k1 = struct {
+                 if (encoded.len != 64) return error.InvalidEncoding;
+                 const x = try Fe.fromBytes(encoded[0..32].*, .big);
+                 const y = try Fe.fromBytes(encoded[32..64].*, .big);
++                if (x.equivalent(AffineCoordinates.identityElement.x) and y.equivalent(AffineCoordinates.identityElement.y)) return error.InvalidEncoding;
+                 return Secp256k1.fromAffineCoordinates(.{ .x = x, .y = y });
+             },
+             else => return error.InvalidEncoding,

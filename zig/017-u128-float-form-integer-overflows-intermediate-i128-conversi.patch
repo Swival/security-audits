@@ -1,0 +1,13 @@
+diff --git a/lib/std/json/static.zig b/lib/std/json/static.zig
+index d177237842..291fa1789d 100644
+--- a/lib/std/json/static.zig
++++ b/lib/std/json/static.zig
+@@ -780,7 +780,7 @@ fn sliceToInt(comptime T: type, slice: []const u8) !T {
+     const float = try std.fmt.parseFloat(f128, slice);
+     if (@round(float) != float) return error.InvalidNumber;
+     if (float > @as(f128, @floatFromInt(std.math.maxInt(T))) or float < @as(f128, @floatFromInt(std.math.minInt(T)))) return error.Overflow;
+-    return @as(T, @intCast(@as(i128, @intFromFloat(float))));
++    return @as(T, @intFromFloat(float));
+ }
+ 
+ fn sliceToEnum(comptime T: type, slice: []const u8) !T {

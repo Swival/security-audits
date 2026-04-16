@@ -1,0 +1,16 @@
+diff --git a/lib/std/elf.zig b/lib/std/elf.zig
+index 81de3f7f50..e87cea9b72 100644
+--- a/lib/std/elf.zig
++++ b/lib/std/elf.zig
+@@ -991,9 +991,10 @@ pub const DynamicSectionBufferIterator = struct {
+ 
+     pub fn next(it: *DynamicSectionBufferIterator) !?Elf64_Dyn {
+         if (it.offset >= it.end_offset) return null;
++        if (it.offset > it.buf.len) return error.EndOfStream;
+         const size: u64 = if (it.is_64) @sizeOf(Elf64_Dyn) else @sizeOf(Elf32_Dyn);
+         defer it.offset += size;
+-        var reader: std.Io.Reader = .fixed(it.buf[it.offset..]);
++        var reader: std.Io.Reader = .fixed(it.buf[@intCast(it.offset)..]);
+         return try takeDynamicSection(&reader, it.is_64, it.endian);
+     }
+ };

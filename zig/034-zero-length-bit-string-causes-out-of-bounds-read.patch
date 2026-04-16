@@ -1,0 +1,12 @@
+diff --git a/lib/std/crypto/Certificate.zig b/lib/std/crypto/Certificate.zig
+index 4defc2a408..07519ef60b 100644
+--- a/lib/std/crypto/Certificate.zig
++++ b/lib/std/crypto/Certificate.zig
+@@ -562,6 +562,7 @@ pub const ParseBitStringError = error{ CertificateFieldHasWrongDataType, Certifi
+ 
+ pub fn parseBitString(cert: Certificate, elem: der.Element) !der.Element.Slice {
+     if (elem.identifier.tag != .bitstring) return error.CertificateFieldHasWrongDataType;
++    if (elem.slice.start >= elem.slice.end) return error.CertificateHasInvalidBitString;
+     if (cert.buffer[elem.slice.start] != 0) return error.CertificateHasInvalidBitString;
+     return .{ .start = elem.slice.start + 1, .end = elem.slice.end };
+ }

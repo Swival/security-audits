@@ -1,0 +1,13 @@
+diff --git a/lib/std/crypto/codecs/asn1/der.zig b/lib/std/crypto/codecs/asn1/der.zig
+index 4395f9f3b6..27dabcd111 100644
+--- a/lib/std/crypto/codecs/asn1/der.zig
++++ b/lib/std/crypto/codecs/asn1/der.zig
+@@ -11,7 +11,7 @@ pub const Encoder = @import("der/Encoder.zig");
+ pub fn decode(comptime T: type, encoded: []const u8) !T {
+     var decoder = Decoder{ .bytes = encoded };
+     const res = try decoder.any(T);
+-    std.debug.assert(decoder.index == encoded.len);
++    if (decoder.index != encoded.len) return error.TrailingData;
+     return res;
+ }
+ 

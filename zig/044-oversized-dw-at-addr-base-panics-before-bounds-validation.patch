@@ -1,0 +1,13 @@
+diff --git a/lib/std/debug/Dwarf.zig b/lib/std/debug/Dwarf.zig
+index 439e590dae..87166fbe2b 100644
+--- a/lib/std/debug/Dwarf.zig
++++ b/lib/std/debug/Dwarf.zig
+@@ -1259,7 +1259,7 @@ fn readDebugAddr(di: Dwarf, endian: Endian, compile_unit: *const CompileUnit, in
+     // need to read the header to know the size of each item. Empirically,
+     // it may disagree with is_64 on the compile unit.
+     // The header is 8 or 12 bytes depending on is_64.
+-    if (compile_unit.addr_base < 8) return bad();
++    if (compile_unit.addr_base < 8 or compile_unit.addr_base > debug_addr.len) return bad();
+ 
+     const version = mem.readInt(u16, debug_addr[compile_unit.addr_base - 4 ..][0..2], endian);
+     if (version != 5) return bad();

@@ -1,0 +1,99 @@
+diff --git a/lib/std/crypto/phc_encoding.zig b/lib/std/crypto/phc_encoding.zig
+index 70f1f52bfb..268f81e213 100644
+--- a/lib/std/crypto/phc_encoding.zig
++++ b/lib/std/crypto/phc_encoding.zig
+@@ -81,19 +81,22 @@ pub fn deserialize(comptime HashResult: type, str: []const u8) Error!HashResult
+ 
+     var out = mem.zeroes(HashResult);
+     var it = mem.splitScalar(u8, str, fields_delimiter_scalar);
+-    var set_fields: usize = 0;
++    const info = @typeInfo(HashResult).@"struct";
++    var set_fields: [info.field_names.len]bool = undefined;
++    @memset(&set_fields, false);
+ 
+     while (true) {
+         // Read the algorithm identifier
+         if ((it.next() orelse return Error.InvalidEncoding).len != 0) return Error.InvalidEncoding;
+         out.alg_id = it.next() orelse return Error.InvalidEncoding;
+-        set_fields += 1;
++        set_fields[meta.fieldIndex(HashResult, "alg_id").?] = true;
+ 
+         // Read the optional version number
+         var field = it.next() orelse break;
+         if (kvSplit(field)) |opt_version| {
+             if (mem.eql(u8, opt_version.key, version_param_name)) {
+                 if (@hasField(HashResult, "alg_version")) {
++                    if (set_fields[meta.fieldIndex(HashResult, "alg_version").?]) return Error.InvalidEncoding;
+                     const ValueType = switch (@typeInfo(@TypeOf(out.alg_version))) {
+                         .optional => |opt| opt.child,
+                         else => @TypeOf(out.alg_version),
+@@ -103,7 +106,7 @@ pub fn deserialize(comptime HashResult: type, str: []const u8) Error!HashResult
+                         opt_version.value,
+                         10,
+                     ) catch return Error.InvalidEncoding;
+-                    set_fields += 1;
++                    set_fields[meta.fieldIndex(HashResult, "alg_version").?] = true;
+                 }
+                 field = it.next() orelse break;
+             }
+@@ -115,9 +118,9 @@ pub fn deserialize(comptime HashResult: type, str: []const u8) Error!HashResult
+         while (it_params.next()) |params| {
+             const param = kvSplit(params) catch break;
+             var found = false;
+-            const info = @typeInfo(HashResult).@"struct";
+-            inline for (info.field_names, info.field_types) |p_name, p_type| {
++            inline for (info.field_names, info.field_types, 0..) |p_name, p_type, i| {
+                 if (mem.eql(u8, p_name, param.key)) {
++                    if (set_fields[i]) return Error.InvalidEncoding;
+                     switch (@typeInfo(p_type)) {
+                         .int => @field(out, p_name) = fmt.parseUnsigned(
+                             p_type,
+@@ -134,7 +137,7 @@ pub fn deserialize(comptime HashResult: type, str: []const u8) Error!HashResult
+                             .{p_name},
+                         ),
+                     }
+-                    set_fields += 1;
++                    set_fields[i] = true;
+                     found = true;
+                     break;
+                 }
+@@ -148,8 +151,9 @@ pub fn deserialize(comptime HashResult: type, str: []const u8) Error!HashResult
+ 
+         // Read an optional salt
+         if (@hasField(HashResult, "salt")) {
++            if (set_fields[meta.fieldIndex(HashResult, "salt").?]) return Error.InvalidEncoding;
+             try out.salt.fromB64(field);
+-            set_fields += 1;
++            set_fields[meta.fieldIndex(HashResult, "salt").?] = true;
+         } else {
+             return Error.InvalidEncoding;
+         }
+@@ -157,8 +161,9 @@ pub fn deserialize(comptime HashResult: type, str: []const u8) Error!HashResult
+         // Read an optional hash
+         field = it.next() orelse break;
+         if (@hasField(HashResult, "hash")) {
++            if (set_fields[meta.fieldIndex(HashResult, "hash").?]) return Error.InvalidEncoding;
+             try out.hash.fromB64(field);
+-            set_fields += 1;
++            set_fields[meta.fieldIndex(HashResult, "hash").?] = true;
+         } else {
+             return Error.InvalidEncoding;
+         }
+@@ -167,14 +172,11 @@ pub fn deserialize(comptime HashResult: type, str: []const u8) Error!HashResult
+ 
+     // Check that all the required fields have been set, excluding optional values and parameters
+     // with default values
+-    var expected_fields: usize = 0;
+-    const info = @typeInfo(HashResult).@"struct";
+-    inline for (info.field_types, info.field_attrs) |p_type, p_attrs| {
+-        if (@typeInfo(p_type) != .optional and p_attrs.default_value_ptr == null) {
+-            expected_fields += 1;
++    inline for (info.field_types, info.field_attrs, 0..) |p_type, p_attrs, i| {
++        if (@typeInfo(p_type) != .optional and p_attrs.default_value_ptr == null and !set_fields[i]) {
++            return Error.InvalidEncoding;
+         }
+     }
+-    if (set_fields < expected_fields) return Error.InvalidEncoding;
+ 
+     return out;
+ }

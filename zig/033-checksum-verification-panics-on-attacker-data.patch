@@ -1,0 +1,14 @@
+diff --git a/lib/std/compress/zstd/Decompress.zig b/lib/std/compress/zstd/Decompress.zig
+index 8acb2650a2..e925414ed6 100644
+--- a/lib/std/compress/zstd/Decompress.zig
++++ b/lib/std/compress/zstd/Decompress.zig
+@@ -369,8 +369,7 @@ fn readInFrame(d: *Decompress, w: *Writer, limit: Limit, state: *State.InFrame)
+ 
+     if (state.frame.hasher_opt) |*hasher| {
+         if (bytes_written > 0) {
+-            _ = hasher;
+-            @panic("TODO all those bytes written needed to go through the hasher too");
++            hasher.update(w.buffer[w.end - bytes_written .. w.end]);
+         }
+     }
+ 

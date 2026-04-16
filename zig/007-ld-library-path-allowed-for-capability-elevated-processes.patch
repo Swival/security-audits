@@ -1,0 +1,16 @@
+diff --git a/lib/std/dynamic_library.zig b/lib/std/dynamic_library.zig
+index d7cea3b3cd..7ba76c8016 100644
+--- a/lib/std/dynamic_library.zig
++++ b/lib/std/dynamic_library.zig
+@@ -203,8 +203,9 @@ pub const ElfDynLib = struct {
+             return Io.Dir.cwd().openFile(io, path_or_name, .{});
+         }
+ 
+-        // Only read LD_LIBRARY_PATH if the binary is not setuid/setgid
+-        if (std.os.linux.geteuid() == std.os.linux.getuid() and
++        // Only read LD_LIBRARY_PATH if the binary is not running in secure-execution mode.
++        if (std.os.linux.getauxval(std.elf.AT_SECURE) == 0 and
++            std.os.linux.geteuid() == std.os.linux.getuid() and
+             std.os.linux.getegid() == std.os.linux.getgid())
+         {
+             if (LD_LIBRARY_PATH) |ld_library_path| {

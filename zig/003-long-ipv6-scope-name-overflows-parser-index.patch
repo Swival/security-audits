@@ -1,0 +1,30 @@
+diff --git a/lib/std/Io/net.zig b/lib/std/Io/net.zig
+index c704d8b9e9..14ae05b1e6 100644
+--- a/lib/std/Io/net.zig
++++ b/lib/std/Io/net.zig
+@@ -511,10 +511,10 @@ pub const Ip6Address = struct {
+             }
+             // Has to be u16 elements to handle 3-digit hex numbers from compression.
+             var parts: [8]u16 = @splat(0);
+-            var parts_i: u8 = 0;
+-            var text_i: u8 = 0;
+-            var digit_i: u8 = 0;
+-            var compress_start: ?u8 = null;
++            var parts_i: usize = 0;
++            var text_i: usize = 0;
++            var digit_i: usize = 0;
++            var compress_start: ?usize = null;
+             var interface_name_text: ?[]const u8 = null;
+             const State = union(enum) { digit, end };
+             state: switch (State.digit) {
+@@ -575,8 +575,9 @@ pub const Ip6Address = struct {
+                         text_i += 1;
+                         const name = text[text_i..];
+                         if (name.len == 0) return .incomplete;
++                        if (name.len > Interface.Name.max_len) return .{ .interface_name_oversized = text_i };
+                         interface_name_text = name;
+-                        text_i = @intCast(text.len);
++                        text_i = text.len;
+                         continue :state .end;
+                     },
+                     else => return .{ .invalid_byte = text_i },

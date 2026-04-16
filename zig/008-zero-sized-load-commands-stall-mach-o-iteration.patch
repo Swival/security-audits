@@ -1,0 +1,12 @@
+diff --git a/lib/std/macho.zig b/lib/std/macho.zig
+index 9fdce9dd66..a57e787fd0 100644
+--- a/lib/std/macho.zig
++++ b/lib/std/macho.zig
+@@ -1966,6 +1966,7 @@ pub const LoadCommandIterator = struct {
+             error.ReadFailed => unreachable,
+             error.EndOfStream => return error.InvalidMachO,
+         };
++        if (hdr.cmdsize < @sizeOf(load_command)) return error.InvalidMachO;
+         const data = it.r.take(hdr.cmdsize) catch |err| switch (err) {
+             error.ReadFailed => unreachable,
+             error.EndOfStream => return error.InvalidMachO,

@@ -1,0 +1,15 @@
+diff --git a/lib/std/http/ChunkParser.zig b/lib/std/http/ChunkParser.zig
+index 7c628ec327..292d3c5355 100644
+--- a/lib/std/http/ChunkParser.zig
++++ b/lib/std/http/ChunkParser.zig
+@@ -52,8 +52,8 @@ pub fn feed(p: *ChunkParser, bytes: []const u8) usize {
+         .head_size => {
+             const digit = switch (c) {
+                 '0'...'9' => |b| b - '0',
+-                'A'...'Z' => |b| b - 'A' + 10,
+-                'a'...'z' => |b| b - 'a' + 10,
++                'A'...'F' => |b| b - 'A' + 10,
++                'a'...'f' => |b| b - 'a' + 10,
+                 '\r' => {
+                     p.state = .head_r;
+                     continue;

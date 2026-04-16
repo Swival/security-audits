@@ -1,0 +1,12 @@
+diff --git a/lib/std/zig/llvm/BitcodeReader.zig b/lib/std/zig/llvm/BitcodeReader.zig
+index 3ed1e0e928..dd0ec350d2 100644
+--- a/lib/std/zig/llvm/BitcodeReader.zig
++++ b/lib/std/zig/llvm/BitcodeReader.zig
+@@ -93,6 +93,7 @@ pub const Record = struct {
+             else => unreachable,
+         };
+ 
++        if (operands.items.len == 0) return error.InvalidAbbrev;
+         return .{ .operands = try operands.toOwnedSlice() };
+     }
+ };

@@ -1,0 +1,15 @@
+diff --git a/lib/std/crypto/codecs/asn1.zig b/lib/std/crypto/codecs/asn1.zig
+index faa2ffb621..a5a02d36d1 100644
+--- a/lib/std/crypto/codecs/asn1.zig
++++ b/lib/std/crypto/codecs/asn1.zig
+@@ -208,6 +208,10 @@ pub const Element = struct {
+             // long form between 0 and std.math.maxInt(u1024)
+             const len_size: u7 = @truncate(size_or_len_size);
+             if (len_size > @sizeOf(Index)) return error.EndOfStream;
++            if ((reader.peekByte() catch |err| switch (err) {
++                error.ReadFailed => unreachable, // it's all fixed buffers
++                else => |e| return e,
++            }) == 0) return error.EndOfStream;
+ 
+             const len = reader.takeVarInt(Index, .big, len_size) catch |err| switch (err) {
+                 error.ReadFailed => unreachable, // it's all fixed buffers

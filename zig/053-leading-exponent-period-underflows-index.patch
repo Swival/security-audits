@@ -1,0 +1,13 @@
+diff --git a/lib/std/zig/number_literal.zig b/lib/std/zig/number_literal.zig
+index a4dc33eb91..f03567bb2f 100644
+--- a/lib/std/zig/number_literal.zig
++++ b/lib/std/zig/number_literal.zig
+@@ -121,7 +121,7 @@ pub fn parseNumberLiteral(bytes: []const u8) Result {
+                 continue;
+             },
+             '.' => {
+-                if (exponent) {
++                if (exponent and i >= ".e".len) {
+                     const digit_index = i - ".e".len;
+                     if (digit_index < bytes.len) {
+                         switch (bytes[digit_index]) {

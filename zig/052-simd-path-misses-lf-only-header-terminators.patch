@@ -1,0 +1,22 @@
+diff --git a/lib/std/http/HeadParser.zig b/lib/std/http/HeadParser.zig
+index 7b9ca6d2c5..4fc308b2a8 100644
+--- a/lib/std/http/HeadParser.zig
++++ b/lib/std/http/HeadParser.zig
+@@ -124,6 +124,17 @@ pub fn feed(p: *HeadParser, bytes: []const u8) usize {
+                     const matches_or: SizeVector = matches_r | matches_n;
+ 
+                     const matches = @reduce(.Add, matches_or);
++                    if (matches == 2) {
++                        inline for (0..vector_len - 1) |i_usize| {
++                            const i = @as(u32, @truncate(i_usize));
++
++                            if (int16(chunk[i..][0..2]) == int16("\n\n")) {
++                                p.state = .finished;
++                                return index + i + 2;
++                            }
++                        }
++                    }
++
+                     switch (matches) {
+                         0 => {},
+                         1 => switch (chunk[vector_len - 1]) {

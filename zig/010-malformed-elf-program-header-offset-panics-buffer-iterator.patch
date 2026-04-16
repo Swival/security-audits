@@ -1,0 +1,20 @@
+diff --git a/lib/std/elf.zig b/lib/std/elf.zig
+index 81de3f7f50..721b00aa9e 100644
+--- a/lib/std/elf.zig
++++ b/lib/std/elf.zig
+@@ -873,9 +873,12 @@ pub const ProgramHeaderBufferIterator = struct {
+         if (it.index >= it.phnum) return null;
+         defer it.index += 1;
+ 
+-        const size: usize = if (it.is_64) @sizeOf(Elf64_Phdr) else @sizeOf(Elf32_Phdr);
+-        const offset = @as(usize, @intCast(it.phoff)) + size * it.index;
+-        var reader = Io.Reader.fixed(it.buf[offset..]);
++        const size: u64 = if (it.is_64) @sizeOf(Elf64_Phdr) else @sizeOf(Elf32_Phdr);
++        const offset = math.add(u64, it.phoff, size * it.index) catch return error.EndOfStream;
++        if (offset > it.buf.len) return error.EndOfStream;
++        const start: usize = @intCast(offset);
++        if (size > it.buf.len - start) return error.EndOfStream;
++        var reader = Io.Reader.fixed(it.buf[start..]);
+ 
+         return try takeProgramHeader(&reader, it.is_64, it.endian);
+     }

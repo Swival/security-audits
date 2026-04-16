@@ -1,0 +1,49 @@
+diff --git a/lib/std/http/Server.zig b/lib/std/http/Server.zig
+index 7820ad6d0d..8bf84aa4a9 100644
+--- a/lib/std/http/Server.zig
++++ b/lib/std/http/Server.zig
+@@ -131,6 +131,8 @@ pub const Request = struct {
+                 },
+             };
+ 
++            var has_transfer_encoding = false;
++
+             while (it.next()) |line| {
+                 if (line.len == 0) return head;
+                 switch (line[0]) {
+@@ -150,7 +152,7 @@ pub const Request = struct {
+                 } else if (std.ascii.eqlIgnoreCase(header_name, "content-type")) {
+                     head.content_type = header_value;
+                 } else if (std.ascii.eqlIgnoreCase(header_name, "content-length")) {
+-                    if (head.content_length != null) return error.HttpHeadersInvalid;
++                    if (has_transfer_encoding or head.content_length != null) return error.HttpHeadersInvalid;
+                     head.content_length = std.fmt.parseInt(u64, header_value, 10) catch
+                         return error.InvalidContentLength;
+                 } else if (std.ascii.eqlIgnoreCase(header_name, "content-encoding")) {
+@@ -164,6 +166,9 @@ pub const Request = struct {
+                         return error.HttpTransferEncodingUnsupported;
+                     }
+                 } else if (std.ascii.eqlIgnoreCase(header_name, "transfer-encoding")) {
++                    if (head.content_length != null) return error.HttpHeadersInvalid;
++                    has_transfer_encoding = true;
++
+                     // Transfer-Encoding: second, first
+                     // Transfer-Encoding: deflate, chunked
+                     var iter = mem.splitBackwardsScalar(u8, header_value, ',');
+@@ -201,7 +206,6 @@ pub const Request = struct {
+         test parse {
+             const request_bytes = "GET /hi HTTP/1.0\r\n" ++
+                 "content-tYpe: text/plain\r\n" ++
+-                "content-Length:10\r\n" ++
+                 "expeCt:   100-continue \r\n" ++
+                 "TRansfer-encoding:\tdeflate, chunked \r\n" ++
+                 "connectioN:\t keep-alive \r\n\r\n";
+@@ -216,7 +220,7 @@ pub const Request = struct {
+             try testing.expectEqualStrings("100-continue", req.expect.?);
+ 
+             try testing.expectEqual(true, req.keep_alive);
+-            try testing.expectEqual(10, req.content_length.?);
++            try testing.expectEqual(null, req.content_length);
+             try testing.expectEqual(.chunked, req.transfer_encoding);
+             try testing.expectEqual(.deflate, req.transfer_compression);
+         }

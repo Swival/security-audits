@@ -1,0 +1,13 @@
+diff --git a/lib/std/crypto/modes.zig b/lib/std/crypto/modes.zig
+index ca8ecb90a6..1051b83614 100644
+--- a/lib/std/crypto/modes.zig
++++ b/lib/std/crypto/modes.zig
+@@ -55,7 +55,7 @@ pub fn ctrSlice(
+             inline while (j < parallel_count) : (j += 1) {
+                 mem.writeInt(CounterInt, counters[j * block_length + counter_offset ..][0..counter_size], cnt_val +% j, endian);
+             }
+-            cnt_val += parallel_count;
++            cnt_val +%= parallel_count;
+             block_cipher.xorWide(parallel_count, dst[i .. i + wide_block_length][0..wide_block_length], src[i .. i + wide_block_length][0..wide_block_length], counters);
+         }
+         mem.writeInt(CounterInt, counterBlock[counter_offset..][0..counter_size], cnt_val, endian);

@@ -1,0 +1,14 @@
+diff --git a/lib/std/zip.zig b/lib/std/zip.zig
+index be2a442f3d..e73a14792f 100644
+--- a/lib/std/zip.zig
++++ b/lib/std/zip.zig
+@@ -212,6 +212,9 @@ fn isBadFilename(filename: []const u8) bool {
+     if (filename.len == 0 or filename[0] == '/')
+         return true;
+ 
++    if (builtin.os.tag == .windows and std.fs.path.getWin32PathType(u8, filename) != .relative)
++        return true;
++
+     var it = std.mem.splitScalar(u8, filename, '/');
+     while (it.next()) |part| {
+         if (std.mem.eql(u8, part, ".."))

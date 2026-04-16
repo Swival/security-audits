@@ -1,0 +1,13 @@
+diff --git a/lib/std/http/Client.zig b/lib/std/http/Client.zig
+index 1dd8bb6579..d8c2a8789a 100644
+--- a/lib/std/http/Client.zig
++++ b/lib/std/http/Client.zig
+@@ -1615,6 +1615,8 @@ pub fn connect(
+         };
+     }
+ 
++    if (protocol == .tls) return error.ConnectionRefused;
++
+     // fall back to using the proxy as a normal http proxy
+     const connection = try client.connectTcp(proxy.host, proxy.port, proxy.protocol);
+     connection.proxied = true;

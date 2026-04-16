@@ -1,0 +1,25 @@
+diff --git a/lib/std/zon/parse.zig b/lib/std/zon/parse.zig
+index 49ea45e034..67977863c5 100644
+--- a/lib/std/zon/parse.zig
++++ b/lib/std/zon/parse.zig
+@@ -827,9 +827,10 @@ const Parser = struct {
+ 
+         // If we fail partway through, free all already initialized fields
+         var initialized: usize = 0;
++        var initialized_fields: [info.field_names.len]usize = undefined;
+         errdefer if (self.options.free_on_error and info.field_names.len > 0) {
+-            for (fields.names[0..initialized]) |name_runtime| {
+-                switch (field_indices.get(name_runtime.get(self.zoir)) orelse continue) {
++            for (initialized_fields[0..initialized]) |field_index| {
++                switch (field_index) {
+                     inline 0...(info.field_names.len - 1) => |name_index| {
+                         const name = info.field_names[name_index];
+                         free(self.gpa, @field(result, name));
+@@ -867,6 +868,7 @@ const Parser = struct {
+                 else => unreachable, // Can't be out of bounds
+             }
+ 
++            initialized_fields[initialized] = field_index;
+             initialized += 1;
+         }
+ 

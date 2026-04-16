@@ -1,0 +1,49 @@
+diff --git a/lib/std/crypto/salsa20.zig b/lib/std/crypto/salsa20.zig
+index 36793eae2e..24743964f0 100644
+--- a/lib/std/crypto/salsa20.zig
++++ b/lib/std/crypto/salsa20.zig
+@@ -375,6 +375,24 @@ pub const XSalsa20Poly1305 = struct {
+ 
+     const rounds = 20;
+ 
++    fn updateMac(mac: *Poly1305, ad: []const u8, c: []const u8) void {
++        if (ad.len == 0) {
++            // Preserves NaCl secretbox/crypto_secretbox compatibility, which has no
++            // associated data and MACs the ciphertext only.
++            mac.update(c);
++            return;
++        }
++        mac.update(ad);
++        mac.pad();
++        mac.update(c);
++        mac.pad();
++
++        var lengths: [16]u8 = undefined;
++        mem.writeInt(u64, lengths[0..8], @as(u64, ad.len), .little);
++        mem.writeInt(u64, lengths[8..16], @as(u64, c.len), .little);
++        mac.update(&lengths);
++    }
++
+     /// c: ciphertext: output buffer should be of size m.len
+     /// tag: authentication tag: output MAC
+     /// m: message
+@@ -391,8 +409,7 @@ pub const XSalsa20Poly1305 = struct {
+         @memcpy(c[0..mlen0], block0[32..][0..mlen0]);
+         Salsa20.xor(c[mlen0..], m[mlen0..], 1, extended.key, extended.nonce);
+         var mac = Poly1305.init(block0[0..32]);
+-        mac.update(ad);
+-        mac.update(c);
++        updateMac(&mac, ad, c);
+         mac.final(tag);
+     }
+ 
+@@ -413,8 +430,7 @@ pub const XSalsa20Poly1305 = struct {
+         @memcpy(block0[32..][0..mlen0], c[0..mlen0]);
+         Salsa20.xor(block0[0..], block0[0..], 0, extended.key, extended.nonce);
+         var mac = Poly1305.init(block0[0..32]);
+-        mac.update(ad);
+-        mac.update(c);
++        updateMac(&mac, ad, c);
+         var computed_tag: [tag_length]u8 = undefined;
+         mac.final(&computed_tag);
+ 
