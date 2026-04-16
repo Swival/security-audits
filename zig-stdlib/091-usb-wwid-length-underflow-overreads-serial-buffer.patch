@@ -1,0 +1,15 @@
+diff --git a/lib/std/os/uefi/device_path.zig b/lib/std/os/uefi/device_path.zig
+index 049084c0f7..a42f2320ca 100644
+--- a/lib/std/os/uefi/device_path.zig
++++ b/lib/std/os/uefi/device_path.zig
+@@ -431,8 +431,10 @@ pub const DevicePath = union(Type) {
+             device_product_id: u16 align(1),
+ 
+             pub fn serial_number(self: *const UsbWwidDevicePath) []align(1) const u16 {
++                const serial = @as([*]align(1) const u16, @ptrCast(@as([*]const u8, @ptrCast(self)) + @sizeOf(UsbWwidDevicePath)));
++                if (self.length < @sizeOf(UsbWwidDevicePath)) return serial[0..0];
+                 const serial_len = (self.length - @sizeOf(UsbWwidDevicePath)) / @sizeOf(u16);
+-                return @as([*]align(1) const u16, @ptrCast(@as([*]const u8, @ptrCast(self)) + @sizeOf(UsbWwidDevicePath)))[0..serial_len];
++                return serial[0..serial_len];
+             }
+         };

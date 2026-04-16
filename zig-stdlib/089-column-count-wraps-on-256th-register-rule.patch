@@ -1,0 +1,13 @@
+diff --git a/lib/std/debug/Dwarf/Unwind/VirtualMachine.zig b/lib/std/debug/Dwarf/Unwind/VirtualMachine.zig
+index ccb674b565..8f461a49af 100644
+--- a/lib/std/debug/Dwarf/Unwind/VirtualMachine.zig
++++ b/lib/std/debug/Dwarf/Unwind/VirtualMachine.zig
+@@ -45,7 +45,7 @@ pub const Column = struct {
+ 
+ const ColumnRange = struct {
+     start: usize,
+-    len: u8,
++    len: usize,
+ };
+ 
+ columns: std.ArrayList(Column) = .empty,

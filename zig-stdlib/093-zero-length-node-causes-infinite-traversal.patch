@@ -1,0 +1,12 @@
+diff --git a/lib/std/os/uefi/protocol/device_path.zig b/lib/std/os/uefi/protocol/device_path.zig
+index ebd2463be4..ab850b51d1 100644
+--- a/lib/std/os/uefi/protocol/device_path.zig
++++ b/lib/std/os/uefi/protocol/device_path.zig
+@@ -28,6 +28,7 @@ pub const DevicePath = extern struct {
+     pub fn next(self: *const DevicePath) ?*const DevicePath {
+         const subtype: uefi.DevicePath.End.Subtype = @enumFromInt(self.subtype);
+         if (self.type == .end and subtype == .end_entire) return null;
++        if (self.length == 0) return null;
+         const bytes: [*]const u8 = @ptrCast(self);
+         return @ptrCast(bytes + self.length);
+     }

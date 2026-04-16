@@ -1,0 +1,14 @@
+diff --git a/lib/std/os/uefi/device_path.zig b/lib/std/os/uefi/device_path.zig
+index 049084c0f7..b5461ef840 100644
+--- a/lib/std/os/uefi/device_path.zig
++++ b/lib/std/os/uefi/device_path.zig
+@@ -212,6 +212,9 @@ pub const DevicePath = union(Type) {
+ 
+             // multiple adr entries can optionally follow
+             pub fn adrs(self: *const AdrDevicePath) []align(1) const u32 {
++                // Avoid underflow when a malformed record reports a length shorter than the header.
++                if (self.length < 4) return &.{};
++
+                 // self.length is a minimum of 8 with one adr which is size 4.
+                 const entries = (self.length - 4) / @sizeOf(u32);
+                 return @as([*]align(1) const u32, @ptrCast(&self.adr))[0..entries];

@@ -1,0 +1,21 @@
+diff --git a/lib/std/os/uefi/device_path.zig b/lib/std/os/uefi/device_path.zig
+index 049084c0f7..e7c123fab1 100644
+--- a/lib/std/os/uefi/device_path.zig
++++ b/lib/std/os/uefi/device_path.zig
+@@ -824,8 +824,15 @@ pub const DevicePath = union(Type) {
+             subtype: Subtype,
+             length: u16 align(1),
+ 
+-            pub fn getPath(self: *const FilePathDevicePath) [*:0]align(1) const u16 {
+-                return @as([*:0]align(1) const u16, @ptrCast(@as([*]const u8, @ptrCast(self)) + @sizeOf(FilePathDevicePath)));
++            pub fn getPath(self: *const FilePathDevicePath) ?[:0]align(1) const u16 {
++                if (self.length < @sizeOf(FilePathDevicePath)) return null;
++
++                const path_len_bytes = self.length - @sizeOf(FilePathDevicePath);
++                if (path_len_bytes % @sizeOf(u16) != 0) return null;
++
++                const path = @as([*]align(1) const u16, @ptrCast(@as([*]const u8, @ptrCast(self)) + @sizeOf(FilePathDevicePath)))[0..@divExact(path_len_bytes, @sizeOf(u16))];
++                const path_len = std.mem.indexOfScalar(u16, path, 0) orelse return null;
++                return path[0..path_len :0];
+             }
+         };

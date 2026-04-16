@@ -1,0 +1,15 @@
+diff --git a/lib/std/zig/llvm/BitcodeReader.zig b/lib/std/zig/llvm/BitcodeReader.zig
+index e32e8afc03..d511798bb4 100644
+--- a/lib/std/zig/llvm/BitcodeReader.zig
++++ b/lib/std/zig/llvm/BitcodeReader.zig
+@@ -251,9 +251,9 @@ fn nextRecord(bc: *BitcodeReader) !?Record {
+         .block_len => operands.appendAssumeCapacity(try bc.read32Bits()),
+         .abbrev_op => unreachable,
+     };
++    if (operands.items.len < 1) return error.InvalidRecordId;
+     return .{
+         .name = name: {
+-            if (operands.items.len < 1) break :name &.{};
+             const record_id = std.math.cast(u32, operands.items[0]) orelse break :name &.{};
+             if (state.block_id) |block_id| {
+                 if (bc.block_info.get(block_id)) |block_info| {

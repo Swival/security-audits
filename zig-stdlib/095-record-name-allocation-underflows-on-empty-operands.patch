@@ -1,0 +1,12 @@
+diff --git a/lib/std/zig/llvm/BitcodeReader.zig b/lib/std/zig/llvm/BitcodeReader.zig
+index e32e8afc03..0a64187869 100644
+--- a/lib/std/zig/llvm/BitcodeReader.zig
++++ b/lib/std/zig/llvm/BitcodeReader.zig
+@@ -356,6 +356,7 @@ fn parseBlockInfoBlock(bc: *BitcodeReader) !void {
+                 gop.value_ptr.block_name = name;
+             },
+             Block.Info.set_record_name_id => if (bc.keep_names) {
++                if (record.operands.len == 0) return error.InvalidRecordId;
+                 const gop = try bc.block_info.getOrPut(bc.allocator, block_id orelse
+                     return error.UnspecifiedBlockId);
+                 if (!gop.found_existing) gop.value_ptr.* = Block.Info.default;
