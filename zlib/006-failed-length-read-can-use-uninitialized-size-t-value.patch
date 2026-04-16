@@ -1,0 +1,19 @@
+diff --git a/contrib/iostream2/zstream.h b/contrib/iostream2/zstream.h
+index ce62dc1..c8494a4 100644
+--- a/contrib/iostream2/zstream.h
++++ b/contrib/iostream2/zstream.h
+@@ -126,8 +126,13 @@ inline izstream& operator>(izstream& zs, T& x) {
+ 
+ 
+ inline zstringlen::zstringlen(izstream& zs) {
+-    zs > val.byte;
+-    if (val.byte == 255) zs > val.word;
++    val.byte = 0;
++    val.word = 0;
++    if (zs.read(&val.byte, sizeof(val.byte)) != sizeof(val.byte)) return;
++    if (val.byte == 255) {
++        if (zs.read(&val.word, sizeof(val.word)) != sizeof(val.word))
++            val.word = 0;
++    }
+     else val.word = val.byte;
+ }

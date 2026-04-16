@@ -1,0 +1,42 @@
+diff --git a/gzwrite.c b/gzwrite.c
+index 13a3700..3610b0a 100644
+--- a/gzwrite.c
++++ b/gzwrite.c
+@@ -371,9 +371,8 @@ int ZEXPORT gzputs(gzFile file, const char *s) {
+     return len && put == 0 ? -1 : (int)put;
+ }
+ 
+-#if (((!defined(STDC) && !defined(Z_HAVE_STDARG_H)) || !defined(NO_vsnprintf)) && \
+-     (defined(STDC) || defined(Z_HAVE_STDARG_H) || !defined(NO_snprintf))) || \
+-    defined(ZLIB_INSECURE)
++#if ((!defined(STDC) && !defined(Z_HAVE_STDARG_H)) || !defined(NO_vsnprintf)) && \
++    (defined(STDC) || defined(Z_HAVE_STDARG_H) || !defined(NO_snprintf))
+ /* If the second half of the input buffer is occupied, write out the contents.
+    If there is any input remaining due to a non-blocking stall on write, move
+    it to the start of the buffer. Return true if this did not open up the
+@@ -401,10 +400,9 @@ local int gz_vacate(gz_statep state) {
+ 
+ /* -- see zlib.h -- */
+ int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va) {
+-#if defined(NO_vsnprintf) && !defined(ZLIB_INSECURE)
++#if defined(NO_vsnprintf)
+ #warning "vsnprintf() not available -- gzprintf() stub returns Z_STREAM_ERROR"
+-#warning "you can recompile with ZLIB_INSECURE defined to use vsprintf()"
+-    /* prevent use of insecure vsprintf(), unless purposefully requested */
++    /* prevent use of insecure vsprintf() */
+     (void)file, (void)format, (void)va;
+     return Z_STREAM_ERROR;
+ #else
+@@ -501,10 +499,9 @@ int ZEXPORTVA gzprintf(gzFile file, const char *format, int a1, int a2, int a3,
+                        int a4, int a5, int a6, int a7, int a8, int a9, int a10,
+                        int a11, int a12, int a13, int a14, int a15, int a16,
+                        int a17, int a18, int a19, int a20) {
+-#if defined(NO_snprintf) && !defined(ZLIB_INSECURE)
++#if defined(NO_snprintf)
+ #warning "snprintf() not available -- gzprintf() stub returns Z_STREAM_ERROR"
+-#warning "you can recompile with ZLIB_INSECURE defined to use sprintf()"
+-    /* prevent use of insecure sprintf(), unless purposefully requested */
++    /* prevent use of insecure sprintf() */
+     (void)file, (void)format, (void)a1, (void)a2, (void)a3, (void)a4, (void)a5,
+     (void)a6, (void)a7, (void)a8, (void)a9, (void)a10, (void)a11, (void)a12,
+     (void)a13, (void)a14, (void)a15, (void)a16, (void)a17, (void)a18,

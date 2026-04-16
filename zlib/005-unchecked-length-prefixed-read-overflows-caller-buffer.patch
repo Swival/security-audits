@@ -1,0 +1,50 @@
+diff --git a/contrib/iostream2/zstream.h b/contrib/iostream2/zstream.h
+index ce62dc1..5645ce0 100644
+--- a/contrib/iostream2/zstream.h
++++ b/contrib/iostream2/zstream.h
+@@ -132,15 +132,30 @@ inline zstringlen::zstringlen(izstream& zs) {
+ }
+ 
+ /*
+- * Read length of string + the string with the '>' operator.
++ * Read length of string + the string into a caller-provided buffer.
++ * Returns 0 if the encoded length does not fit, after skipping the input.
+  */
+-inline izstream& operator>(izstream& zs, char* x) {
++inline char* read_string(izstream& zs, char* x, size_t size) {
+     zstringlen len(zs);
++    if (size == 0 || len.value() >= size) {
++        if (size != 0) x[0] = '\0';
++        ::gzseek(zs.fp(), (z_off_t) len.value(), SEEK_CUR);
++        return 0;
++    }
+     ::gzread(zs.fp(), x, len.value());
+     x[len.value()] = '\0';
++    return x;
++}
++
++template <int N>
++inline izstream& operator>(izstream& zs, char (&x)[N]) {
++    read_string(zs, x, N);
+     return zs;
+ }
+ 
++/* Disabled for raw pointers: use read_string(zs, x, size). */
++inline izstream& operator>(izstream& zs, char*& x);
++
+ inline char* read_string(izstream& zs) {
+     zstringlen len(zs);
+     char* x = new char[len.value()+1];
+diff --git a/contrib/iostream2/zstream_test.cpp b/contrib/iostream2/zstream_test.cpp
+index 6273f62..a2fd09f 100644
+--- a/contrib/iostream2/zstream_test.cpp
++++ b/contrib/iostream2/zstream_test.cpp
+@@ -12,7 +12,8 @@ void main() {
+ 
+     izstream in("temp.gz"); // read it back
+     char *x = read_string(in), *y = new char[256], z[256];
+-    in > y > z;
++    read_string(in, y, 256);
++    in > z;
+     in.close();
+     cout << x << endl << y << endl << z << endl;

@@ -1,0 +1,13 @@
+diff --git a/contrib/minizip/crypt.h b/contrib/minizip/crypt.h
+index dd54893..65ddb78 100644
+--- a/contrib/minizip/crypt.h
++++ b/contrib/minizip/crypt.h
+@@ -24,6 +24,8 @@
+    Encryption is not supported.
+ */
+ 
++#error "Traditional PKWARE ZIP encryption is disabled; use AES-capable ZIP support instead."
++
+ #define CRC32(c, b) ((*(pcrc_32_tab+(((int)(c) ^ (b)) & 0xff))) ^ ((c) >> 8))
+ 
+ /***********************************************************************

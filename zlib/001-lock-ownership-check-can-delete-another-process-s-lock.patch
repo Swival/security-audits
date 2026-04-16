@@ -1,0 +1,84 @@
+diff --git a/examples/gzlog.c b/examples/gzlog.c
+index da1b02e..487f5fe 100644
+--- a/examples/gzlog.c
++++ b/examples/gzlog.c
+@@ -299,7 +299,8 @@ struct log {
+     ulong clen;     /* length (modulo 2^32) of compressed data */
+     ulong tcrc;     /* crc of total data */
+     ulong tlen;     /* length (modulo 2^32) of total data */
+-    time_t lock;    /* last modify time of our lock file */
++    dev_t lock_dev; /* device containing our lock file */
++    ino_t lock_ino; /* inode number of our lock file */
+ };
+ 
+ /* gzip header for gzlog */
+@@ -340,11 +341,11 @@ local unsigned char log_gzbody[] = {
+    foo.* files.  If the modify time of an existing lock file is greater than
+    PATIENCE seconds in the past, then consider the lock file to have been
+    abandoned, delete it, and try the exclusive create again.  Save the lock
+-   file modify time for verification of ownership.  Return 0 on success, or -1
+-   on failure, usually due to an access restriction or invalid path.  Note that
+-   if stat() or unlink() fails, it may be due to another process noticing the
+-   abandoned lock file a smidge sooner and deleting it, so those are not
+-   flagged as an error. */
++   file device and inode for verification of ownership.  Return 0 on success,
++   or -1 on failure, usually due to an access restriction or invalid path.
++   Note that if stat() or unlink() fails, it may be due to another process
++   noticing the abandoned lock file a smidge sooner and deleting it, so those
++   are not flagged as an error. */
+ local int log_lock(struct log *log)
+ {
+     int fd;
+@@ -360,33 +361,31 @@ local int log_lock(struct log *log)
+         }
+         sleep(2);       /* relinquish the CPU for two seconds while waiting */
+     }
++    if (fstat(fd, &st) == 0) {
++        log->lock_dev = st.st_dev;
++        log->lock_ino = st.st_ino;
++    }
+     close(fd);
+-    if (stat(log->path, &st) == 0)
+-        log->lock = st.st_mtime;
+     return 0;
+ }
+ 
+ /* Update the modify time of the lock file to now, in order to prevent another
+-   task from thinking that the lock is stale.  Save the lock file modify time
+-   for verification of ownership. */
++   task from thinking that the lock is stale. */
+ local void log_touch(struct log *log)
+ {
+-    struct stat st;
+-
+     strcpy(log->end, ".lock");
+     utimes(log->path, NULL);
+-    if (stat(log->path, &st) == 0)
+-        log->lock = st.st_mtime;
+ }
+ 
+-/* Check the log file modify time against what is expected.  Return true if
+-   this is not our lock.  If it is our lock, touch it to keep it. */
++/* Check the log file identity against what is expected.  Return true if this
++   is not our lock.  If it is our lock, touch it to keep it. */
+ local int log_check(struct log *log)
+ {
+     struct stat st;
+ 
+     strcpy(log->end, ".lock");
+-    if (stat(log->path, &st) || st.st_mtime != log->lock)
++    if (stat(log->path, &st) || st.st_dev != log->lock_dev ||
++            st.st_ino != log->lock_ino)
+         return 1;
+     log_touch(log);
+     return 0;
+@@ -399,7 +398,8 @@ local void log_unlock(struct log *log)
+         return;
+     strcpy(log->end, ".lock");
+     unlink(log->path);
+-    log->lock = 0;
++    log->lock_dev = 0;
++    log->lock_ino = 0;
+ }
+ 
+ /* Check the gzip header and read in the extra field, filling in the values in

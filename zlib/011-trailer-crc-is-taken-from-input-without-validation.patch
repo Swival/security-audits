@@ -1,0 +1,45 @@
+diff --git a/examples/gzjoin.c b/examples/gzjoin.c
+index 89e8098..78d5391 100644
+--- a/examples/gzjoin.c
++++ b/examples/gzjoin.c
+@@ -286,6 +286,8 @@ local void gzcopy(char *name, int clr, unsigned long *crc, unsigned long *tot,
+     unsigned char *start;   /* start of compressed data in buffer */
+     unsigned char *junk;    /* buffer for uncompressed data -- discarded */
+     z_off_t len;            /* length of uncompressed data (support > 4 GB) */
++    unsigned long part;     /* crc of uncompressed data from this member */
++    unsigned long check;    /* crc stored in the gzip trailer */
+     z_stream strm;          /* zlib inflate stream */
+ 
+     /* open gzip file and skip header */
+@@ -308,6 +310,7 @@ local void gzcopy(char *name, int clr, unsigned long *crc, unsigned long *tot,
+ 
+     /* inflate and copy compressed data, clear last-block bit if requested */
+     len = 0;
++    part = crc32(0L, Z_NULL, 0);
+     zpull(&strm, in);
+     start = in->next;
+     last = start[0] & 1;
+@@ -334,7 +337,8 @@ local void gzcopy(char *name, int clr, unsigned long *crc, unsigned long *tot,
+             bail("invalid compressed data in ", in->name);
+         }
+ 
+-        /* update length of uncompressed data */
++        /* update length and crc of uncompressed data */
++        part = crc32(part, junk, CHUNK - strm.avail_out);
+         len += CHUNK - strm.avail_out;
+ 
+         /* check for block boundary (only get this when block copied out) */
+@@ -407,8 +411,11 @@ local void gzcopy(char *name, int clr, unsigned long *crc, unsigned long *tot,
+         }
+     }
+ 
+-    /* update crc and tot */
+-    *crc = crc32_combine(*crc, bget4(in), len);
++    /* validate and update crc and tot */
++    check = bget4(in);
++    if (check != part)
++        bail("invalid compressed data in ", in->name);
++    *crc = crc32_combine(*crc, part, len);
+     *tot += (unsigned long)len;
+ 
+     /* clean up */

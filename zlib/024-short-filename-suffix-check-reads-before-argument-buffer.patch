@@ -1,0 +1,24 @@
+diff --git a/examples/gun.c b/examples/gun.c
+index dbd181c..a98ce6f 100644
+--- a/examples/gun.c
++++ b/examples/gun.c
+@@ -667,13 +667,13 @@ int main(int argc, char **argv)
+                 outname = NULL;
+             else {
+                 len = (int)strlen(*argv);
+-                if (strcmp(*argv + len - 3, ".gz") == 0 ||
+-                    strcmp(*argv + len - 3, "-gz") == 0)
++                if (len >= 3 && (strcmp(*argv + len - 3, ".gz") == 0 ||
++                                 strcmp(*argv + len - 3, "-gz") == 0))
+                     len -= 3;
+-                else if (strcmp(*argv + len - 2, ".z") == 0 ||
+-                    strcmp(*argv + len - 2, "-z") == 0 ||
+-                    strcmp(*argv + len - 2, "_z") == 0 ||
+-                    strcmp(*argv + len - 2, ".Z") == 0)
++                else if (len >= 2 && (strcmp(*argv + len - 2, ".z") == 0 ||
++                                      strcmp(*argv + len - 2, "-z") == 0 ||
++                                      strcmp(*argv + len - 2, "_z") == 0 ||
++                                      strcmp(*argv + len - 2, ".Z") == 0))
+                     len -= 2;
+                 else {
+                     fprintf(stderr, "gun error: no gz type on %s--skipping\n",

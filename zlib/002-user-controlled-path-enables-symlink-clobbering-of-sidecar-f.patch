@@ -1,0 +1,66 @@
+diff --git a/examples/gzlog.c b/examples/gzlog.c
+index da1b02e..94e1fa9 100644
+--- a/examples/gzlog.c
++++ b/examples/gzlog.c
+@@ -454,6 +454,34 @@ local int log_mark(struct log *log, int op)
+     return ret;
+ }
+ 
++/* Open an auxiliary file for rewrite without following symlinks. */
++local int log_side_open(struct log *log)
++{
++    int fd, flags;
++    struct stat st;
++
++    flags = O_WRONLY;
++#ifdef O_NOFOLLOW
++    flags |= O_NOFOLLOW;
++#endif
++    fd = open(log->path, flags, 0);
++    if (fd >= 0) {
++        if (fstat(fd, &st) || !S_ISREG(st.st_mode) || ftruncate(fd, 0) ||
++                lseek(fd, 0, SEEK_SET) < 0) {
++            close(fd);
++            return -1;
++        }
++        return fd;
++    }
++    if (errno != ENOENT)
++        return -1;
++    flags = O_WRONLY | O_CREAT | O_EXCL;
++#ifdef O_NOFOLLOW
++    flags |= O_NOFOLLOW;
++#endif
++    return open(log->path, flags, 0644);
++}
++
+ /* Rewrite the last block header bits and subsequent zero bits to get to a byte
+    boundary, setting the last block bit if last is true, and then write the
+    remainder of the stored block header (length and one's complement).  Leave
+@@ -952,7 +980,7 @@ int gzlog_compress(gzlog *logd)
+ 
+         /* write the uncompressed data to the .add file */
+         strcpy(log->end, ".add");
+-        fd = open(log->path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
++        fd = log_side_open(log);
+         if (fd < 0)
+             break;
+         ret = (size_t)write(fd, data, len) != len;
+@@ -962,7 +990,7 @@ int gzlog_compress(gzlog *logd)
+ 
+         /* write the dictionary for the next compress to the .temp file */
+         strcpy(log->end, ".temp");
+-        fd = open(log->path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
++        fd = log_side_open(log);
+         if (fd < 0)
+             break;
+         next = DICT > len ? len : DICT;
+@@ -1013,7 +1041,7 @@ int gzlog_write(gzlog *logd, void *data, size_t len)
+ 
+     /* create and write .add file */
+     strcpy(log->end, ".add");
+-    fd = open(log->path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
++    fd = log_side_open(log);
+     if (fd < 0)
+         return -1;
+     ret = (size_t)write(fd, data, len) != len;
