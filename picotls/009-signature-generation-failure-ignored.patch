@@ -1,0 +1,16 @@
+diff --git a/lib/uecc.c b/lib/uecc.c
+index 111b8dc..dec4a80 100644
+--- a/lib/uecc.c
++++ b/lib/uecc.c
+@@ -158,7 +158,10 @@ static int secp256r1sha256_sign(ptls_sign_certificate_t *_self, ptls_t *tls, ptl
+     }
+ 
+     /* sign */
+-    uECC_sign(self->key, hash, sizeof(hash), sig, uECC_secp256r1());
++    if (!uECC_sign(self->key, hash, sizeof(hash), sig, uECC_secp256r1())) {
++        ret = PTLS_ALERT_INTERNAL_ERROR;
++        goto Exit;
++    }
+ 
+     /* encode using DER */
+     ptls_buffer_push_asn1_sequence(outbuf, {

@@ -1,5 +1,5 @@
 diff --git a/lib/mbedtls_sign.c b/lib/mbedtls_sign.c
-index de06175..3b54864 100644
+index de06175..aa0bbd9 100644
 --- a/lib/mbedtls_sign.c
 +++ b/lib/mbedtls_sign.c
 @@ -540,14 +540,15 @@ int ptls_mbedtls_rsa_get_key_bits(const unsigned char *key_value, size_t key_len
@@ -19,3 +19,13 @@ index de06175..3b54864 100644
 +    if (ret == 0 && x < key_length) {
          unsigned char v = key_value[x];
          nb_bits = 8 * nb_bytes;
+ 
+@@ -559,6 +560,8 @@ int ptls_mbedtls_rsa_get_key_bits(const unsigned char *key_value, size_t key_len
+                 v <<= 1;
+             }
+         }
++    } else {
++        ret = -1;
+     }
+     *p_nb_bits = nb_bits;
+     return ret;
