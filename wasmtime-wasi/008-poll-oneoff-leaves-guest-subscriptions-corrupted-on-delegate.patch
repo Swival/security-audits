@@ -1,0 +1,18 @@
+diff --git a/crates/wasi/src/p0.rs b/crates/wasi/src/p0.rs
+index 5d610f0ae5..0777ab0455 100644
+--- a/crates/wasi/src/p0.rs
++++ b/crates/wasi/src/p0.rs
+@@ -542,11 +542,11 @@ impl<T: Snapshot1 + Send> wasi_unstable::WasiUnstable for T {
+             )?;
+         }
+         let ret = Snapshot1::poll_oneoff(self, memory, subs.cast(), events.cast(), nsubscriptions)
+-            .await?;
++            .await;
+         for (sub, slot) in old_subs.into_iter().zip(subs_array.iter()) {
+             memory.write(slot?, sub)?;
+         }
+-        Ok(ret)
++        Ok(ret?)
+     }
+ 
+     fn proc_exit(

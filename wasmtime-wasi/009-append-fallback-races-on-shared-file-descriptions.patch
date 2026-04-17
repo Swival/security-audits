@@ -1,0 +1,34 @@
+diff --git a/crates/wasi/src/filesystem/unix.rs b/crates/wasi/src/filesystem/unix.rs
+index 12826d854d..6953ba9dc5 100644
+--- a/crates/wasi/src/filesystem/unix.rs
++++ b/crates/wasi/src/filesystem/unix.rs
+@@ -1,7 +1,6 @@
+ use crate::filesystem::{Advice, DescriptorFlags};
+ use io_lifetimes::AsFilelike;
+-use rustix::fs::{OFlags, fcntl_getfl, fcntl_setfl};
+-use rustix::io::write;
++use rustix::fs::{OFlags, fcntl_getfl};
+ use std::fs::File;
+ use std::io;
+ use std::os::fd::AsFd;
+@@ -72,15 +71,11 @@ pub(crate) fn append_cursor_unspecified(file: impl AsFd, data: &[u8]) -> io::Res
+         }
+     }
+ 
+-    // Otherwise use `F_SETFL` to switch the file description to append
+-    // mode, do the write, and switch back. This is not atomic with
+-    // respect to other users of the file description, but WASI isn't fully
+-    // threaded right now anyway.
+-    let old_flags = fcntl_getfl(&file)?;
+-    fcntl_setfl(&file, old_flags | OFlags::APPEND)?;
+-    let result = write(&file, data);
+-    fcntl_setfl(&file, old_flags).unwrap();
+-    Ok(result?)
++    let _ = (file, data);
++    Err(io::Error::new(
++        io::ErrorKind::Unsupported,
++        "append requires pwritev2 support on this platform",
++    ))
+ }
+ 
+ pub(crate) fn write_at_cursor_unspecified(

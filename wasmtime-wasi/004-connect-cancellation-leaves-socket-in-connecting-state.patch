@@ -1,0 +1,43 @@
+diff --git a/crates/wasi/src/p3/sockets/host/types/tcp.rs b/crates/wasi/src/p3/sockets/host/types/tcp.rs
+index 6a0871565b..c2363a9514 100644
+--- a/crates/wasi/src/p3/sockets/host/types/tcp.rs
++++ b/crates/wasi/src/p3/sockets/host/types/tcp.rs
+@@ -258,9 +258,36 @@ impl HostTcpSocketWithStore for WasiSockets {
+             SocketResult::Ok(socket)
+         })?;
+ 
+-        // FIXME: handle possible cancellation of the outer `connect`
+-        // https://github.com/bytecodealliance/wasmtime/pull/11291#discussion_r2223917986
++        struct ConnectGuard<'a, T> {
++            store: &'a Accessor<T, WasiSockets>,
++            socket: &'a Resource<TcpSocket>,
++            active: bool,
++        }
++
++        impl<T> Drop for ConnectGuard<'_, T> {
++            fn drop(&mut self) {
++                if !self.active {
++                    return;
++                }
++
++                let _ = self.store.with(|mut store| -> SocketResult<()> {
++                    let socket = get_socket_mut(store.get().table, self.socket)?;
++                    socket.finish_connect(Err(std::io::Error::new(
++                        std::io::ErrorKind::ConnectionAborted,
++                        "connect cancelled",
++                    )))?;
++                    Ok(())
++                });
++            }
++        }
++
++        let mut guard = ConnectGuard {
++            store,
++            socket: &socket,
++            active: true,
++        };
+         let res = sock.connect(remote_address).await;
++        guard.active = false;
+         store.with(|mut store| {
+             let socket = get_socket_mut(store.get().table, &socket)?;
+             socket.finish_connect(res)?;
