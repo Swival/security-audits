@@ -1,0 +1,13 @@
+diff --git a/lib/wasix/src/os/task/control_plane.rs b/lib/wasix/src/os/task/control_plane.rs
+index 18e8adab51f..3a49133ee4b 100644
+--- a/lib/wasix/src/os/task/control_plane.rs
++++ b/lib/wasix/src/os/task/control_plane.rs
+@@ -120,7 +120,7 @@ impl WasiControlPlane {
+     pub(crate) fn register_task(&self) -> Result<TaskCountGuard, ControlPlaneError> {
+         let count = self.state.task_count.fetch_add(1, Ordering::SeqCst);
+         if let Some(max) = self.state.config.max_task_count
+-            && count > max
++            && count >= max
+         {
+             self.state.task_count.fetch_sub(1, Ordering::SeqCst);
+             return Err(ControlPlaneError::TaskLimitReached { max: count });

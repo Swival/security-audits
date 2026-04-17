@@ -1,0 +1,13 @@
+diff --git a/lib/wasix/src/os/command/builtins/cmd_wasmer.rs b/lib/wasix/src/os/command/builtins/cmd_wasmer.rs
+index 4f609933a3b..f1c84f6b253 100644
+--- a/lib/wasix/src/os/command/builtins/cmd_wasmer.rs
++++ b/lib/wasix/src/os/command/builtins/cmd_wasmer.rs
+@@ -101,7 +101,7 @@ impl CmdWasmer {
+                 if let Ok(container) = from_bytes(bytes.clone()) {
+                     let pkg = BinaryPackage::from_webc(&container, &*self.runtime)
+                         .await
+-                        .unwrap();
++                        .map_err(|err| SpawnError::Other(err.into()))?;
+ 
+                     Executable::BinaryPackage(Box::new(pkg))
+                 } else {

@@ -1,0 +1,19 @@
+diff --git a/lib/wasix/src/runners/wcgi/handler.rs b/lib/wasix/src/runners/wcgi/handler.rs
+index 7a97f9269af..b082ac288c5 100644
+--- a/lib/wasix/src/runners/wcgi/handler.rs
++++ b/lib/wasix/src/runners/wcgi/handler.rs
+@@ -161,9 +161,13 @@ impl Handler {
+             if let Some(stderr) = work_consume_stderr.await
+                 && !stderr.is_empty()
+             {
++                tracing::error!(
++                    stderr = %String::from_utf8_lossy(&stderr),
++                    "WCGI executable wrote to stderr"
++                );
+                 return Ok(Response::builder()
+                     .status(StatusCode::INTERNAL_SERVER_ERROR)
+-                    .body(body_from_data(stderr))?);
++                    .body(body_from_data(Bytes::from_static(b"Internal Server Error")))?);
+             }
+         } else {
+             task_manager

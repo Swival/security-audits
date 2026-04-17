@@ -1,0 +1,16 @@
+diff --git a/lib/wasix/src/syscalls/wasix/closure_prepare.rs b/lib/wasix/src/syscalls/wasix/closure_prepare.rs
+index a50bf140778..8e3cbdb37a9 100644
+--- a/lib/wasix/src/syscalls/wasix/closure_prepare.rs
++++ b/lib/wasix/src/syscalls/wasix/closure_prepare.rs
+@@ -382,9 +382,9 @@ pub fn closure_prepare<M: MemorySize>(
+     };
+     let module_handle = match linker.load_module(wasm_loader, &mut ctx) {
+         Ok(m) => m,
+-        Err(e) => {
+-            // Should never happen
+-            panic!("Failed to load newly built in-memory module: {e}");
++        Err(err) => {
++            error!("Failed to load newly built in-memory module: {err}");
++            return Ok(Errno::Io);
+         }
+     };

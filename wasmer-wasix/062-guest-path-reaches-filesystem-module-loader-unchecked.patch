@@ -1,0 +1,71 @@
+diff --git a/lib/wasix/src/syscalls/wasix/dlopen.rs b/lib/wasix/src/syscalls/wasix/dlopen.rs
+index 01063772bce..09139c96371 100644
+--- a/lib/wasix/src/syscalls/wasix/dlopen.rs
++++ b/lib/wasix/src/syscalls/wasix/dlopen.rs
+@@ -37,6 +37,15 @@ pub fn dlopen<M: MemorySize>(
+ 
+     let path = unsafe { get_input_str_ok!(&memory, path, path_len) };
+     Span::current().record("path", path.as_str());
++    let path = Path::new(&path);
++    if !is_confined_relative_path(path) {
++        wasi_dl_err!(
++            "invalid module path: only confined relative paths are allowed",
++            memory,
++            err_buf,
++            err_buf_len
++        );
++    }
+ 
+     let ld_library_path =
+         unsafe { get_input_str_ok!(&memory, ld_library_path, ld_library_path_len) };
+@@ -45,11 +54,22 @@ pub fn dlopen<M: MemorySize>(
+         .split(':')
+         .map(Path::new)
+         .collect::<Vec<_>>();
++    if ld_library_path
++        .iter()
++        .any(|path| !is_confined_relative_path(path))
++    {
++        wasi_dl_err!(
++            "invalid library search path: only confined relative paths are allowed",
++            memory,
++            err_buf,
++            err_buf_len
++        );
++    }
+ 
+     let linker = linker.clone();
+ 
+     let location = DlModuleSpec::FileSystem {
+-        module_spec: Path::new(&path),
++        module_spec: path,
+         ld_library_path: ld_library_path.as_slice(),
+     };
+     let module_handle = linker.load_module(location, &mut ctx);
+@@ -71,6 +91,26 @@ pub fn dlopen<M: MemorySize>(
+     Ok(Errno::Success)
+ }
+ 
++fn is_confined_relative_path(path: &Path) -> bool {
++    let mut depth = 0usize;
++
++    for component in path.components() {
++        match component {
++            Component::CurDir => {}
++            Component::Normal(_) => depth += 1,
++            Component::ParentDir => {
++                if depth == 0 {
++                    return false;
++                }
++                depth -= 1;
++            }
++            Component::RootDir | Component::Prefix(_) => return false,
++        }
++    }
++
++    true
++}
++
+ pub(crate) fn write_dl_error<M: MemorySize>(
+     mut err: &str,
+     memory: &MemoryView,

@@ -1,0 +1,13 @@
+diff --git a/lib/wasix/src/runtime/package_loader/builtin_loader.rs b/lib/wasix/src/runtime/package_loader/builtin_loader.rs
+index 0ea50d245c3..bce59d77a0a 100644
+--- a/lib/wasix/src/runtime/package_loader/builtin_loader.rs
++++ b/lib/wasix/src/runtime/package_loader/builtin_loader.rs
+@@ -57,7 +57,7 @@ impl BuiltinPackageLoader {
+             in_memory: Some(InMemoryCache::default()),
+             client: Arc::new(crate::http::default_http_client().unwrap()),
+             cache: None,
+-            hash_validation: HashIntegrityValidationMode::NoValidate,
++            hash_validation: HashIntegrityValidationMode::FailOnHashMismatch,
+             tokens: HashMap::new(),
+         }
+     }

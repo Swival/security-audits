@@ -1,0 +1,13 @@
+diff --git a/lib/wasix/src/syscalls/journal/actions/fd_write.rs b/lib/wasix/src/syscalls/journal/actions/fd_write.rs
+index 9a1dda06cb5..56eaa0795cf 100644
+--- a/lib/wasix/src/syscalls/journal/actions/fd_write.rs
++++ b/lib/wasix/src/syscalls/journal/actions/fd_write.rs
+@@ -21,7 +21,7 @@ impl<'a> JournalSyscallPlayer<'a, '_> {
+             return Ok(());
+         }
+         if self.stderr_fds.contains(&fd) {
+-            if let Some(x) = self.stdout.as_mut() {
++            if let Some(x) = self.stderr.as_mut() {
+                 x.push(JournalStdIoWrite {
+                     offset,
+                     data,

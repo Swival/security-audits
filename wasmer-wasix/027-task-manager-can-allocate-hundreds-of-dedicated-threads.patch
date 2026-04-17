@@ -1,0 +1,13 @@
+diff --git a/lib/wasix/src/runtime/task_manager/tokio.rs b/lib/wasix/src/runtime/task_manager/tokio.rs
+index e3904369b58..c1f21bc5795 100644
+--- a/lib/wasix/src/runtime/task_manager/tokio.rs
++++ b/lib/wasix/src/runtime/task_manager/tokio.rs
+@@ -84,7 +84,7 @@ impl TokioTaskManager {
+         let concurrency = std::thread::available_parallelism()
+             .unwrap_or(NonZeroUsize::new(1).unwrap())
+             .get();
+-        let max_threads = 200usize.max(concurrency * 100);
++        let max_threads = concurrency.clamp(1, 32);
+ 
+         Self {
+             rt: rt.into(),

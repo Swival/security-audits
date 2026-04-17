@@ -1,0 +1,17 @@
+diff --git a/lib/wasix/src/utils/store.rs b/lib/wasix/src/utils/store.rs
+index d956dbaeb73..6a23737e170 100644
+--- a/lib/wasix/src/utils/store.rs
++++ b/lib/wasix/src/utils/store.rs
+@@ -26,6 +26,12 @@ pub fn capture_store_snapshot(store: &mut impl wasmer::AsStoreMut) -> StoreSnaps
+ pub fn restore_store_snapshot(store: &mut impl wasmer::AsStoreMut, snapshot: &StoreSnapshot) {
+     let objs = store.objects_mut();
+ 
++    assert_eq!(
++        snapshot.globals.len(),
++        objs.as_u128_globals().len(),
++        "snapshot global count does not match store global count"
++    );
++
+     for (index, value) in snapshot.globals.iter().enumerate() {
+         objs.set_global_unchecked(index, *value);
+     }

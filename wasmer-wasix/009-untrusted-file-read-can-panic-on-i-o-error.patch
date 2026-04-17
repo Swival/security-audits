@@ -1,0 +1,23 @@
+diff --git a/lib/wasix/src/os/command/builtins/cmd_wasmer.rs b/lib/wasix/src/os/command/builtins/cmd_wasmer.rs
+index 4f609933a3b..21ba2fda90f 100644
+--- a/lib/wasix/src/os/command/builtins/cmd_wasmer.rs
++++ b/lib/wasix/src/os/command/builtins/cmd_wasmer.rs
+@@ -1,7 +1,7 @@
+ use std::{any::Any, path::PathBuf, sync::Arc};
+ 
+ use crate::{
+-    SpawnError,
++    ExtendedFsError, SpawnError,
+     bin_factory::spawn_exec_wasm,
+     os::task::{OwnedTaskStatus, TaskJoinHandle},
+     runtime::module_cache::HashedModuleData,
+@@ -94,7 +94,9 @@ impl CmdWasmer {
+             let f = fs.new_open_options().read(true).open(&file_path);
+             let executable = if let Ok(mut file) = f {
+                 let mut data = Vec::with_capacity(file.size() as usize);
+-                file.read_to_end(&mut data).await.unwrap();
++                file.read_to_end(&mut data)
++                    .await
++                    .map_err(|err| SpawnError::FileSystemError(ExtendedFsError::new(err)))?;
+ 
+                 let bytes: bytes::Bytes = data.into();

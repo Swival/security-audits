@@ -1,0 +1,51 @@
+diff --git a/lib/wasix/src/state/env.rs b/lib/wasix/src/state/env.rs
+index 783291f0be1..316771d5335 100644
+--- a/lib/wasix/src/state/env.rs
++++ b/lib/wasix/src/state/env.rs
+@@ -19,7 +19,7 @@ use rand::RngExt;
+ use std::{
+     collections::HashMap,
+     ops::Deref,
+-    path::{Path, PathBuf},
++    path::{Component, Path, PathBuf},
+     str,
+     sync::Arc,
+     time::Duration,
+@@ -69,6 +69,19 @@ async fn write_readonly_buffer_to_fs(
+         .map_err(virtual_fs::FsError::from)
+ }
+ 
++fn validate_command_name(
++    command: &str,
++    error: impl FnOnce(String) -> WasiStateCreationError,
++) -> Result<(), WasiStateCreationError> {
++    let mut components = Path::new(command).components();
++    match (components.next(), components.next()) {
++        (Some(Component::Normal(_)), None) => Ok(()),
++        _ => Err(error(format!(
++            "invalid command name `{command}`: expected a single normalized path component"
++        ))),
++    }
++}
++
+ /// Data required to construct a [`WasiEnv`].
+ #[derive(Debug)]
+ pub struct WasiEnvInit {
+@@ -1126,6 +1139,8 @@ impl WasiEnv {
+             let _ = root_fs.create_dir(Path::new("/usr/bin"));
+ 
+             for command in &pkg.commands {
++                validate_command_name(command.name(), WasiStateCreationError::WasiIncludePackageError)?;
++
+                 let path = format!("/bin/{}", command.name());
+                 let path2 = format!("/usr/bin/{}", command.name());
+                 let path = Path::new(path.as_str());
+@@ -1212,6 +1227,8 @@ impl WasiEnv {
+ 
+         #[cfg(feature = "sys")]
+         for (command, target) in map_commands.iter() {
++            validate_command_name(command, WasiStateCreationError::WasiInheritError)?;
++
+             // Read the file
+             let file = std::fs::read(target).map_err(|err| {
+                 WasiStateCreationError::WasiInheritError(format!(

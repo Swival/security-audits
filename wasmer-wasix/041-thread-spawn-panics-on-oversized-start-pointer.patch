@@ -1,0 +1,66 @@
+diff --git a/lib/wasix/src/syscalls/wasix/thread_spawn.rs b/lib/wasix/src/syscalls/wasix/thread_spawn.rs
+index 1e0b4bda9c3..027002be2ef 100644
+--- a/lib/wasix/src/syscalls/wasix/thread_spawn.rs
++++ b/lib/wasix/src/syscalls/wasix/thread_spawn.rs
+@@ -120,6 +120,10 @@ pub fn thread_spawn_internal_using_layout<M: MemorySize>(
+     start_ptr_offset: M::Offset,
+     rewind_state: Option<(RewindState, RewindResultType)>,
+ ) -> Result<(), Errno> {
++    let start_ptr_offset: i32 = start_ptr_offset
++        .try_into()
++        .map_err(|_| Errno::Overflow)?;
++
+     // We extract the memory which will be passed to the thread
+     let func_env = ctx.as_ref();
+     let mut store = ctx.as_store_mut();
+@@ -185,12 +189,12 @@ pub fn thread_spawn_internal_using_layout<M: MemorySize>(
+ }
+ 
+ // This function calls into the module
+-fn call_module_internal<M: MemorySize>(
++fn call_module_internal(
+     ctx: &WasiFunctionEnv,
+     mut store: Store,
+-    start_ptr_offset: M::Offset,
++    start_ptr_offset: i32,
+ ) -> (Store, Result<Option<ExitCode>, DeepSleepWork>) {
+-    // Note: we ensure both unwraps can happen before getting to this point
++    // Note: we ensure the remaining unwrap can happen before getting to this point
+     let spawn = ctx
+         .data(&store)
+         .inner()
+@@ -202,15 +206,11 @@ fn call_module_internal<M: MemorySize>(
+ 
+     let spawn: Function = spawn.into();
+     let tid_i32 = tid.raw().try_into().map_err(|_| Errno::Overflow).unwrap();
+-    let start_pointer_i32 = start_ptr_offset
+-        .try_into()
+-        .map_err(|_| Errno::Overflow)
+-        .unwrap();
+     let (mut store, thread_result) = ContextSwitchingEnvironment::run_main_context(
+         ctx,
+         store,
+         spawn,
+-        vec![Value::I32(tid_i32), Value::I32(start_pointer_i32)],
++        vec![Value::I32(tid_i32), Value::I32(start_ptr_offset)],
+     );
+     let thread_result = thread_result.map(|_| ());
+ 
+@@ -284,7 +284,7 @@ fn handle_thread_result(
+ fn call_module<M: MemorySize>(
+     mut ctx: WasiFunctionEnv,
+     mut store: Store,
+-    start_ptr_offset: M::Offset,
++    start_ptr_offset: i32,
+     thread_handle: Arc<WasiThreadHandle>,
+     rewind_state: Option<(RewindState, RewindResultType)>,
+ ) {
+@@ -307,7 +307,7 @@ fn call_module<M: MemorySize>(
+     }
+ 
+     // Now invoke the module
+-    let (store, ret) = call_module_internal::<M>(&ctx, store, start_ptr_offset);
++    let (store, ret) = call_module_internal(&ctx, store, start_ptr_offset);
+ 
+     // If it went to deep sleep then we need to handle that
+     if let Err(deep) = ret {

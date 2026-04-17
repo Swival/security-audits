@@ -1,0 +1,24 @@
+diff --git a/lib/wasix/src/os/task/thread.rs b/lib/wasix/src/os/task/thread.rs
+index cb7df5fd84f..62c8bb20ac8 100644
+--- a/lib/wasix/src/os/task/thread.rs
++++ b/lib/wasix/src/os/task/thread.rs
+@@ -444,16 +444,9 @@ impl WasiThread {
+             let memory_stack_before = pstack.memory_stack.len();
+             let memory_stack_after = memory_stack.len();
+             if memory_stack_before > memory_stack_after
+-                || (!pstack
+-                    .memory_stack
+-                    .iter()
+-                    .zip(memory_stack.iter())
+-                    .any(|(a, b)| *a == *b)
+-                    && !pstack
+-                        .memory_stack_corrected
+-                        .iter()
+-                        .zip(memory_stack.iter())
+-                        .any(|(a, b)| *a == *b))
++                || pstack.memory_stack_corrected.len() > memory_stack_corrected.len()
++                || !memory_stack.starts_with(&pstack.memory_stack)
++                || !memory_stack_corrected.starts_with(&pstack.memory_stack_corrected)
+             {
+                 // The stacks have changed so need to start again at this segment
+                 let mut new_stack = ThreadStack {

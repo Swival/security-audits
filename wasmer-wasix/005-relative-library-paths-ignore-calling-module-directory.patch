@@ -1,0 +1,50 @@
+diff --git a/lib/wasix/src/state/linker.rs b/lib/wasix/src/state/linker.rs
+index 0abec187668..a21eb6a884e 100644
+--- a/lib/wasix/src/state/linker.rs
++++ b/lib/wasix/src/state/linker.rs
+@@ -4026,17 +4026,34 @@ async fn locate_module(
+         })
+     } else if module_path.components().count() > 1 {
+         trace!(?module_path, "Locating module with relative path");
+-        try_load(
+-            &fs.root_fs,
+-            fs.relative_path_to_absolute(module_path.to_string_lossy().into_owned()),
+-        )
+-        .await
+-        .map_err(|e| {
+-            LinkError::SharedLibraryMissing(
+-                module_path.to_string_lossy().into_owned(),
+-                LocateModuleError::Single(e),
+-            )
+-        })
++
++        let mut errors = Vec::new();
++
++        if let Some(calling_module_dir) = calling_module_path
++            .as_ref()
++            .map(|path| path.as_ref().parent().unwrap_or_else(|| path.as_ref()))
++        {
++            let caller_relative_path = fs.relative_path_to_absolute(
++                calling_module_dir.join(module_path).to_string_lossy().into_owned(),
++            );
++
++            match try_load(&fs.root_fs, &caller_relative_path).await {
++                Ok(ret) => return Ok(ret),
++                Err(e) => errors.push((caller_relative_path, e)),
++            }
++        }
++
++        let full_path = fs.relative_path_to_absolute(module_path.to_string_lossy().into_owned());
++        match try_load(&fs.root_fs, &full_path).await {
++            Ok(ret) => Ok(ret),
++            Err(e) => {
++                errors.push((full_path, e));
++                Err(LinkError::SharedLibraryMissing(
++                    module_path.to_string_lossy().into_owned(),
++                    LocateModuleError::Multiple(errors),
++                ))
++            }
++        }
+     } else {
+         // Go through all dynamic library lookup paths
+         // Note: a path without a slash does *not* look at the current directory. This is by design.

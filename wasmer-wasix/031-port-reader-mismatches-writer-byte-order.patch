@@ -1,0 +1,21 @@
+diff --git a/lib/wasix/src/net/mod.rs b/lib/wasix/src/net/mod.rs
+index a75e31be8e7..e7d7d8eca47 100644
+--- a/lib/wasix/src/net/mod.rs
++++ b/lib/wasix/src/net/mod.rs
+@@ -170,14 +170,14 @@ pub(crate) fn read_ip_port<M: MemorySize>(
+     let o = addr.u.octs;
+     Ok(match addr.tag {
+         Addressfamily::Inet4 => {
+-            let port = u16::from_ne_bytes([o[0], o[1]]);
++            let port = u16::from_be_bytes([o[0], o[1]]);
+             (IpAddr::V4(Ipv4Addr::new(o[2], o[3], o[4], o[5])), port)
+         }
+         Addressfamily::Inet6 => {
+             let octets: [u8; 16] = o[2..18].try_into().unwrap();
+             (
+                 IpAddr::V6(Ipv6Addr::from(octets)),
+-                u16::from_ne_bytes([o[0], o[1]]),
++                u16::from_be_bytes([o[0], o[1]]),
+             )
+         }
+         _ => {

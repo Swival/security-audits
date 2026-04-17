@@ -1,0 +1,52 @@
+diff --git a/lib/wasix/src/runtime/resolver/inputs.rs b/lib/wasix/src/runtime/resolver/inputs.rs
+index 023a6119914..fde010ded5c 100644
+--- a/lib/wasix/src/runtime/resolver/inputs.rs
++++ b/lib/wasix/src/runtime/resolver/inputs.rs
+@@ -289,19 +289,10 @@ impl WebcHash {
+     }
+ 
+     pub fn for_file(path: &Path) -> Result<Self, std::io::Error> {
+-        // check for a hash at the file location
+         let mut path_hash = path.to_owned();
+         path_hash.set_extension("webc.sha256");
+-        if let Ok(mut file) = File::open(&path_hash) {
+-            let mut hash = Vec::new();
+-            if let Ok(amt) = file.read_to_end(&mut hash)
+-                && amt == 32
+-            {
+-                return Ok(WebcHash::from_bytes(hash[0..32].try_into().unwrap()));
+-            }
+-        }
+ 
+-        // compute the hash
++        // Always hash the WEBC itself; the sidecar is only a verified cache.
+         let mut hasher = Sha256::default();
+         let mut reader = BufReader::new(File::open(path)?);
+ 
+@@ -315,13 +306,22 @@ impl WebcHash {
+             reader.consume(bytes_read);
+         }
+ 
+-        let hash = hasher.finalize().into();
++        let hash: [u8; 32] = hasher.finalize().into();
+ 
+-        // write the cache of the hash to the file system
++        if let Ok(mut file) = File::open(&path_hash) {
++            let mut cached_hash = [0_u8; 32];
++            if file.read_exact(&mut cached_hash).is_ok()
++                && file.read(&mut [0_u8; 1]).ok() == Some(0)
++                && cached_hash == hash
++            {
++                return Ok(WebcHash::from_bytes(cached_hash));
++            }
++        }
++
++        // Refresh the cache when it is missing or does not match the WEBC.
+         std::fs::write(path_hash, hash).ok();
+-        let hash = WebcHash::from_bytes(hash);
+ 
+-        Ok(hash)
++        Ok(WebcHash::from_bytes(hash))
+     }
+ 
+     /// Generate a new [`WebcHash`] based on the SHA-256 hash of some bytes.

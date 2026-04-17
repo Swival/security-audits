@@ -1,0 +1,15 @@
+diff --git a/lib/wasix/src/syscalls/wasix/dlopen.rs b/lib/wasix/src/syscalls/wasix/dlopen.rs
+index 01063772bce..c2c340c0c3f 100644
+--- a/lib/wasix/src/syscalls/wasix/dlopen.rs
++++ b/lib/wasix/src/syscalls/wasix/dlopen.rs
+@@ -77,6 +77,10 @@ pub(crate) fn write_dl_error<M: MemorySize>(
+     err_buf: WasmPtr<u8, M>,
+     err_buf_len: u64,
+ ) -> Result<(), MemoryAccessError> {
++    if err_buf_len == 0 {
++        return Ok(());
++    }
++
+     let mut err_len = err.len();
+ 
+     if err_len > err_buf_len as usize {

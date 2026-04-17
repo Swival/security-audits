@@ -1,0 +1,59 @@
+diff --git a/lib/wasix/src/runtime/resolver/resolve.rs b/lib/wasix/src/runtime/resolver/resolve.rs
+index 45a03644a88..0cfdd097cf6 100644
+--- a/lib/wasix/src/runtime/resolver/resolve.rs
++++ b/lib/wasix/src/runtime/resolver/resolve.rs
+@@ -50,6 +50,11 @@ pub enum ResolveError {
+         package_name: String,
+         versions: Vec<Version>,
+     },
++    #[error("Package {package} references unknown filesystem dependency alias \"{alias}\"")]
++    UnknownFileSystemDependency {
++        package: PackageId,
++        alias: String,
++    },
+ }
+ 
+ fn registry_error_message(specifier: &PackageSource) -> String {
+@@ -337,7 +342,10 @@ fn resolve_package(dependency_graph: &DependencyGraph) -> Result<ResolvedPackage
+                         .graph()
+                         .edges(index)
+                         .find(|edge| edge.weight().alias == *name)
+-                        .unwrap()
++                        .ok_or_else(|| ResolveError::UnknownFileSystemDependency {
++                            package: id.clone(),
++                            alias: name.clone(),
++                        })?
+                         .target();
+                     &dependency_graph[dep_index].id
+                 }
+@@ -1213,4 +1221,30 @@ mod tests {
+             }]
+         );
+     }
++
++    #[test]
++    fn unknown_fs_dependency_alias_returns_error() {
++        let root_id = PackageId::new_named("root", "1.0.0".parse().unwrap());
++        let dep_id = PackageId::new_named("dep", "1.0.0".parse().unwrap());
++        let mut builder = RegistryBuilder::new();
++        builder
++            .register("root", "1.0.0")
++            .with_dependency("dep", "=1.0.0")
++            .with_fs_mapping_from_dependency("dep-volume", "/root", "/root", "missing");
++        builder.register("dep", "1.0.0");
++        let mut dep_builder = builder.start_dependency_graph();
++        dep_builder.insert(root_id.clone()).with_dependency(&dep_id);
++        dep_builder.insert(dep_id);
++        let graph = dep_builder.graph(root_id.clone());
++
++        let err = resolve_package(&graph).unwrap_err();
++
++        match err {
++            ResolveError::UnknownFileSystemDependency { package, alias } => {
++                assert_eq!(package, builder.get(&root_id).package_id());
++                assert_eq!(alias, "missing");
++            }
++            _ => panic!("Expected unknown filesystem dependency error, found {err:?}"),
++        }
++    }
+ }

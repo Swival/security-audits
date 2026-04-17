@@ -1,0 +1,34 @@
+diff --git a/lib/wasix/src/runners/wcgi/create_env.rs b/lib/wasix/src/runners/wcgi/create_env.rs
+index 31d85d560b6..c9e401b8e4f 100644
+--- a/lib/wasix/src/runners/wcgi/create_env.rs
++++ b/lib/wasix/src/runners/wcgi/create_env.rs
+@@ -1,9 +1,6 @@
+ use virtual_fs::Pipe;
+ 
+-use crate::{
+-    WasiEnvBuilder, capabilities::Capabilities, http::HttpClientCapabilityV1,
+-    runners::wcgi::callbacks::CreateEnvResult,
+-};
++use crate::{WasiEnvBuilder, runners::wcgi::callbacks::CreateEnvResult};
+ 
+ use super::{RecycleEnvConfig, callbacks::CreateEnvConfig};
+ 
+@@ -27,16 +24,11 @@ pub(crate) async fn default_create_env(conf: CreateEnvConfig) -> anyhow::Result<
+ 
+     builder.add_envs(conf.env);
+ 
+-    let builder = builder
++    let env = builder
+         .stdin(Box::new(req_body_receiver))
+         .stdout(Box::new(res_body_sender))
+         .stderr(Box::new(stderr_sender))
+-        .capabilities(Capabilities {
+-            insecure_allow_all: true,
+-            http_client: HttpClientCapabilityV1::new_allow_all(),
+-            threading: Default::default(),
+-        });
+-    let env = builder.build()?;
++        .build()?;
+ 
+     Ok(CreateEnvResult {
+         env,

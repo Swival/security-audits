@@ -1,0 +1,16 @@
+diff --git a/lib/wasix/src/syscalls/wasix/path_open2.rs b/lib/wasix/src/syscalls/wasix/path_open2.rs
+index a05abd74cad..bfc4fbf9415 100644
+--- a/lib/wasix/src/syscalls/wasix/path_open2.rs
++++ b/lib/wasix/src/syscalls/wasix/path_open2.rs
+@@ -153,9 +153,8 @@ pub(crate) fn path_open_internal(
+     // COMMENTED OUT: WASI isn't giving appropriate rights here when opening
+     //              TODO: look into this; file a bug report if this is a bug
+     //
+-    // Maximum rights: should be the working dir rights
+-    // Minimum rights: whatever rights are provided
+-    let adjusted_rights = /*fs_rights_base &*/ working_dir_rights_inheriting;
++    // Maximum rights: limited by what the directory allows inheriting.
++    let adjusted_rights = fs_rights_base & working_dir_rights_inheriting;
+     let mut open_options = state.fs_new_open_options();
+ 
+     let target_rights = match maybe_inode {

@@ -1,0 +1,13 @@
+diff --git a/lib/wasix/src/syscalls/wasix/context_create.rs b/lib/wasix/src/syscalls/wasix/context_create.rs
+index 896b67ed196..f545ecbf94e 100644
+--- a/lib/wasix/src/syscalls/wasix/context_create.rs
++++ b/lib/wasix/src/syscalls/wasix/context_create.rs
+@@ -32,7 +32,7 @@ pub fn lookup_typechecked_entrypoint(
+     #[cfg(not(feature = "js"))]
+     {
+         let entrypoint_type = entrypoint.ty(&store);
+-        if !entrypoint_type.params().is_empty() && !entrypoint_type.results().is_empty() {
++        if !entrypoint_type.params().is_empty() || !entrypoint_type.results().is_empty() {
+             tracing::trace!(
+                 "Entrypoint function {entrypoint_id} has invalid signature: expected () -> (), got {:?} -> {:?}",
+                 entrypoint_type.params(),

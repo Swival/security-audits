@@ -1,0 +1,60 @@
+diff --git a/lib/wasix/src/runners/dproxy/factory.rs b/lib/wasix/src/runners/dproxy/factory.rs
+index cf7ccddec95..7430e772b62 100644
+--- a/lib/wasix/src/runners/dproxy/factory.rs
++++ b/lib/wasix/src/runners/dproxy/factory.rs
+@@ -6,6 +6,7 @@ use std::{
+ };
+ 
+ use hyper_util::rt::TokioExecutor;
++use tokio::sync::Notify;
+ use wasmer_journal::{DynJournal, RecombinedJournal};
+ 
+ use crate::{
+@@ -21,6 +22,7 @@ use super::{
+ #[derive(Debug, Default)]
+ struct State {
+     instance: HashMap<Shard, DProxyInstance>,
++    starting: HashMap<Shard, Arc<Notify>>,
+ }
+ 
+ /// This factory will store and reuse instances between invocations thus
+@@ -37,17 +39,34 @@ impl DProxyInstanceFactory {
+ 
+     pub async fn acquire(&self, handler: &Handler, shard: Shard) -> anyhow::Result<DProxyInstance> {
+         loop {
+-            {
+-                let state = self.state.lock().unwrap();
++            let notify = {
++                let mut state = self.state.lock().unwrap();
+                 if let Some(instance) = state.instance.get(&shard).cloned() {
+                     return Ok(instance);
+                 }
+-            }
++                if let Some(notify) = state.starting.get(&shard).cloned() {
++                    notify
++                } else {
++                    let notify = Arc::new(Notify::new());
++                    state.starting.insert(shard.clone(), notify.clone());
++                    drop(state);
+ 
+-            let instance = self.spin_up(handler, shard.clone()).await?;
++                    let result = self.spin_up(handler, shard.clone()).await;
+ 
+-            let mut state = self.state.lock().unwrap();
+-            state.instance.insert(shard.clone(), instance);
++                    let mut state = self.state.lock().unwrap();
++                    let notify = state
++                        .starting
++                        .remove(&shard)
++                        .expect("missing shard startup reservation");
++                    if let Ok(instance) = result {
++                        state.instance.insert(shard.clone(), instance.clone());
++                    }
++                    notify.notify_waiters();
++                    return result;
++                }
++            };
++
++            notify.notified().await;
+         }
+     }

@@ -1,0 +1,19 @@
+diff --git a/lib/wasix/src/syscalls/mod.rs b/lib/wasix/src/syscalls/mod.rs
+index a3d58df119a..993025a92ac 100644
+--- a/lib/wasix/src/syscalls/mod.rs
++++ b/lib/wasix/src/syscalls/mod.rs
+@@ -891,8 +891,15 @@ pub(crate) unsafe fn get_memory_stack_pointer(
+ pub(crate) unsafe fn get_memory_stack_offset(
+     ctx: &mut FunctionEnvMut<'_, WasiEnv>,
+ ) -> Result<u64, String> {
++    let stack_lower = get_stack_lower(ctx.data());
+     let stack_upper = get_stack_upper(ctx.data());
+     let stack_pointer = unsafe { get_memory_stack_pointer(ctx) }?;
++    if stack_pointer < stack_lower || stack_pointer > stack_upper {
++        return Err(format!(
++            "failed to save stack: stack pointer out of bounds (stack_pointer={}, stack_lower={}, stack_upper={})",
++            stack_pointer, stack_lower, stack_upper
++        ));
++    }
+     Ok(stack_upper - stack_pointer)
+ }
