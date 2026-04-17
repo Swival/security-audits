@@ -1,0 +1,17 @@
+diff --git a/crates/wasi/src/p1.rs b/crates/wasi/src/p1.rs
+index 95c688e2db..d04794e13b 100644
+--- a/crates/wasi/src/p1.rs
++++ b/crates/wasi/src/p1.rs
+@@ -2393,9 +2393,9 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiP1Ctx {
+                                 || now.seconds == seconds
+                                     && u64::from(now.nanoseconds) < nanoseconds
+                             {
+-                                // `now` is less than `timeout`, which is expressible as u64,
+-                                // subtract the nanosecond counts directly
+-                                now.seconds * 1_000_000_000 + u64::from(now.nanoseconds) - timeout
++                                // `timeout` is in the future, so convert the absolute deadline
++                                // into the remaining relative duration.
++                                timeout - (now.seconds * 1_000_000_000 + u64::from(now.nanoseconds))
+                             } else {
+                                 0
+                             };

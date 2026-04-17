@@ -1,0 +1,63 @@
+diff --git a/crates/wasi/src/p1.rs b/crates/wasi/src/p1.rs
+index 95c688e2db..b7f551a132 100644
+--- a/crates/wasi/src/p1.rs
++++ b/crates/wasi/src/p1.rs
+@@ -1861,20 +1861,45 @@ impl wasi_snapshot_preview1::WasiSnapshotPreview1 for WasiP1Ctx {
+         from: types::Fd,
+         to: types::Fd,
+     ) -> Result<(), types::Error> {
+-        let mut st = self.transact()?;
+-        let from = from.into();
+-        let to = to.into();
+-        if !st.descriptors.used.contains_key(&to) {
+-            return Err(types::Errno::Badf.into());
+-        }
+-        let btree_map::Entry::Occupied(desc) = st.descriptors.used.entry(from) else {
+-            return Err(types::Errno::Badf.into());
++        let replaced = {
++            let mut st = self.transact()?;
++            let from = from.into();
++            let to = to.into();
++            if !st.descriptors.used.contains_key(&to) {
++                return Err(types::Errno::Badf.into());
++            }
++            let btree_map::Entry::Occupied(desc) = st.descriptors.used.entry(from) else {
++                return Err(types::Errno::Badf.into());
++            };
++            if from != to {
++                let desc = desc.remove();
++                st.descriptors.free.insert(from);
++                st.descriptors.free.remove(&to);
++                let replaced = st.descriptors.used.remove(&to).unwrap();
++                st.descriptors.used.insert(to, desc);
++                Some(replaced)
++            } else {
++                None
++            }
+         };
+-        if from != to {
+-            let desc = desc.remove();
+-            st.descriptors.free.insert(from);
+-            st.descriptors.free.remove(&to);
+-            st.descriptors.used.insert(to, desc);
++        if let Some(desc) = replaced {
++            match desc {
++                Descriptor::Stdin { stream, .. } => crate::runtime::in_tokio(async {
++                    streams::HostInputStream::drop(&mut self.table, stream).await
++                })
++                .context("failed to call `drop` on `input-stream`"),
++                Descriptor::Stdout { stream, .. } | Descriptor::Stderr { stream, .. } => {
++                    crate::runtime::in_tokio(async {
++                        streams::HostOutputStream::drop(&mut self.table, stream).await
++                    })
++                    .context("failed to call `drop` on `output-stream`")
++                }
++                Descriptor::File(File { fd, .. }) | Descriptor::Directory { fd, .. } => {
++                    filesystem::HostDescriptor::drop(&mut self.filesystem(), fd)
++                        .context("failed to call `drop`")
++                }
++            }
++            .map_err(types::Error::trap)?;
+         }
+         Ok(())
+     }
