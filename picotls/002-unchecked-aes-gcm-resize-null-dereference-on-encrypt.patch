@@ -1,0 +1,18 @@
+diff --git a/lib/fusion.c b/lib/fusion.c
+index 62a93e6..74b8295 100644
+--- a/lib/fusion.c
++++ b/lib/fusion.c
+@@ -1138,8 +1138,12 @@ void aead_do_encrypt(struct st_ptls_aead_context_t *_ctx, void *output, const vo
+ {
+     struct aesgcm_context *ctx = (void *)_ctx;
+ 
+-    if (inlen + aadlen > ctx->aesgcm->capacity)
+-        ctx->aesgcm = ptls_fusion_aesgcm_set_capacity(ctx->aesgcm, inlen + aadlen);
++    if (inlen + aadlen > ctx->aesgcm->capacity) {
++        ptls_fusion_aesgcm_context_t *newctx = ptls_fusion_aesgcm_set_capacity(ctx->aesgcm, inlen + aadlen);
++        if (newctx == NULL)
++            return;
++        ctx->aesgcm = newctx;
++    }
+     ptls_fusion_aesgcm_encrypt(ctx->aesgcm, output, input, inlen, calc_counter(ctx, seq), aad, aadlen, supp);
+ }

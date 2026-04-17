@@ -1,16 +1,14 @@
 diff --git a/lib/quiclb-impl.h b/lib/quiclb-impl.h
-index 228447b..cd3801f 100644
+index 228447b..e854b62 100644
 --- a/lib/quiclb-impl.h
 +++ b/lib/quiclb-impl.h
-@@ -129,7 +129,10 @@ static inline void picotls_quiclb_transform(void (*aesecb_func)(void *aesecb, un
+@@ -129,7 +129,8 @@ static inline void picotls_quiclb_transform(void (*aesecb_func)(void *aesecb, un
           {{0x0f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}}} /* 19 */
      };
  
 -    assert(PTLS_QUICLB_MIN_BLOCK_SIZE <= len && len <= PTLS_QUICLB_MAX_BLOCK_SIZE);
-+    if (len < PTLS_QUICLB_MIN_BLOCK_SIZE || len > PTLS_QUICLB_MAX_BLOCK_SIZE) {
-+        assert(!"invalid QUIC-LB block size");
++    if (len < PTLS_QUICLB_MIN_BLOCK_SIZE || len > PTLS_QUICLB_MAX_BLOCK_SIZE)
 +        return;
-+    }
      PTLS_BUILD_ASSERT(PTLS_QUICLB_MAX_BLOCK_SIZE == PTLS_QUICLB_MIN_BLOCK_SIZE + PTLS_ELEMENTSOF(masks) - 1);
  
      const struct quiclb_mask_t *mask = &masks[len - PTLS_QUICLB_MIN_BLOCK_SIZE];

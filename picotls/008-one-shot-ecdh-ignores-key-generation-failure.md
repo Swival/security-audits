@@ -7,55 +7,36 @@
 
 ## Affected Locations
 - `lib/uecc.c:101`
+- `lib/picotls.c:4733`
 
 ## Summary
-- `secp256r1_key_exchange` calls `uECC_make_key(pub + 1, priv, uECC_secp256r1())` and does not check its return value.
-- On failure, the function still uses stack `priv` bytes in `uECC_shared_secret(...)` and may return success with a derived secret and published key material sourced from stale memory.
-- This skips the intended abort path for ephemeral key-generation failure on a reachable TLS handshake path.
+`secp256r1_key_exchange` in `lib/uecc.c:101` calls `uECC_make_key(pub + 1, priv, ...)` but does not check whether key generation succeeded before using `priv` in `uECC_shared_secret`. On key-generation failure, the function can consume stale or uninitialized stack data, emit a public key buffer derived from bad state, and return success if `uECC_shared_secret` accepts the bytes.
 
 ## Provenance
-- Verified by reproduction against the reported path and behavior.
+- Verified by reproduction in an isolated worktree with a targeted harness
 - Scanner source: https://swival.dev
-- Reachability confirmed via `lib/picotls.c:4733`, where a zero return from the exchange callback is treated as success.
 
 ## Preconditions
-- `uECC_make_key` returns failure during secp256r1 exchange.
+- `uECC_make_key` returns failure during secp256r1 exchange
 
 ## Proof
-- At `lib/uecc.c:101`, `secp256r1_key_exchange` invokes `uECC_make_key(pub + 1, priv, ...)` without checking the result, then immediately passes `priv` into `uECC_shared_secret(peerkey.base + 1, priv, ...)`.
-- `uECC_shared_secret` can still succeed if the stale `priv` bytes represent an acceptable scalar and the peer public key is valid.
-- Reproduction forced a single `uECC_make_key` failure, prefilled the would-be uninitialized `priv` and `pub` buffers, and executed the same call sequence.
-- Observed result: `make_key=0`, then `shared_secret=1`, with a 32-byte secret emitted and a junk published key prefix `04aaaaaa`, demonstrating continued success after key-generation failure.
+- At `lib/uecc.c:101`, `secp256r1_key_exchange` invokes `uECC_make_key(pub + 1, priv, uECC_secp256r1())` and ignores the return value.
+- The same stack `priv` buffer is then passed to `uECC_shared_secret(peerkey.base + 1, priv, secret, uECC_secp256r1())`.
+- Reproduction forced `uECC_make_key` to fail once while pre-filling the pending `priv` and `pub` buffers with known junk bytes to model stale memory.
+- The observed execution was `make_key=0` followed by `shared_secret=1`, with a 32-byte secret emitted and a published key beginning `04aaaaaa`.
+- The handshake path is reachable from `lib/picotls.c:4733`, where a `0` return from the exchange function is treated as success and the returned `ecdh_secret` and `pubkey` are used.
 
 ## Why This Is A Real Bug
-- The function consumes invalid state after a failed cryptographic key-generation step instead of failing closed.
-- The bug is reachable from the TLS server handshake path, so a transient RNG or keygen failure can be misreported as a successful exchange.
-- This can publish stale stack-derived public-key bytes and derive a secret from unintended private-key material, violating expected handshake correctness and error handling.
+The implementation is intended to abort if ephemeral key generation fails. Instead, it proceeds into secret derivation using invalid private-key material and can report success. That is a direct control-flow error, not a theoretical concern: the reproduced run shows the key-generation failure path is skipped and cryptographic state is derived from stale memory on a reachable TLS handshake path.
 
 ## Fix Requirement
-- Check the return value of `uECC_make_key` and abort immediately on failure before using `priv` or exposing `pub`.
+Abort immediately when `uECC_make_key` fails, before reading `priv`, deriving a shared secret, or exposing `pub`.
 
 ## Patch Rationale
-- The patch in `008-one-shot-ecdh-ignores-key-generation-failure.patch` adds an explicit `uECC_make_key` failure check in `secp256r1_key_exchange`.
-- This enforces fail-closed behavior at the first fault site and prevents both stale private-key use and stale public-key publication.
+The patch in `008-one-shot-ecdh-ignores-key-generation-failure.patch` adds an explicit return-value check for `uECC_make_key` in `lib/uecc.c`. This enforces fail-closed behavior at the actual fault point and prevents both secret derivation and public-key output from invalid state.
 
 ## Residual Risk
-- None
+None
 
 ## Patch
-```diff
-diff --git a/lib/uecc.c b/lib/uecc.c
-index 0000000..0000000 100644
---- a/lib/uecc.c
-+++ b/lib/uecc.c
-@@ -101,7 +101,9 @@ static int secp256r1_key_exchange(ptls_iovec_t *pubkey, ptls_iovec_t *secret, pt
-     uint8_t priv[32];
-     uint8_t pub[65];
-     pub[0] = 4;
--    uECC_make_key(pub + 1, priv, uECC_secp256r1());
-+    if (!uECC_make_key(pub + 1, priv, uECC_secp256r1()))
-+        return PTLS_ERROR_NO_MEMORY;
-+
-     if (!uECC_shared_secret(peerkey.base + 1, priv, secret->base, uECC_secp256r1()))
-         return PTLS_ALERT_HANDSHAKE_FAILURE;
-```
+`008-one-shot-ecdh-ignores-key-generation-failure.patch` updates `lib/uecc.c` so `secp256r1_key_exchange` returns failure if `uECC_make_key` does not succeed, before `priv` or `pub` are consumed.

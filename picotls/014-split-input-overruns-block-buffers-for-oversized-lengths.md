@@ -9,38 +9,45 @@
 - `lib/quiclb-impl.h:68`
 - `lib/quiclb-impl.h:132`
 - `lib/quiclb-impl.h:135`
+- `include/picotls.h:2075`
+- `lib/openssl.c:1451`
+- `lib/openssl.c:1457`
+- `lib/openssl.c:1467`
+- `lib/fusion.c:2198`
+- `lib/fusion.c:2204`
+- `lib/fusion.c:2214`
 
 ## Summary
-`picotls_quiclb_split_input` writes `(len + 1) / 2` bytes into `l->bytes` and `r->bytes`, but each destination is a `union picotls_quiclb_block` backed by `PTLS_AES_BLOCK_SIZE` bytes. For `len > 32`, the split loops exceed the 16-byte block capacity and overrun both buffers. The reachable caller path keeps `len` unvalidated in release builds because the only guard is an `assert`.
+`picotls_quiclb_split_input` writes `(len + 1) / 2` bytes into each `union picotls_quiclb_block`, which is only `PTLS_AES_BLOCK_SIZE` bytes wide. For `len > 32`, each copy loop overruns the 16-byte block buffers. In release builds, the only length guard is an `assert`, so oversized caller-controlled lengths can reach `picotls_quiclb_transform` through the exported QUICLB cipher path and trigger memory corruption.
 
 ## Provenance
-- Verified from the supplied finding and reproducer against `lib/quiclb-impl.h` and the exported QUICLB cipher call path
-- External scanner reference: https://swival.dev
+- Verified from the supplied reproducer trace and source review in the affected files.
+- Scanner source: https://swival.dev
 
 ## Preconditions
-- Caller passes `len > 32` into `picotls_quiclb_split_input`
-- Build is compiled with `NDEBUG` or otherwise lacks an active runtime length check
-- Application exposes the QUICLB cipher path through `ptls_cipher_encrypt`
+- Caller passes `len > 32` into `picotls_quiclb_split_input`.
+- Build disables assertions, or caller otherwise reaches the transform path without a runtime length check.
+- Application uses the exported QUICLB cipher interface so untrusted or unchecked lengths reach `ptls_cipher_encrypt`.
 
 ## Proof
-- `picotls_quiclb_split_input` copies `(len + 1) / 2` bytes into each half-buffer starting at `lib/quiclb-impl.h:68`
-- `union picotls_quiclb_block` stores only `PTLS_AES_BLOCK_SIZE` bytes, so any split count above 16 overruns the destination
-- When `len > 32`, `(len + 1) / 2 > 16`, so both write loops overflow before later zero-fill logic can help
-- `picotls_quiclb_transform` forwards its `len` into the split helper, and its intended bounds check at `lib/quiclb-impl.h:132` is only an `assert`
-- In release builds, that assertion is removed, making oversized input practically reachable through the exported QUICLB handlers described in the reproducer
+- `picotls_quiclb_split_input` copies alternating source bytes into `l->bytes[i / 2]` and `r->bytes[i / 2]` for all `i < len`, with no capacity bound before the writes at `lib/quiclb-impl.h:68`.
+- Each destination is `union picotls_quiclb_block`, backed by `PTLS_AES_BLOCK_SIZE` bytes, i.e. 16 bytes.
+- When `len > 32`, `(len + 1) / 2 > 16`, so both loops write beyond the end of `l->bytes` and `r->bytes` before later zero-fill logic runs.
+- `picotls_quiclb_transform` accepts `len` and forwards it into the split logic; its intended range check is only `assert(PTLS_QUICLB_MIN_BLOCK_SIZE <= len && len <= PTLS_QUICLB_MAX_BLOCK_SIZE)` at `lib/quiclb-impl.h:132`.
+- In release builds, that assertion is removed. The call chain remains reachable because `ptls_cipher_encrypt` forwards `len` directly to the cipher `do_transform` callback at `include/picotls.h:2075`, and the OpenSSL/Fusion QUICLB handlers pass that value through unchanged at `lib/openssl.c:1451`, `lib/openssl.c:1457`, `lib/openssl.c:1467`, `lib/fusion.c:2198`, `lib/fusion.c:2204`, and `lib/fusion.c:2214`.
 
 ## Why This Is A Real Bug
-This is a concrete memory-safety violation, not just a spec mismatch. The destination buffers are fixed-size AES blocks, while the function derives copy counts directly from attacker-controlled `len`. Once `len` exceeds 32, the writes necessarily cross object bounds. The bug is reachable through public encryption entrypoints because they forward `len` unchanged, and the only existing validation disappears in production-style builds.
+This is a concrete out-of-bounds write on stack-backed fixed-size block buffers. It is not merely an assertion misuse: in optimized production builds, the asserted invariant disappears, yet the exported API still accepts and forwards arbitrary `len`. That makes the overwrite reachable by a caller that invokes the QUICLB cipher directly, with memory corruption occurring before any later bounds-sensitive logic can contain it.
 
 ## Fix Requirement
-Enforce a runtime upper bound before any mask lookup or split write occurs. The fix must reject oversized `len` values independently of assertions so release builds cannot enter the unsafe path.
+Add a runtime length check in the QUICLB transform path that rejects oversized lengths before any table lookup or split-buffer write occurs. The guard must not rely on `assert` alone.
 
 ## Patch Rationale
-The patch adds a real length guard in the QUICLB transform path before dependent operations execute. This blocks the oversized input that causes the split-buffer overwrite and also prevents subsequent out-of-range table access on the mask array. Placing the check in the shared transform path preserves normal behavior for valid inputs while protecting all callers.
+The patch enforces the QUICLB length contract at runtime before `masks[...]` indexing and before `picotls_quiclb_split_input` runs. Rejecting invalid `len` values is preferable to silently truncating copy loops because it preserves the algorithm's defined input domain, prevents both the mask-table overread and the split-buffer overflow, and keeps behavior explicit for callers in release builds.
 
 ## Residual Risk
 None
 
 ## Patch
 - Patch file: `014-split-input-overruns-block-buffers-for-oversized-lengths.patch`
-- Patch effect: add a runtime `len` validation in `lib/quiclb-impl.h` so inputs outside the supported QUICLB range are rejected before mask indexing and block splitting occur
+- Effect: adds a non-assert runtime guard so invalid QUICLB input lengths are rejected before unsafe indexing and block-buffer writes occur in `lib/quiclb-impl.h`.
