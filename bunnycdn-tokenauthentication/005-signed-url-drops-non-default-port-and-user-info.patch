@@ -1,0 +1,12 @@
+diff --git a/java/src/main/java/BunnyCDN/TokenSigner.java b/java/src/main/java/BunnyCDN/TokenSigner.java
+index c3cadd9..7cf34aa 100644
+--- a/java/src/main/java/BunnyCDN/TokenSigner.java
++++ b/java/src/main/java/BunnyCDN/TokenSigner.java
+@@ -184,7 +184,7 @@ public class TokenSigner {
+             String token = "HS256-" + Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+ 
+             // Step 12: Build final URL
+-            String base = uri.getScheme() + "://" + uri.getHost();
++            String base = uri.getScheme() + "://" + uri.getRawAuthority();
+             String path = uri.getRawPath();
+             String tail = urlData.length() == 0 ? "" : "&" + urlData;

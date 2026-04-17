@@ -1,0 +1,13 @@
+diff --git a/rust/src/lib.rs b/rust/src/lib.rs
+index 929d535..a90d7ab 100644
+--- a/rust/src/lib.rs
++++ b/rust/src/lib.rs
+@@ -140,7 +140,7 @@ pub fn sign_url(
+     let token = format!("HS256-{}", URL_SAFE_NO_PAD.encode(digest));
+ 
+     // Build final URL.
+-    let base = format!("{}://{}", parsed.scheme(), parsed.host_str().unwrap_or(""));
++    let base = parsed[..url::Position::BeforePath].to_string();
+     let tail = if url_data.is_empty() {
+         String::new()
+     } else {

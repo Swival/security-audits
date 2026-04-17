@@ -1,0 +1,20 @@
+diff --git a/php/url_signing.php b/php/url_signing.php
+index d3c12c1..03488d3 100644
+--- a/php/url_signing.php
++++ b/php/url_signing.php
+@@ -27,9 +27,12 @@ function sign_bcdn_url(
+ 
+     // Parse URL
+     $parsed = parse_url($url);
+-    $url_scheme = $parsed['scheme'] ?? '';
+-    $url_host = $parsed['host'] ?? '';
+-    $url_path = $parsed['path'] ?? '/';
++    if ($parsed === false || empty($parsed['scheme']) || empty($parsed['host']) || empty($parsed['path'])) {
++        throw new InvalidArgumentException('url must include scheme, host, and path');
++    }
++    $url_scheme = $parsed['scheme'];
++    $url_host = $parsed['host'];
++    $url_path = $parsed['path'];
+     $url_query = $parsed['query'] ?? '';
+ 
+     // Parse existing query params manually (no parse_str)

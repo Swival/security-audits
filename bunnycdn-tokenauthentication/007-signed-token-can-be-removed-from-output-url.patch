@@ -1,0 +1,18 @@
+diff --git a/nodejs/token.js b/nodejs/token.js
+index 8d16d8f..9ff871b 100644
+--- a/nodejs/token.js
++++ b/nodejs/token.js
+@@ -38,9 +38,12 @@ function signUrl(
+     // 1. Parse URL
+     const parsed = new URL(url);
+ 
+-    // 2. Collect query params, reject duplicates
++    // 2. Collect query params, reject duplicates and reserved keys
+     const queryParams = {};
+     for (const [key, value] of parsed.searchParams) {
++        if (key === 'token' || key === 'expires') {
++            throw new Error(`Query parameter "${key}" is reserved`);
++        }
+         if (Object.prototype.hasOwnProperty.call(queryParams, key)) {
+             throw new Error(`Duplicate query parameter "${key}" is not supported`);
+         }

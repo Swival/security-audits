@@ -1,0 +1,13 @@
+diff --git a/nodejs/token.js b/nodejs/token.js
+index 8d16d8f..d4a96cd 100644
+--- a/nodejs/token.js
++++ b/nodejs/token.js
+@@ -44,6 +44,9 @@ function signUrl(
+         if (Object.prototype.hasOwnProperty.call(queryParams, key)) {
+             throw new Error(`Duplicate query parameter "${key}" is not supported`);
+         }
++        if (isDirectory && (key === 'expires' || key === 'bcdn_token')) {
++            throw new Error(`Query parameter "${key}" is reserved for directory signing`);
++        }
+         queryParams[key] = value;
+     }

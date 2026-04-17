@@ -1,0 +1,105 @@
+diff --git a/java/src/main/java/BunnyCDN/TokenSigner.java b/java/src/main/java/BunnyCDN/TokenSigner.java
+index c3cadd9..e081ddc 100644
+--- a/java/src/main/java/BunnyCDN/TokenSigner.java
++++ b/java/src/main/java/BunnyCDN/TokenSigner.java
+@@ -6,7 +6,9 @@ import java.net.URI;
+ import java.net.URLDecoder;
+ import java.net.URLEncoder;
+ import java.nio.charset.StandardCharsets;
++import java.util.ArrayList;
+ import java.util.Base64;
++import java.util.List;
+ import java.util.Map;
+ import java.util.TreeMap;
+ 
+@@ -90,7 +92,7 @@ public class TokenSigner {
+             URI uri = new URI(url);
+ 
+             // Step 2: Parse query string manually
+-            TreeMap<String, String> queryParams = new TreeMap<>();
++            TreeMap<String, List<String>> queryParams = new TreeMap<>();
+             String query = uri.getRawQuery();
+             if (query != null && !query.isEmpty()) {
+                 String[] pairs = query.split("&");
+@@ -105,22 +107,19 @@ public class TokenSigner {
+                         key = URLDecoder.decode(pair, StandardCharsets.UTF_8.name());
+                         value = "";
+                     }
+-                    if (queryParams.containsKey(key)) {
+-                        throw new IllegalArgumentException("Duplicate query parameter: " + key);
+-                    }
+-                    queryParams.put(key, value);
++                    queryParams.computeIfAbsent(key, ignored -> new ArrayList<>()).add(value);
+                 }
+             }
+ 
+             // Step 3: Add countries to query params
+             if (countriesAllowed != null && !countriesAllowed.isEmpty()) {
+-                queryParams.put("token_countries", countriesAllowed);
++                queryParams.put("token_countries", new ArrayList<>(List.of(countriesAllowed)));
+             }
+             if (countriesBlocked != null && !countriesBlocked.isEmpty()) {
+-                queryParams.put("token_countries_blocked", countriesBlocked);
++                queryParams.put("token_countries_blocked", new ArrayList<>(List.of(countriesBlocked)));
+             }
+             if (speedLimit > 0) {
+-                queryParams.put("limit", String.valueOf(speedLimit));
++                queryParams.put("limit", new ArrayList<>(List.of(String.valueOf(speedLimit))));
+             }
+ 
+             // Step 4: Compute expires
+@@ -132,14 +131,14 @@ public class TokenSigner {
+             }
+ 
+             // Step 5: Build parameters
+-            TreeMap<String, String> parameters = new TreeMap<>();
++            TreeMap<String, List<String>> parameters = new TreeMap<>();
+             if (ignoreParams) {
+-                parameters.put("token_ignore_params", "true");
++                parameters.put("token_ignore_params", new ArrayList<>(List.of("true")));
+             } else {
+                 parameters.putAll(queryParams);
+             }
+             if (pathAllowed != null && !pathAllowed.isEmpty()) {
+-                parameters.put("token_path", pathAllowed);
++                parameters.put("token_path", new ArrayList<>(List.of(pathAllowed)));
+             }
+ 
+             // Step 6: signaturePath
+@@ -152,22 +151,26 @@ public class TokenSigner {
+ 
+             // Step 7: signingData (raw values)
+             StringBuilder signingData = new StringBuilder();
+-            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+-                if (signingData.length() > 0) {
+-                    signingData.append('&');
++            for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
++                for (String value : entry.getValue()) {
++                    if (signingData.length() > 0) {
++                        signingData.append('&');
++                    }
++                    signingData.append(entry.getKey()).append('=').append(value);
+                 }
+-                signingData.append(entry.getKey()).append('=').append(entry.getValue());
+             }
+ 
+             // Step 8: urlData (URL-encoded values, space as %20)
+             StringBuilder urlData = new StringBuilder();
+-            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+-                if (urlData.length() > 0) {
+-                    urlData.append('&');
++            for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
++                for (String value : entry.getValue()) {
++                    if (urlData.length() > 0) {
++                        urlData.append('&');
++                    }
++                    String encodedValue = URLEncoder.encode(value, StandardCharsets.UTF_8.name())
++                            .replace("+", "%20");
++                    urlData.append(entry.getKey()).append('=').append(encodedValue);
+                 }
+-                String encodedValue = URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.name())
+-                        .replace("+", "%20");
+-                urlData.append(entry.getKey()).append('=').append(encodedValue);
+             }
+ 
+             // Step 9: message
