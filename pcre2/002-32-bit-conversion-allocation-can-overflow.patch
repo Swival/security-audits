@@ -1,0 +1,41 @@
+diff --git a/src/pcre2test_inc.h b/src/pcre2test_inc.h
+index 5d282435..e47c9800 100644
+--- a/src/pcre2test_inc.h
++++ b/src/pcre2test_inc.h
+@@ -493,6 +493,7 @@ Returns:     0 on success, with the length updated to the number of 32-bit
+                data items used (excluding the trailing zero)
+              OR -1 if a UTF-8 string is malformed
+              OR -2 if a value > 0x10ffff is encountered in UTF mode
++             OR -4 if the converted string would overflow the buffer size
+ */
+ 
+ static int
+@@ -500,11 +501,15 @@ to32(uint8_t *p, int utf, PCRE2_SIZE *lenptr)
+ {
+ uint32_t *pp;
+ PCRE2_SIZE len = *lenptr;
++PCRE2_SIZE needed_size;
+ 
+-if (pbuffer32_size < 4*len + 4)
++if (len > (PCRE2_SIZE_MAX - 4)/4) return -4;
++needed_size = 4*len + 4;
++
++if (pbuffer32_size < needed_size)
+   {
+   if (pbuffer32 != NULL) free(pbuffer32);
+-  pbuffer32_size = 4*len + 4;
++  pbuffer32_size = needed_size;
+   if (pbuffer32_size < 8192) pbuffer32_size = 8192;
+   pbuffer32 = (uint32_t *)malloc(pbuffer32_size);
+   if (pbuffer32 == NULL)
+@@ -2573,6 +2578,10 @@ switch(errorcode)
+     "cannot be converted to 16-bit in non-UTF mode\n");
+   return PR_SKIP;
+ 
++  case -4:
++  cfprintf(clr_test_error, outfile, "** Failed: 32-bit converted string is too long\n");
++  return PR_SKIP;
++
+   default:
+   break;
+   }

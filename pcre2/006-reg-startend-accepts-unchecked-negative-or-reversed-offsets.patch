@@ -1,0 +1,34 @@
+diff --git a/src/pcre2posix.c b/src/pcre2posix.c
+index 89b95941..61df1c79 100644
+--- a/src/pcre2posix.c
++++ b/src/pcre2posix.c
+@@ -357,6 +357,7 @@ pcre2_regexec(const regex_t *preg, const char *string, size_t nmatch,
+ {
+ int rc, so, eo;
+ int options = 0;
++PCRE2_SIZE len;
+ pcre2_match_data *md = (pcre2_match_data *)preg->re_match_data;
+ 
+ if (string == NULL) return REG_INVARG;
+@@ -381,15 +382,20 @@ if ((eflags & REG_STARTEND) != 0)
+   if (pmatch == NULL) return REG_INVARG;
+   so = pmatch[0].rm_so;
+   eo = pmatch[0].rm_eo;
++  if (so < 0 || eo < so) return REG_INVARG;
++#if INT_MAX > PCRE2_SIZE_MAX
++  if ((int)(PCRE2_SIZE)eo != eo) return REG_INVARG;
++#endif
++  len = (PCRE2_SIZE)(eo - so);
+   }
+ else
+   {
+   so = 0;
+-  eo = (int)strlen(string);
++  len = strlen(string);
+   }
+ 
+ rc = pcre2_match((const pcre2_code *)preg->re_pcre2_code,
+-  (PCRE2_SPTR)string + so, (eo - so), 0, options, md, NULL);
++  (PCRE2_SPTR)string + so, len, 0, options, md, NULL);
+ 
+ /* Successful match */
