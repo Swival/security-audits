@@ -1,0 +1,12 @@
+diff --git a/src/pcre2posix.c b/src/pcre2posix.c
+index 89b95941..3473448c 100644
+--- a/src/pcre2posix.c
++++ b/src/pcre2posix.c
+@@ -255,7 +255,9 @@ PCRE2POSIX_EXP_DEFN void PCRE2_CALL_CONVENTION
+ pcre2_regfree(regex_t *preg)
+ {
+ pcre2_match_data_free(preg->re_match_data);
++preg->re_match_data = NULL;
+ pcre2_code_free(preg->re_pcre2_code);
++preg->re_pcre2_code = NULL;
+ }

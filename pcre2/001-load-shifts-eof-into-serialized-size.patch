@@ -1,0 +1,24 @@
+diff --git a/src/pcre2test_inc.h b/src/pcre2test_inc.h
+index 5d282435..f3e16425 100644
+--- a/src/pcre2test_inc.h
++++ b/src/pcre2test_inc.h
+@@ -1885,7 +1885,18 @@ switch(cmd)
+   if (rc != PR_OK) return rc;
+ 
+   serial_size = 0;
+-  for (i = 0; i < 4; i++) serial_size |= fgetc(f) << (i*8);
++  for (i = 0; i < 4; i++)
++    {
++    int c = fgetc(f);
++    if (c == EOF)
++      {
++      cfprintf(clr_test_error, outfile,
++        "** Unexpected EOF while reading #load header\n");
++      fclose(f);
++      return PR_ABEND;
++      }
++    serial_size |= (PCRE2_SIZE)c << (i*8);
++    }
+ 
+   serial = malloc(serial_size);
+   if (serial == NULL)

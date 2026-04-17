@@ -1,0 +1,63 @@
+diff --git a/src/pcre2.h.generic b/src/pcre2.h.generic
+index 5dcd0036..3a0a4aee 100644
+--- a/src/pcre2.h.generic
++++ b/src/pcre2.h.generic
+@@ -817,7 +817,7 @@ PCRE2_EXP_DECL int32_t PCRE2_CALL_CONVENTION \
+   pcre2_serialize_decode(pcre2_code **, int32_t, const uint8_t *, \
+     pcre2_general_context *); \
+ PCRE2_EXP_DECL int32_t PCRE2_CALL_CONVENTION \
+-  pcre2_serialize_get_number_of_codes(const uint8_t *); \
++  pcre2_serialize_get_number_of_codes(const uint8_t *, PCRE2_SIZE); \
+ PCRE2_EXP_DECL void PCRE2_CALL_CONVENTION \
+   pcre2_serialize_free(uint8_t *);
+ 
+diff --git a/src/pcre2.h.in b/src/pcre2.h.in
+index 06bcfad7..f0a4b54a 100644
+--- a/src/pcre2.h.in
++++ b/src/pcre2.h.in
+@@ -817,7 +817,7 @@ PCRE2_EXP_DECL int32_t PCRE2_CALL_CONVENTION \
+   pcre2_serialize_decode(pcre2_code **, int32_t, const uint8_t *, \
+     pcre2_general_context *); \
+ PCRE2_EXP_DECL int32_t PCRE2_CALL_CONVENTION \
+-  pcre2_serialize_get_number_of_codes(const uint8_t *); \
++  pcre2_serialize_get_number_of_codes(const uint8_t *, PCRE2_SIZE); \
+ PCRE2_EXP_DECL void PCRE2_CALL_CONVENTION \
+   pcre2_serialize_free(uint8_t *);
+ 
+diff --git a/src/pcre2_serialize.c b/src/pcre2_serialize.c
+index 725b5409..5ca9ad18 100644
+--- a/src/pcre2_serialize.c
++++ b/src/pcre2_serialize.c
+@@ -265,11 +265,16 @@ return error;
+ *************************************************/
+ 
+ PCRE2_EXP_DEFN int32_t PCRE2_CALL_CONVENTION
+-pcre2_serialize_get_number_of_codes(const uint8_t *bytes)
++pcre2_serialize_get_number_of_codes(const uint8_t *bytes,
++  PCRE2_SIZE serialized_size)
+ {
+-const pcre2_serialized_data *data = (const pcre2_serialized_data *)bytes;
++const pcre2_serialized_data *data;
+ 
+-if (data == NULL) return PCRE2_ERROR_NULL;
++if (bytes == NULL) return PCRE2_ERROR_NULL;
++if (serialized_size < sizeof(pcre2_serialized_data))
++  return PCRE2_ERROR_BADSERIALIZEDDATA;
++
++data = (const pcre2_serialized_data *)bytes;
+ if (data->magic != SERIALIZED_DATA_MAGIC) return PCRE2_ERROR_BADMAGIC;
+ if (data->version != SERIALIZED_DATA_VERSION) return PCRE2_ERROR_BADMODE;
+ if (data->config != SERIALIZED_DATA_CONFIG) return PCRE2_ERROR_BADMODE;
+diff --git a/src/pcre2test_inc.h b/src/pcre2test_inc.h
+index 5d282435..7f148c86 100644
+--- a/src/pcre2test_inc.h
++++ b/src/pcre2test_inc.h
+@@ -1906,7 +1906,7 @@ switch(cmd)
+     }
+   else
+     {
+-    rc = pcre2_serialize_get_number_of_codes(serial);
++    rc = pcre2_serialize_get_number_of_codes(serial, serial_size);
+     if (rc < 0)
+       {
+       if (!serial_error(rc, "Get number of codes")) yield = PR_ABEND;
