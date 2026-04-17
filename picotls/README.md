@@ -4,7 +4,7 @@ Security audit of picotls, a TLS 1.3 protocol library in C. Each finding include
 
 ## Summary
 
-**Total findings: 7** -- High: 4, Medium: 3
+**Total findings: 14** -- High: 9, Medium: 5
 
 ## Findings
 
@@ -14,12 +14,27 @@ Security audit of picotls, a TLS 1.3 protocol library in C. Each finding include
 |---|---------|----------|
 | [001](001-tls-1-2-receive-path-suppresses-decryption-errors.md) | TLS 1.2 receive path drops fatal decrypt failures | High |
 
+### AES-GCM (fusion)
+
+| # | Finding | Severity |
+|---|---------|----------|
+| [002](002-unchecked-aes-gcm-resize-null-dereference-on-encrypt.md) | Unchecked AES-GCM resize NULL-dereference on encrypt | High |
+| [003](003-setup-reports-success-after-aes-gcm-allocation-failure.md) | Setup reports success after AES-GCM allocation failure | High |
+
 ### AEAD encryption
 
 | # | Finding | Severity |
 |---|---------|----------|
 | [010](010-aead-constructor-failure-is-reported-as-success.md) | AEAD constructor failure is reported as success | High |
 | [012](012-decrypt-underflows-ciphertext-length-before-tag-split.md) | Decrypt length underflow before tag split | High |
+
+### Key import and signing
+
+| # | Finding | Severity |
+|---|---------|----------|
+| [004](004-ed25519-algorithm-mapping-rejects-imported-keys.md) | ED25519 algorithm mapping rejects imported keys | High |
+| [005](005-rsa-pkcs8-import-slices-wrong-der-object.md) | RSA PKCS8 import slices wrong DER object | High |
+| [009](009-signature-generation-failure-ignored.md) | Signature generation failure ignored | Medium |
 
 ### ECDH key exchange
 
@@ -34,8 +49,15 @@ Security audit of picotls, a TLS 1.3 protocol library in C. Each finding include
 |---|---------|----------|
 | [006](006-rsa-key-bit-parser-reads-past-short-buffer.md) | RSA key-bit parser reads past short buffer | Medium |
 
+### Cipher identity
+
+| # | Finding | Severity |
+|---|---------|----------|
+| [011](011-aes-256-ctr-advertises-the-aes128-ctr-identifier.md) | AES-256-CTR misadvertises as AES128-CTR | Medium |
+
 ### QUICLB cipher
 
 | # | Finding | Severity |
 |---|---------|----------|
+| [013](013-assert-only-length-guard-allows-mask-index-underflow.md) | Assert-only length guard allows mask index underflow | High |
 | [014](014-split-input-overruns-block-buffers-for-oversized-lengths.md) | Split input overruns block buffers for oversized lengths | High |
