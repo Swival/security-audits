@@ -1,0 +1,15 @@
+diff --git a/crypto/trust_token/pmbtoken.cc b/crypto/trust_token/pmbtoken.cc
+index 95f1fd3d5..5e9b16ad2 100644
+--- a/crypto/trust_token/pmbtoken.cc
++++ b/crypto/trust_token/pmbtoken.cc
+@@ -298,6 +298,10 @@ static int pmbtoken_issuer_key_from_bytes(const PMBTOKEN_METHOD *method,
+       return 0;
+     }
+   }
++  if (CBS_len(&cbs) != 0) {
++    OPENSSL_PUT_ERROR(TRUST_TOKEN, TRUST_TOKEN_R_DECODE_FAILURE);
++    return 0;
++  }
+ 
+   // Recompute the public key.
+   EC_JACOBIAN pub[3];

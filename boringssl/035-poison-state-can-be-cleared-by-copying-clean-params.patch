@@ -1,0 +1,12 @@
+diff --git a/crypto/x509/x509_vpm.cc b/crypto/x509/x509_vpm.cc
+index 6125178fb..5d16910a4 100644
+--- a/crypto/x509/x509_vpm.cc
++++ b/crypto/x509/x509_vpm.cc
+@@ -173,7 +173,7 @@ static int x509_verify_param_copy(X509_VERIFY_PARAM *dest,
+     }
+   }
+ 
+-  dest->poison = src->poison;
++  dest->poison |= src->poison;
+   return 1;
+ }
