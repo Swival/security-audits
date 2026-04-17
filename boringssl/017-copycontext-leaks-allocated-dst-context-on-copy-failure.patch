@@ -1,0 +1,13 @@
+diff --git a/crypto/evp/p_mldsa.cc b/crypto/evp/p_mldsa.cc
+index 1e83147e9..adb21055e 100644
+--- a/crypto/evp/p_mldsa.cc
++++ b/crypto/evp/p_mldsa.cc
+@@ -393,6 +393,8 @@ struct MLDSAImplementation {
+     MldsaPkeyCtx *sctx = static_cast<MldsaPkeyCtx *>(src->data);
+     MldsaPkeyCtx *dctx = static_cast<MldsaPkeyCtx *>(dst->data);
+     if (!dctx->context.CopyFrom(sctx->context)) {
++      Cleanup(dst);
++      dst->data = nullptr;
+       return 0;
+     }
+     return 1;

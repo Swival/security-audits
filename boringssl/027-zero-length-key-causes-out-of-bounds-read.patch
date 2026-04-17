@@ -1,0 +1,15 @@
+diff --git a/crypto/rc4/rc4.cc b/crypto/rc4/rc4.cc
+index 1c8971fc7..f08f32b34 100644
+--- a/crypto/rc4/rc4.cc
++++ b/crypto/rc4/rc4.cc
+@@ -43,6 +43,10 @@ void RC4_set_key(RC4_KEY *rc4key, unsigned len, const uint8_t *key) {
+     d[i] = i;
+   }
+ 
++  if (len == 0) {
++    return;
++  }
++
+   unsigned id1 = 0, id2 = 0;
+   for (unsigned i = 0; i < 256; i++) {
+     uint32_t tmp = d[i];

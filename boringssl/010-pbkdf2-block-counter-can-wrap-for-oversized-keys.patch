@@ -1,0 +1,19 @@
+diff --git a/crypto/evp/pbkdf.cc b/crypto/evp/pbkdf.cc
+index 6388876ef..3feaf00dd 100644
+--- a/crypto/evp/pbkdf.cc
++++ b/crypto/evp/pbkdf.cc
+@@ -34,6 +34,14 @@ int PKCS5_PBKDF2_HMAC(const char *password, size_t password_len,
+ 
+   uint32_t i = 1;
+   size_t md_len = EVP_MD_size(digest);
++  size_t blocks = key_len / md_len;
++  if (key_len % md_len != 0) {
++    blocks++;
++  }
++  if (blocks > UINT32_MAX) {
++    return 0;
++  }
++
+   while (key_len > 0) {
+     size_t todo = md_len;
+     if (todo > key_len) {

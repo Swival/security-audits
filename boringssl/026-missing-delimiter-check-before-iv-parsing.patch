@@ -1,0 +1,24 @@
+diff --git a/crypto/pem/pem_lib.cc b/crypto/pem/pem_lib.cc
+index c2ff10ba6..6e670ee82 100644
+--- a/crypto/pem/pem_lib.cc
++++ b/crypto/pem/pem_lib.cc
+@@ -419,11 +419,18 @@ int bssl::PEM_get_EVP_CIPHER_INFO(const char *header, EVP_CIPHER_INFO *cipher) {
+     header++;
+   }
+   cipher->cipher = cipher_by_name(std::string_view(p, header - p));
+-  header++;
+   if (cipher->cipher == nullptr) {
+     OPENSSL_PUT_ERROR(PEM, PEM_R_UNSUPPORTED_ENCRYPTION);
+     return 0;
+   }
++  if (*header != ',') {
++    OPENSSL_PUT_ERROR(PEM, PEM_R_BAD_IV_CHARS);
++    return 0;
++  }
++  header++;
++    OPENSSL_PUT_ERROR(PEM, PEM_R_UNSUPPORTED_ENCRYPTION);
++    return 0;
++  }
+   // The IV parameter must be at least 8 bytes long to be used as the salt in
+   // the KDF. (This should not happen given |cipher_by_name|.)
+   if (EVP_CIPHER_iv_length(cipher->cipher) < 8) {

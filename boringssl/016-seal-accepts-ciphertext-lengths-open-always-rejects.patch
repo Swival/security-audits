@@ -1,0 +1,18 @@
+diff --git a/crypto/cipher/e_aeseax.cc b/crypto/cipher/e_aeseax.cc
+index f85da3d68..428f1974b 100644
+--- a/crypto/cipher/e_aeseax.cc
++++ b/crypto/cipher/e_aeseax.cc
+@@ -223,8 +223,11 @@ static int aead_aes_eax_sealv(const EVP_AEAD_CTX *ctx,
+                               Span<uint8_t> out_tag, size_t *out_tag_len,
+                               Span<const uint8_t> nonce,
+                               Span<const CRYPTO_IVEC> aadvecs) {
+-  // We use the full 128 bits of the nonce as counter, so no need to check the
+-  // plaintext size.
++  const uint64_t in_len_64 = bssl::iovec::TotalLength(iovecs);
++  if (in_len_64 > (UINT64_C(1) << 36) + AES_BLOCK_SIZE) {
++    OPENSSL_PUT_ERROR(CIPHER, CIPHER_R_TOO_LARGE);
++    return 0;
++  }
+ 
+   if (out_tag.size() < ctx->tag_len) {
+     OPENSSL_PUT_ERROR(CIPHER, CIPHER_R_BUFFER_TOO_SMALL);
