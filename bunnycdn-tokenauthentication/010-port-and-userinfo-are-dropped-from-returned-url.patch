@@ -1,0 +1,23 @@
+diff --git a/php/url_signing.php b/php/url_signing.php
+index d3c12c1..f046803 100644
+--- a/php/url_signing.php
++++ b/php/url_signing.php
+@@ -29,6 +29,9 @@ function sign_bcdn_url(
+     $parsed = parse_url($url);
+     $url_scheme = $parsed['scheme'] ?? '';
+     $url_host = $parsed['host'] ?? '';
++    $url_user = $parsed['user'] ?? '';
++    $url_pass = $parsed['pass'] ?? '';
++    $url_port = isset($parsed['port']) ? ':' . $parsed['port'] : '';
+     $url_path = $parsed['path'] ?? '/';
+     $url_query = $parsed['query'] ?? '';
+ 
+@@ -100,7 +103,7 @@ function sign_bcdn_url(
+     $token = 'HS256-' . rtrim(strtr(base64_encode($digest), '+/', '-_'), '=');
+ 
+     // Build final URL
+-    $base = "{$url_scheme}://{$url_host}";
++    $base = "{$url_scheme}://" . (($url_user !== '' || $url_pass !== '') ? $url_user . ($url_pass !== '' ? ":{$url_pass}" : '') . '@' : '') . "{$url_host}{$url_port}";
+     $tail = $url_data !== '' ? "&{$url_data}" : '';
+ 
+     if ($is_directory) {

@@ -1,0 +1,99 @@
+diff --git a/c#/BunnyCDN.TokenAuthentication/BunnyCDN.TokenAuthentication/TokenSigner.cs b/c#/BunnyCDN.TokenAuthentication/BunnyCDN.TokenAuthentication/TokenSigner.cs
+index b4b35a9..4c20817 100644
+--- a/c#/BunnyCDN.TokenAuthentication/BunnyCDN.TokenAuthentication/TokenSigner.cs
++++ b/c#/BunnyCDN.TokenAuthentication/BunnyCDN.TokenAuthentication/TokenSigner.cs
+@@ -24,11 +24,20 @@ namespace BunnyCDN.TokenAuthentication
+             var queryParams = ParseQueryString(uri.Query);
+ 
+             if (config.CountriesAllowed.Any())
+-                queryParams["token_countries"] = string.Join(",", config.CountriesAllowed).ToUpperInvariant();
++            {
++                queryParams.RemoveAll(kv => kv.Key == "token_countries");
++                queryParams.Add(new KeyValuePair<string, string>("token_countries", string.Join(",", config.CountriesAllowed).ToUpperInvariant()));
++            }
+             if (config.CountriesBlocked.Any())
+-                queryParams["token_countries_blocked"] = string.Join(",", config.CountriesBlocked).ToUpperInvariant();
++            {
++                queryParams.RemoveAll(kv => kv.Key == "token_countries_blocked");
++                queryParams.Add(new KeyValuePair<string, string>("token_countries_blocked", string.Join(",", config.CountriesBlocked).ToUpperInvariant()));
++            }
+             if (config.SpeedLimit > 0)
+-                queryParams["limit"] = config.SpeedLimit.ToString();
++            {
++                queryParams.RemoveAll(kv => kv.Key == "limit");
++                queryParams.Add(new KeyValuePair<string, string>("limit", config.SpeedLimit.ToString()));
++            }
+ 
+             var expires = config.ExpiresAt.ToUnixTimestamp();
+ 
+@@ -73,34 +82,30 @@ namespace BunnyCDN.TokenAuthentication
+         public static string SignUrl(string securityKey, Uri url, DateTimeOffset expireAt, string ipAddress)
+             => SignUrl(securityKey, url.ToString(), expireAt, ipAddress);
+ 
+-        private static SortedDictionary<string, string> BuildParameters(
+-            Dictionary<string, string> queryParams,
++        private static List<KeyValuePair<string, string>> BuildParameters(
++            List<KeyValuePair<string, string>> queryParams,
+             bool ignoreParams,
+             string tokenPath)
+         {
+-            var result = new SortedDictionary<string, string>(StringComparer.Ordinal);
++            var result = new List<KeyValuePair<string, string>>();
+ 
+             if (ignoreParams)
+             {
+-                result["token_ignore_params"] = "true";
++                result.Add(new KeyValuePair<string, string>("token_ignore_params", "true"));
+             }
+             else
+             {
+-                foreach (var kv in queryParams)
+-                    result[kv.Key] = kv.Value;
++                result.AddRange(queryParams);
+             }
+ 
+             if (!string.IsNullOrEmpty(tokenPath))
+-                result["token_path"] = tokenPath;
++                result.Add(new KeyValuePair<string, string>("token_path", tokenPath));
+ 
+-            return result;
++            return result.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToList();
+         }
+ 
+-        private static string JoinParams(SortedDictionary<string, string> parameters, bool encode)
++        private static string JoinParams(IEnumerable<KeyValuePair<string, string>> parameters, bool encode)
+         {
+-            if (parameters.Count == 0)
+-                return "";
+-
+             var sb = new StringBuilder();
+             var first = true;
+             foreach (var kv in parameters)
+@@ -114,9 +119,9 @@ namespace BunnyCDN.TokenAuthentication
+             return sb.ToString();
+         }
+ 
+-        private static Dictionary<string, string> ParseQueryString(string query)
++        private static List<KeyValuePair<string, string>> ParseQueryString(string query)
+         {
+-            var result = new Dictionary<string, string>(StringComparer.Ordinal);
++            var result = new List<KeyValuePair<string, string>>();
+             if (string.IsNullOrEmpty(query))
+                 return result;
+ 
+@@ -144,14 +149,7 @@ namespace BunnyCDN.TokenAuthentication
+                     value = Uri.UnescapeDataString(part.Substring(eqIdx + 1));
+                 }
+ 
+-#if NET9_0_OR_GREATER
+-                if (!result.TryAdd(key, value))
+-                    throw new ArgumentException($"Multi-valued query parameter '{key}' is not supported");
+-#else
+-                if (result.ContainsKey(key))
+-                    throw new ArgumentException($"Multi-valued query parameter '{key}' is not supported");
+-                result[key] = value;
+-#endif
++                result.Add(new KeyValuePair<string, string>(key, value));
+             }
+             return result;
+         }
