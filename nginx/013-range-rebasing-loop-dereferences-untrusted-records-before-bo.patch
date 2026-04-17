@@ -1,0 +1,102 @@
+diff --git a/src/stream/ngx_stream_geo_module.c b/src/stream/ngx_stream_geo_module.c
+index 316de92..234340c 100644
+--- a/src/stream/ngx_stream_geo_module.c
++++ b/src/stream/ngx_stream_geo_module.c
+@@ -1345,7 +1345,7 @@ static ngx_int_t
+ ngx_stream_geo_include_binary_base(ngx_conf_t *cf,
+     ngx_stream_geo_conf_ctx_t *ctx, ngx_str_t *name)
+ {
+-    u_char                       *base, ch;
++    u_char                       *base, *last, ch;
+     time_t                        mtime;
+     size_t                        size, len;
+     ssize_t                       n;
+@@ -1446,20 +1446,49 @@ ngx_stream_geo_include_binary_base(ngx_conf_t *cf,
+ 
+     ngx_crc32_init(crc32);
+ 
++    last = base + size;
+     vv = (ngx_stream_variable_value_t *)
+             (base + sizeof(ngx_stream_geo_header_t));
+ 
+-    while (vv->data) {
++    for ( ;; ) {
++        if ((size_t) (last - (u_char *) vv)
++            < sizeof(ngx_stream_variable_value_t))
++        {
++            ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
++                 "incompatible binary geo range base \"%s\"", name->data);
++            goto failed;
++        }
++
++        if (vv->data == NULL) {
++            break;
++        }
++
+         len = ngx_align(sizeof(ngx_stream_variable_value_t) + vv->len,
+                         sizeof(void *));
++
++        if ((size_t) (last - (u_char *) vv) < len) {
++            ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
++                 "incompatible binary geo range base \"%s\"", name->data);
++            goto failed;
++        }
++
+         ngx_crc32_update(&crc32, (u_char *) vv, len);
+         vv->data += (size_t) base;
+         vv = (ngx_stream_variable_value_t *) ((u_char *) vv + len);
+     }
++
+     ngx_crc32_update(&crc32, (u_char *) vv,
+                      sizeof(ngx_stream_variable_value_t));
+     vv++;
+ 
++    if ((size_t) (last - (u_char *) vv)
++        < 0x10000 * sizeof(ngx_stream_geo_range_t *))
++    {
++        ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
++             "incompatible binary geo range base \"%s\"", name->data);
++        goto failed;
++    }
++
+     ranges = (ngx_stream_geo_range_t **) vv;
+ 
+     for (i = 0; i < 0x10000; i++) {
+@@ -1472,14 +1501,35 @@ ngx_stream_geo_include_binary_base(ngx_conf_t *cf,
+ 
+     range = (ngx_stream_geo_range_t *) &ranges[0x10000];
+ 
+-    while ((u_char *) range < base + size) {
+-        while (range->value) {
++    while ((u_char *) range < last) {
++        for ( ;; ) {
++            if ((size_t) (last - (u_char *) range) < sizeof(void *)) {
++                ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
++                     "incompatible binary geo range base \"%s\"",
++                     name->data);
++                goto failed;
++            }
++
++            if (range->value == NULL) {
++                break;
++            }
++
++            if ((size_t) (last - (u_char *) range)
++                < sizeof(ngx_stream_geo_range_t))
++            {
++                ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
++                     "incompatible binary geo range base \"%s\"",
++                     name->data);
++                goto failed;
++            }
++
+             ngx_crc32_update(&crc32, (u_char *) range,
+                              sizeof(ngx_stream_geo_range_t));
+             range->value = (ngx_stream_variable_value_t *)
+                                ((u_char *) range->value + (size_t) base);
+             range++;
+         }
++
+         ngx_crc32_update(&crc32, (u_char *) range, sizeof(void *));
+         range = (ngx_stream_geo_range_t *) ((u_char *) range + sizeof(void *));
+     }

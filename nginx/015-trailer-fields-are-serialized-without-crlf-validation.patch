@@ -1,0 +1,47 @@
+diff --git a/src/http/modules/ngx_http_chunked_filter_module.c b/src/http/modules/ngx_http_chunked_filter_module.c
+index ea5cbe6..f4b0d40 100644
+--- a/src/http/modules/ngx_http_chunked_filter_module.c
++++ b/src/http/modules/ngx_http_chunked_filter_module.c
+@@ -255,7 +255,20 @@ ngx_http_chunked_create_trailers(ngx_http_request_t *r,
+             i = 0;
+         }
+ 
+-        if (header[i].hash == 0) {
++        if (header[i].hash == 0
++            || ngx_strlchr(header[i].key.data,
++                           header[i].key.data + header[i].key.len, CR)
++               != NULL
++            || ngx_strlchr(header[i].key.data,
++                           header[i].key.data + header[i].key.len, LF)
++               != NULL
++            || ngx_strlchr(header[i].value.data,
++                           header[i].value.data + header[i].value.len, CR)
++               != NULL
++            || ngx_strlchr(header[i].value.data,
++                           header[i].value.data + header[i].value.len, LF)
++               != NULL)
++        {
+             continue;
+         }
+ 
+@@ -309,7 +322,20 @@ ngx_http_chunked_create_trailers(ngx_http_request_t *r,
+             i = 0;
+         }
+ 
+-        if (header[i].hash == 0) {
++        if (header[i].hash == 0
++            || ngx_strlchr(header[i].key.data,
++                           header[i].key.data + header[i].key.len, CR)
++               != NULL
++            || ngx_strlchr(header[i].key.data,
++                           header[i].key.data + header[i].key.len, LF)
++               != NULL
++            || ngx_strlchr(header[i].value.data,
++                           header[i].value.data + header[i].value.len, CR)
++               != NULL
++            || ngx_strlchr(header[i].value.data,
++                           header[i].value.data + header[i].value.len, LF)
++               != NULL)
++        {
+             continue;
+         }

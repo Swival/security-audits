@@ -1,0 +1,27 @@
+diff --git a/src/event/quic/ngx_event_quic_bpf.c b/src/event/quic/ngx_event_quic_bpf.c
+index ab024ad..999dba3 100644
+--- a/src/event/quic/ngx_event_quic_bpf.c
++++ b/src/event/quic/ngx_event_quic_bpf.c
+@@ -185,21 +185,11 @@ failed:
+         return NGX_ERROR;
+     }
+ 
+-    /*
+-     * returning error now will lead to master process exiting immediately
+-     * leaving worker processes orphaned, what is really unexpected.
+-     * Instead, just issue a not about failed initialization and try
+-     * to cleanup a bit. Still program can be already loaded to kernel
+-     * for some reuseport groups, and there is no way to revert, so
+-     * behaviour may be inconsistent.
+-     */
+-
+     ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+-                  "ngx_quic_bpf_module failed to initialize properly, ignored."
+-                  "please check limits and note that nginx state now "
+-                  "can be inconsistent and restart may be required");
++                  "ngx_quic_bpf_module failed to initialize properly, "
++                  "aborting reload to avoid inconsistent state");
+ 
+-    return NGX_OK;
++    return NGX_ERROR;
+ }

@@ -1,0 +1,66 @@
+diff --git a/src/http/modules/ngx_http_mp4_module.c b/src/http/modules/ngx_http_mp4_module.c
+index 678d629..dec9e5f 100644
+--- a/src/http/modules/ngx_http_mp4_module.c
++++ b/src/http/modules/ngx_http_mp4_module.c
+@@ -346,8 +346,8 @@ static ngx_int_t ngx_http_mp4_read_stco_atom(ngx_http_mp4_file_t *mp4,
+     uint64_t atom_data_size);
+ static ngx_int_t ngx_http_mp4_update_stco_atom(ngx_http_mp4_file_t *mp4,
+     ngx_http_mp4_trak_t *trak);
+-static void ngx_http_mp4_adjust_stco_atom(ngx_http_mp4_file_t *mp4,
+-    ngx_http_mp4_trak_t *trak, int32_t adjustment);
++static ngx_int_t ngx_http_mp4_adjust_stco_atom(ngx_http_mp4_file_t *mp4,
++    ngx_http_mp4_trak_t *trak, off_t adjustment);
+ static ngx_int_t ngx_http_mp4_read_co64_atom(ngx_http_mp4_file_t *mp4,
+     uint64_t atom_data_size);
+ static ngx_int_t ngx_http_mp4_update_co64_atom(ngx_http_mp4_file_t *mp4,
+@@ -934,7 +934,11 @@ ngx_http_mp4_process(ngx_http_mp4_file_t *mp4)
+         if (trak[i].out[NGX_HTTP_MP4_CO64_DATA].buf) {
+             ngx_http_mp4_adjust_co64_atom(mp4, &trak[i], adjustment);
+         } else {
+-            ngx_http_mp4_adjust_stco_atom(mp4, &trak[i], (int32_t) adjustment);
++            if (ngx_http_mp4_adjust_stco_atom(mp4, &trak[i], adjustment)
++                != NGX_OK)
++            {
++                return NGX_ERROR;
++            }
+         }
+     }
+ 
+@@ -3703,11 +3707,12 @@ ngx_http_mp4_update_stco_atom(ngx_http_mp4_file_t *mp4,
+ }
+ 
+ 
+-static void
++static ngx_int_t
+ ngx_http_mp4_adjust_stco_atom(ngx_http_mp4_file_t *mp4,
+-    ngx_http_mp4_trak_t *trak, int32_t adjustment)
++    ngx_http_mp4_trak_t *trak, off_t adjustment)
+ {
+-    uint32_t    offset, *entry, *end;
++    off_t       offset;
++    uint32_t   *entry, *end;
+     ngx_buf_t  *data;
+ 
+     /*
+@@ -3723,11 +3728,20 @@ ngx_http_mp4_adjust_stco_atom(ngx_http_mp4_file_t *mp4,
+     end = (uint32_t *) data->last;
+ 
+     while (entry < end) {
+-        offset = ngx_mp4_get_32value(entry);
+-        offset += adjustment;
+-        ngx_mp4_set_32value(entry, offset);
++        offset = (off_t) ngx_mp4_get_32value(entry) + adjustment;
++
++        if (offset < 0 || (uint64_t) offset > NGX_MAX_UINT32_VALUE) {
++            ngx_log_error(NGX_LOG_ERR, mp4->file.log, 0,
++                          "too large mp4 stco chunk offset in \"%s\"",
++                          mp4->file.name.data);
++            return NGX_ERROR;
++        }
++
++        ngx_mp4_set_32value(entry, (uint32_t) offset);
+         entry++;
+     }
++
++    return NGX_OK;
+ }

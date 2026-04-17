@@ -1,0 +1,14 @@
+diff --git a/src/http/modules/ngx_http_xslt_filter_module.c b/src/http/modules/ngx_http_xslt_filter_module.c
+index 4e6e1b9..26f6206 100644
+--- a/src/http/modules/ngx_http_xslt_filter_module.c
++++ b/src/http/modules/ngx_http_xslt_filter_module.c
+@@ -381,8 +381,7 @@ ngx_http_xslt_add_chunk(ngx_http_request_t *r, ngx_http_xslt_filter_ctx_t *ctx,
+                           "xmlCreatePushParserCtxt() failed");
+             return NGX_ERROR;
+         }
+-        xmlCtxtUseOptions(ctxt, XML_PARSE_NOENT|XML_PARSE_DTDLOAD
+-                                               |XML_PARSE_NOWARNING);
++        xmlCtxtUseOptions(ctxt, XML_PARSE_NOWARNING);
+ 
+         ctxt->sax->externalSubset = ngx_http_xslt_sax_external_subset;
+         ctxt->sax->setDocumentLocator = NULL;
