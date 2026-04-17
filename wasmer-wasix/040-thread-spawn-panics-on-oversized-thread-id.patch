@@ -1,0 +1,16 @@
+diff --git a/lib/wasix/src/syscalls/wasix/thread_spawn.rs b/lib/wasix/src/syscalls/wasix/thread_spawn.rs
+index 1e0b4bda9c3..cd3d98be4f9 100644
+--- a/lib/wasix/src/syscalls/wasix/thread_spawn.rs
++++ b/lib/wasix/src/syscalls/wasix/thread_spawn.rs
+@@ -201,7 +201,10 @@ fn call_module_internal<M: MemorySize>(
+     let tid = ctx.data(&store).tid();
+ 
+     let spawn: Function = spawn.into();
+-    let tid_i32 = tid.raw().try_into().map_err(|_| Errno::Overflow).unwrap();
++    let tid_i32 = match tid.raw().try_into() {
++        Ok(tid) => tid,
++        Err(_) => return (store, Ok(Some(Errno::Overflow.into()))),
++    };
+     let start_pointer_i32 = start_ptr_offset
+         .try_into()
+         .map_err(|_| Errno::Overflow)

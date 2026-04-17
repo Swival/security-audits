@@ -1,0 +1,12 @@
+diff --git a/lib/wasix/src/runtime/module_cache/filesystem.rs b/lib/wasix/src/runtime/module_cache/filesystem.rs
+index 675c1bfa510..cf8ef6d1ebf 100644
+--- a/lib/wasix/src/runtime/module_cache/filesystem.rs
++++ b/lib/wasix/src/runtime/module_cache/filesystem.rs
+@@ -30,6 +30,7 @@ impl FileSystemCache {
+ 
+     fn path(&self, key: ModuleHash, deterministic_id: &str) -> PathBuf {
+         let artifact_version = wasmer_types::MetadataHeader::CURRENT_VERSION;
++        let deterministic_id = hex::encode(deterministic_id);
+         self.cache_dir
+             .join(format!("{deterministic_id}-v{artifact_version}"))
+             .join(key.to_string())

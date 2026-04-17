@@ -1,0 +1,19 @@
+diff --git a/lib/wasix/src/journal/effector/memory_and_snapshot.rs b/lib/wasix/src/journal/effector/memory_and_snapshot.rs
+index b7c587a30bd..c6ee06e45f6 100644
+--- a/lib/wasix/src/journal/effector/memory_and_snapshot.rs
++++ b/lib/wasix/src/journal/effector/memory_and_snapshot.rs
+@@ -209,8 +209,13 @@ impl JournalEffector {
+         let (uncompressed_size, compressed_data) = block::uncompressed_size(compressed_data)
+             .map_err(|err| anyhow::anyhow!("failed to decompress - {err}"))?;
+ 
++        let write_end = region
++            .start
++            .checked_add(uncompressed_size as u64)
++            .ok_or_else(|| anyhow::anyhow!("memory restore overflow"))?;
++
+         let memory = unsafe { env.memory() };
+-        memory.grow_at_least(&mut store, region.end + uncompressed_size as u64)?;
++        memory.grow_at_least(&mut store, write_end)?;
+ 
+         // Write the data to the memory
+         let memory = unsafe { env.memory_view(&store) };

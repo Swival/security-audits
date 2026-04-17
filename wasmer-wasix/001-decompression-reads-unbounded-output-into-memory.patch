@@ -1,0 +1,27 @@
+diff --git a/lib/wasix/src/runtime/package_loader/builtin_loader.rs b/lib/wasix/src/runtime/package_loader/builtin_loader.rs
+index 0ea50d245c3..949aeb99ec7 100644
+--- a/lib/wasix/src/runtime/package_loader/builtin_loader.rs
++++ b/lib/wasix/src/runtime/package_loader/builtin_loader.rs
+@@ -356,6 +356,8 @@ impl BuiltinPackageLoader {
+     /// * Supports nested encodings (e.g. `gzip, zstd`)
+     /// * Passes through unencoded bodies or "identity" encoding unchanged
+     fn decode_response_body(headers: &HeaderMap, body: Vec<u8>) -> Result<Vec<u8>, anyhow::Error> {
++        const MAX_DECODED_RESPONSE_BODY_SIZE: usize = 1024 * 1024 * 1024;
++
+         let encodings = match headers.get(http::header::CONTENT_ENCODING) {
+             Some(header) => header
+                 .to_str()
+@@ -401,8 +403,13 @@ impl BuiltinPackageLoader {
+ 
+         let mut decoded = Vec::new();
+         reader
++            .take(MAX_DECODED_RESPONSE_BODY_SIZE as u64 + 1)
+             .read_to_end(&mut decoded)
+             .context("failed to decode response body")?;
++        if decoded.len() > MAX_DECODED_RESPONSE_BODY_SIZE {
++            bail!("decoded response body exceeds supported size");
++        }
++
+         Ok(decoded)
+     }
+ }

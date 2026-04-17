@@ -1,0 +1,13 @@
+diff --git a/lib/wasix/src/utils/owned_mutex_guard.rs b/lib/wasix/src/utils/owned_mutex_guard.rs
+index f2ab5812e96..7d94a624d75 100644
+--- a/lib/wasix/src/utils/owned_mutex_guard.rs
++++ b/lib/wasix/src/utils/owned_mutex_guard.rs
+@@ -97,7 +97,7 @@ pub(crate) struct OwnedRwLockReadGuard<T: 'static> {
+     ownership: Arc<RwLock<T>>,
+ }
+ 
+-unsafe impl<T> Send for OwnedRwLockReadGuard<T> where T: Send {}
++unsafe impl<T> Send for OwnedRwLockReadGuard<T> where T: Send + Sync {}
+ 
+ impl<T> Drop for OwnedRwLockReadGuard<T>
+ where

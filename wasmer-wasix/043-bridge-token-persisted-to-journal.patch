@@ -1,0 +1,13 @@
+diff --git a/lib/wasix/src/syscalls/wasix/port_bridge.rs b/lib/wasix/src/syscalls/wasix/port_bridge.rs
+index d5fea56a3c9..12b230d3dfe 100644
+--- a/lib/wasix/src/syscalls/wasix/port_bridge.rs
++++ b/lib/wasix/src/syscalls/wasix/port_bridge.rs
+@@ -44,7 +44,7 @@ pub fn port_bridge<M: MemorySize>(
+ 
+     #[cfg(feature = "journal")]
+     if ctx.data().enable_journal {
+-        JournalEffector::save_port_bridge(&mut ctx, network, token, security).map_err(|err| {
++        JournalEffector::save_port_bridge(&mut ctx, network, String::new(), security).map_err(|err| {
+             tracing::error!("failed to save port_bridge event - {}", err);
+             WasiError::Exit(ExitCode::from(Errno::Fault))
+         })?;

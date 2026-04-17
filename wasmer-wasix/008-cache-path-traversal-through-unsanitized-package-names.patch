@@ -1,0 +1,44 @@
+diff --git a/lib/wasix/src/runtime/resolver/backend_source.rs b/lib/wasix/src/runtime/resolver/backend_source.rs
+index f0d18d6fe4c..cc01e06478e 100644
+--- a/lib/wasix/src/runtime/resolver/backend_source.rs
++++ b/lib/wasix/src/runtime/resolver/backend_source.rs
+@@ -1,5 +1,5 @@
+ use std::{
+-    path::{MAIN_SEPARATOR_STR, PathBuf},
++    path::PathBuf,
+     sync::Arc,
+     time::{Duration, SystemTime},
+ };
+@@ -459,13 +459,19 @@ impl FileSystemCache {
+         }
+     }
+ 
+-    fn path(&self, package_name: &str) -> PathBuf {
+-        self.cache_dir
+-            .join(package_name.replace(MAIN_SEPARATOR_STR, "#"))
++    fn path(&self, package_name: &str) -> Result<PathBuf, Error> {
++        anyhow::ensure!(
++            !package_name.contains('/')
++                && !package_name.contains('\\')
++                && !package_name.contains(".."),
++            "Invalid package name for cache path: {package_name}"
++        );
++
++        Ok(self.cache_dir.join(package_name))
+     }
+ 
+     fn lookup_cached_query(&self, package_name: &str) -> Result<Option<WebQuery>, Error> {
+-        let filename = self.path(package_name);
++        let filename = self.path(package_name)?;
+ 
+         let _span =
+             tracing::debug_span!("lookup_cached_query", filename=%filename.display()).entered();
+@@ -538,7 +544,7 @@ impl FileSystemCache {
+         // Now we've saved our cache entry we need to move it to the right
+         // location. We do this in two steps so concurrent queries don't see
+         // the cache entry until it has been completely written.
+-        let filename = self.path(package_name);
++        let filename = self.path(package_name)?;
+         tracing::debug!(
+             filename=%filename.display(),
+             package_name,

@@ -1,0 +1,23 @@
+diff --git a/lib/wasix/src/runners/dproxy/handler.rs b/lib/wasix/src/runners/dproxy/handler.rs
+index 2f90fdc1fcc..1d7c5dee8cc 100644
+--- a/lib/wasix/src/runners/dproxy/handler.rs
++++ b/lib/wasix/src/runners/dproxy/handler.rs
+@@ -52,16 +52,8 @@ impl Handler {
+     {
+         tracing::debug!(headers=?req.headers());
+ 
+-        // Determine the shard we are using
+-        let shard = req
+-            .headers()
+-            .get("X-Shard")
+-            .map(|v| String::from_utf8_lossy(v.as_bytes()))
+-            .map(|s| match s.parse::<u64>() {
+-                Ok(id) => Ok(Shard::ById(id)),
+-                Err(err) => Err(err),
+-            })
+-            .unwrap_or(Ok(Shard::Singleton))?;
++        // Do not trust client-controlled headers for shard selection.
++        let shard = Shard::Singleton;
+ 
+         // Modify the request URI so that it will work with the hyper proxy
+         let mut new_uri = Uri::builder()

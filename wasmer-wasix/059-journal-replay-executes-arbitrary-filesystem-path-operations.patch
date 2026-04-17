@@ -1,0 +1,83 @@
+diff --git a/lib/wasix/src/syscalls/journal/play_event.rs b/lib/wasix/src/syscalls/journal/play_event.rs
+index 92a9d709f56..1f4b5d433a5 100644
+--- a/lib/wasix/src/syscalls/journal/play_event.rs
++++ b/lib/wasix/src/syscalls/journal/play_event.rs
+@@ -1,7 +1,22 @@
+-use std::ops::Range;
++use std::{
++    ops::Range,
++    path::{Component, Path},
++};
+ 
+ use super::*;
+ 
++fn validate_replayed_path(path: &str) -> Result<(), WasiRuntimeError> {
++    let invalid = Path::new(path)
++        .components()
++        .any(|component| matches!(component, Component::ParentDir | Component::RootDir | Component::Prefix(_)));
++    if invalid {
++        return Err(anyhow_err_to_runtime_err(anyhow::format_err!(
++            "journal restore error: invalid replay path ({path})"
++        )));
++    }
++    Ok(())
++}
++
+ impl<'a> JournalSyscallPlayer<'a, '_> {
+     #[allow(clippy::result_large_err)]
+     pub(super) unsafe fn play_event(
+@@ -144,11 +159,13 @@ impl<'a> JournalSyscallPlayer<'a, '_> {
+                 }?;
+             }
+             JournalEntry::RemoveDirectoryV1 { fd, path } => {
++                validate_replayed_path(&path)?;
+                 tracing::trace!("Replay journal - RemoveDirectory {}", path);
+                 JournalEffector::apply_path_remove_directory(&mut self.ctx, fd, &path)
+                     .map_err(anyhow_err_to_runtime_err)?;
+             }
+             JournalEntry::UnlinkFileV1 { fd, path } => {
++                validate_replayed_path(&path)?;
+                 tracing::trace!("Replay journal - UnlinkFile {}", path);
+                 JournalEffector::apply_path_unlink(&mut self.ctx, fd, &path)
+                     .map_err(anyhow_err_to_runtime_err)?;
+@@ -159,6 +176,8 @@ impl<'a> JournalSyscallPlayer<'a, '_> {
+                 new_fd,
+                 new_path,
+             } => {
++                validate_replayed_path(&old_path)?;
++                validate_replayed_path(&new_path)?;
+                 tracing::trace!("Replay journal - PathRename {}->{}", old_path, new_path);
+                 JournalEffector::apply_path_rename(
+                     &mut self.ctx,
+@@ -222,6 +241,7 @@ impl<'a> JournalSyscallPlayer<'a, '_> {
+                 }
+             }
+             JournalEntry::CreateDirectoryV1 { fd, path } => {
++                validate_replayed_path(&path)?;
+                 tracing::trace!(%fd, %path, "Replay journal - CreateDirectory");
+                 JournalEffector::apply_path_create_directory(&mut self.ctx, fd, &path)
+                     .map_err(anyhow_err_to_runtime_err)?;
+@@ -369,6 +389,8 @@ impl<'a> JournalSyscallPlayer<'a, '_> {
+                 new_fd,
+                 new_path,
+             } => {
++                validate_replayed_path(&old_path)?;
++                validate_replayed_path(&new_path)?;
+                 tracing::trace!("Replay journal - PathLink {}->{}", old_path, new_path);
+                 JournalEffector::apply_path_link(
+                     &mut self.ctx,
+@@ -385,11 +407,14 @@ impl<'a> JournalSyscallPlayer<'a, '_> {
+                 fd,
+                 new_path,
+             } => {
++                validate_replayed_path(&old_path)?;
++                validate_replayed_path(&new_path)?;
+                 tracing::trace!("Replay journal - PathSymlink {}->{}", old_path, new_path);
+                 JournalEffector::apply_path_symlink(&mut self.ctx, &old_path, fd, &new_path)
+                     .map_err(anyhow_err_to_runtime_err)?;
+             }
+             JournalEntry::ChangeDirectoryV1 { path } => {
++                validate_replayed_path(&path)?;
+                 tracing::trace!("Replay journal - ChangeDirection {}", path);
+                 JournalEffector::apply_chdir(&mut self.ctx, &path)
+                     .map_err(anyhow_err_to_runtime_err)?;

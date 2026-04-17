@@ -1,0 +1,31 @@
+diff --git a/lib/wasix/src/syscalls/journal/restore_snapshot.rs b/lib/wasix/src/syscalls/journal/restore_snapshot.rs
+index 10368c47404..b4cf1e5ed0d 100644
+--- a/lib/wasix/src/syscalls/journal/restore_snapshot.rs
++++ b/lib/wasix/src/syscalls/journal/restore_snapshot.rs
+@@ -79,13 +79,6 @@ pub unsafe fn restore_snapshot(
+             .map_err(anyhow_err_to_runtime_err)?;
+     }
+ 
+-    // Once we get to this point we are no longer replaying the journal
+-    // and need to clear this flag, the reason is that restoring the
+-    // background threads may immediately process requests while this
+-    // flag is still set which would be bad
+-    tracing::trace!("replaying journal=false");
+-    runner.ctx.data_mut().replaying_journal = false;
+-
+     // Spawn all the threads
+     let thread_count = runner.spawn_threads.len();
+     tracing::trace!(thread_count, "restoring threads");
+@@ -116,6 +109,12 @@ pub unsafe fn restore_snapshot(
+             .map_err(anyhow_err_to_runtime_err)?;
+         }
+     }
++
++    // Clear the replay flag only after all replay-driven restoration work,
++    // including background thread state, has completed.
++    tracing::trace!("replaying journal=false");
++    runner.ctx.data_mut().replaying_journal = false;
++
+     tracing::debug!(thread_count, "snapshot restore complete");
+ 
+     Ok(runner.rewind)

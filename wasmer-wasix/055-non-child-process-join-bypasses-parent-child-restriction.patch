@@ -1,0 +1,36 @@
+diff --git a/lib/wasix/src/syscalls/wasix/proc_join.rs b/lib/wasix/src/syscalls/wasix/proc_join.rs
+index 87c12ea03e5..5c1111c8c16 100644
+--- a/lib/wasix/src/syscalls/wasix/proc_join.rs
++++ b/lib/wasix/src/syscalls/wasix/proc_join.rs
+@@ -151,7 +151,7 @@ pub(super) fn proc_join_internal<M: MemorySize + 'static>(
+ 
+     // Waiting for a process that is an explicit child will join it
+     // meaning it will no longer be a sub-process of the main process
+-    let mut process = {
++    let process = {
+         let mut inner = ctx.data().process.lock();
+         let process = inner
+             .children
+@@ -163,12 +163,6 @@ pub(super) fn proc_join_internal<M: MemorySize + 'static>(
+         process
+     };
+ 
+-    // Otherwise it could be the case that we are waiting for a process
+-    // that is not a child of this process but may still be running
+-    if process.is_none() {
+-        process = ctx.data().control_plane.get_process(pid);
+-    }
+-
+     if let Some(process) = process {
+         // We can already set the process ID
+         wasi_try_mem_ok!(pid_ptr.write(
+@@ -200,7 +194,7 @@ pub(super) fn proc_join_internal<M: MemorySize + 'static>(
+             }
+         }
+     } else {
+-        trace!(ret_id = pid.raw(), "status=nothing");
+-        ret_result(ctx, JoinStatusResult::Nothing)
++        trace!(ret_id = pid.raw(), "status=child");
++        ret_result(ctx, JoinStatusResult::Err(Errno::Child))
+     }
+ }

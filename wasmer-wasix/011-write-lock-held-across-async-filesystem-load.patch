@@ -1,0 +1,74 @@
+diff --git a/lib/wasix/src/bin_factory/mod.rs b/lib/wasix/src/bin_factory/mod.rs
+index a290e6efefa..141afc7dbb2 100644
+--- a/lib/wasix/src/bin_factory/mod.rs
++++ b/lib/wasix/src/bin_factory/mod.rs
+@@ -156,9 +156,6 @@ impl BinFactory {
+         Err(SpawnError::BinaryNotFound { binary: name })
+     }
+ 
+-    // TODO: remove allow once BinFactory is refactored
+-    // currently fine because a BinFactory is only used by a single process tree
+-    #[allow(clippy::await_holding_lock)]
+     pub async fn get_executable(
+         &self,
+         name: &str,
+@@ -174,33 +171,46 @@ impl BinFactory {
+             }
+         }
+ 
+-        let mut cache = self.local.write().unwrap();
++        {
++            let cache = self.local.write().unwrap();
+ 
+-        // Check the cache again to avoid a race condition where the cache was populated inbetween the fast path and here
+-        if let Some(data) = cache.get(&name) {
+-            return data.clone().map(Executable::BinaryPackage);
++            // Check the cache again to avoid a race condition where the cache was populated inbetween the fast path and here
++            if let Some(data) = cache.get(&name) {
++                return data.clone().map(Executable::BinaryPackage);
++            }
+         }
+ 
+-        // Check the filesystem for the file
+-        if name.starts_with('/')
++        let loaded = if name.starts_with('/')
+             && let Some(fs) = fs
+         {
+             match load_executable_from_filesystem(fs, name.as_ref(), self.runtime()).await {
+-                Ok(executable) => {
+-                    if let Executable::BinaryPackage(pkg) = &executable {
+-                        cache.insert(name, Some(pkg.clone()));
+-                    }
+-
+-                    return Some(executable);
+-                }
++                Ok(executable) => Some(executable),
+                 Err(e) => {
+                     tracing::warn!(
+                         path = name,
+                         error = &*e,
+                         "Unable to load the package from disk"
+                     );
++                    None
+                 }
+             }
++        } else {
++            None
++        };
++
++        let mut cache = self.local.write().unwrap();
++
++        // Check the cache again to avoid a race condition where the cache was populated while loading from the filesystem
++        if let Some(data) = cache.get(&name) {
++            return data.clone().map(Executable::BinaryPackage);
++        }
++
++        if let Some(executable) = loaded {
++            if let Executable::BinaryPackage(pkg) = &executable {
++                cache.insert(name, Some(pkg.clone()));
++            }
++
++            return Some(executable);
+         }
+ 
+         // NAK

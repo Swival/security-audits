@@ -1,0 +1,19 @@
+diff --git a/lib/wasix/src/os/task/process.rs b/lib/wasix/src/os/task/process.rs
+index f1d0f124481..3746ef9cee5 100644
+--- a/lib/wasix/src/os/task/process.rs
++++ b/lib/wasix/src/os/task/process.rs
+@@ -832,12 +832,10 @@ impl WasiProcess {
+     }
+ 
+     /// Terminate the process and all its threads
+-    pub fn terminate(&self, exit_code: ExitCode) {
+-        // FIXME: this is wrong, threads might still be running!
+-        // Need special logic for the main thread.
++    pub fn terminate(&self, _exit_code: ExitCode) {
+         let guard = self.inner.0.lock().unwrap();
+         for thread in guard.threads.values() {
+-            thread.set_status_finished(Ok(exit_code))
++            thread.signal(Signal::Sigkill);
+         }
+     }
+ }

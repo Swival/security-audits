@@ -1,0 +1,14 @@
+diff --git a/lib/wasix/src/runtime/resolver/backend_source.rs b/lib/wasix/src/runtime/resolver/backend_source.rs
+index f0d18d6fe4c..a0b0b82309d 100644
+--- a/lib/wasix/src/runtime/resolver/backend_source.rs
++++ b/lib/wasix/src/runtime/resolver/backend_source.rs
+@@ -77,7 +77,8 @@ impl BackendSource {
+         }
+ 
+         let body = Body {
+-            query: WASMER_WEBC_QUERY_ALL.replace("$NAME", package_name),
++            query: WASMER_WEBC_QUERY_ALL
++                .replace("\"$NAME\"", &serde_json::to_string(package_name)?),
+         };
+ 
+         let request = HttpRequest {

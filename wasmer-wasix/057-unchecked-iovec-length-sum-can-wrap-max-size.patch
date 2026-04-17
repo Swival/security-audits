@@ -1,0 +1,13 @@
+diff --git a/lib/wasix/src/syscalls/wasix/sock_recv_from.rs b/lib/wasix/src/syscalls/wasix/sock_recv_from.rs
+index 7ace6a56d26..525562df87d 100644
+--- a/lib/wasix/src/syscalls/wasix/sock_recv_from.rs
++++ b/lib/wasix/src/syscalls/wasix/sock_recv_from.rs
+@@ -63,7 +63,7 @@ pub(super) fn sock_recv_from_internal<M: MemorySize>(
+         for iovs in iovs_arr.iter() {
+             let iovs = wasi_try_mem_ok!(iovs.read());
+             let buf_len: usize = wasi_try_ok!(iovs.buf_len.try_into().map_err(|_| Errno::Overflow));
+-            max_size += buf_len;
++            max_size = wasi_try_ok!(max_size.checked_add(buf_len).ok_or(Errno::Overflow));
+         }
+         max_size
+     };

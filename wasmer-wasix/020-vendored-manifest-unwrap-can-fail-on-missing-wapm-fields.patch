@@ -1,0 +1,26 @@
+diff --git a/lib/wasix/src/runtime/resolver/inputs.rs b/lib/wasix/src/runtime/resolver/inputs.rs
+index 023a6119914..e2f9758a8f9 100644
+--- a/lib/wasix/src/runtime/resolver/inputs.rs
++++ b/lib/wasix/src/runtime/resolver/inputs.rs
+@@ -236,13 +236,15 @@ fn url_or_manifest_to_specifier(value: &UrlOrManifest) -> Result<PackageSource,
+             if let Ok(Some(WapmAnnotations { name, version, .. })) =
+                 manifest.package_annotation("wapm")
+             {
+-                let version = version.unwrap().parse()?;
+-                let id = NamedPackageId {
+-                    full_name: name.unwrap(),
+-                    version,
+-                };
++                if let (Some(name), Some(version)) = (name, version) {
++                    let version = version.parse()?;
++                    let id = NamedPackageId {
++                        full_name: name,
++                        version,
++                    };
+ 
+-                return Ok(PackageSource::from(id));
++                    return Ok(PackageSource::from(id));
++                }
+             }
+ 
+             if let Some(origin) = manifest
