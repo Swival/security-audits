@@ -1,0 +1,45 @@
+diff --git a/src/os/win32/ngx_shmem.c b/src/os/win32/ngx_shmem.c
+index 4932764..ae13902 100644
+--- a/src/os/win32/ngx_shmem.c
++++ b/src/os/win32/ngx_shmem.c
+@@ -123,16 +123,21 @@ ngx_shm_alloc(ngx_shm_t *shm)
+ ngx_int_t
+ ngx_shm_remap(ngx_shm_t *shm, u_char *addr)
+ {
+-    if (UnmapViewOfFile(shm->addr) == 0) {
++    u_char  *old_addr, *new_addr;
++
++    old_addr = shm->addr;
++
++    if (UnmapViewOfFile(old_addr) == 0) {
+         ngx_log_error(NGX_LOG_ALERT, shm->log, ngx_errno,
+                       "UnmapViewOfFile(%p) of file mapping \"%V\" failed",
+-                      shm->addr, &shm->name);
++                      old_addr, &shm->name);
+         return NGX_ERROR;
+     }
+ 
+-    shm->addr = MapViewOfFileEx(shm->handle, FILE_MAP_WRITE, 0, 0, 0, addr);
++    new_addr = MapViewOfFileEx(shm->handle, FILE_MAP_WRITE, 0, 0, 0, addr);
+ 
+-    if (shm->addr != NULL) {
++    if (new_addr != NULL) {
++        shm->addr = new_addr;
+         return NGX_OK;
+     }
+ 
+@@ -140,6 +145,15 @@ ngx_shm_remap(ngx_shm_t *shm, u_char *addr)
+                   "MapViewOfFileEx(%uz, %p) of file mapping \"%V\" failed",
+                   shm->size, addr, &shm->name);
+ 
++    shm->addr = MapViewOfFileEx(shm->handle, FILE_MAP_WRITE, 0, 0, 0,
++                                old_addr);
++
++    if (shm->addr == NULL) {
++        ngx_log_error(NGX_LOG_ALERT, shm->log, ngx_errno,
++                      "MapViewOfFileEx(%uz, %p) of file mapping \"%V\" failed",
++                      shm->size, old_addr, &shm->name);
++    }
++
+     return NGX_ERROR;
+ }

@@ -1,0 +1,91 @@
+diff --git a/src/http/modules/ngx_http_geo_module.c b/src/http/modules/ngx_http_geo_module.c
+index 5018e1a..f957f8e 100644
+--- a/src/http/modules/ngx_http_geo_module.c
++++ b/src/http/modules/ngx_http_geo_module.c
+@@ -1419,7 +1419,7 @@ static ngx_int_t
+ ngx_http_geo_include_binary_base(ngx_conf_t *cf, ngx_http_geo_conf_ctx_t *ctx,
+     ngx_str_t *name)
+ {
+-    u_char                     *base, ch;
++    u_char                     *base, *end, ch;
+     time_t                      mtime;
+     size_t                      size, len;
+     ssize_t                     n;
+@@ -1520,18 +1520,44 @@ ngx_http_geo_include_binary_base(ngx_conf_t *cf, ngx_http_geo_conf_ctx_t *ctx,
+ 
+     ngx_crc32_init(crc32);
+ 
++    end = base + size;
+     vv = (ngx_http_variable_value_t *) (base + sizeof(ngx_http_geo_header_t));
+ 
+-    while (vv->data) {
++    while ((u_char *) vv + sizeof(ngx_http_variable_value_t) <= end
++           && vv->data)
++    {
+         len = ngx_align(sizeof(ngx_http_variable_value_t) + vv->len,
+                         sizeof(void *));
++
++        if ((u_char *) vv + len > end) {
++            ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
++                         "truncated binary geo range base \"%s\"",
++                         name->data);
++            goto failed;
++        }
++
+         ngx_crc32_update(&crc32, (u_char *) vv, len);
+         vv->data += (size_t) base;
+         vv = (ngx_http_variable_value_t *) ((u_char *) vv + len);
+     }
++
++    if ((u_char *) vv + sizeof(ngx_http_variable_value_t) > end) {
++        ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
++                     "truncated binary geo range base \"%s\"",
++                     name->data);
++        goto failed;
++    }
++
+     ngx_crc32_update(&crc32, (u_char *) vv, sizeof(ngx_http_variable_value_t));
+     vv++;
+ 
++    if ((u_char *) vv + 0x10000 * sizeof(ngx_http_geo_range_t *) > end) {
++        ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
++                     "truncated binary geo range base \"%s\"",
++                     name->data);
++        goto failed;
++    }
++
+     ranges = (ngx_http_geo_range_t **) vv;
+ 
+     for (i = 0; i < 0x10000; i++) {
+@@ -1544,14 +1570,29 @@ ngx_http_geo_include_binary_base(ngx_conf_t *cf, ngx_http_geo_conf_ctx_t *ctx,
+ 
+     range = (ngx_http_geo_range_t *) &ranges[0x10000];
+ 
+-    while ((u_char *) range < base + size) {
+-        while (range->value) {
++    while ((u_char *) range < end) {
++        while ((u_char *) range + sizeof(void *) <= end && range->value) {
++            if ((u_char *) range + sizeof(ngx_http_geo_range_t) > end) {
++                ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
++                             "truncated binary geo range base \"%s\"",
++                             name->data);
++                goto failed;
++            }
++
+             ngx_crc32_update(&crc32, (u_char *) range,
+                              sizeof(ngx_http_geo_range_t));
+             range->value = (ngx_http_variable_value_t *)
+                                ((u_char *) range->value + (size_t) base);
+             range++;
+         }
++
++        if ((u_char *) range + sizeof(void *) > end) {
++            ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
++                         "truncated binary geo range base \"%s\"",
++                         name->data);
++            goto failed;
++        }
++
+         ngx_crc32_update(&crc32, (u_char *) range, sizeof(void *));
+         range = (ngx_http_geo_range_t *) ((u_char *) range + sizeof(void *));
+     }

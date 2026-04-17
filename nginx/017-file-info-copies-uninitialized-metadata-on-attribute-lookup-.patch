@@ -1,0 +1,24 @@
+diff --git a/src/os/win32/ngx_files.c b/src/os/win32/ngx_files.c
+index 90644ad..04ffdca 100644
+--- a/src/os/win32/ngx_files.c
++++ b/src/os/win32/ngx_files.c
+@@ -422,12 +422,14 @@ ngx_file_info(u_char *file, ngx_file_info_t *sb)
+ 
+     rc = GetFileAttributesExW(u, GetFileExInfoStandard, &fa);
+ 
+-    sb->dwFileAttributes = fa.dwFileAttributes;
+-    sb->ftCreationTime = fa.ftCreationTime;
+-    sb->ftLastAccessTime = fa.ftLastAccessTime;
+-    sb->ftLastWriteTime = fa.ftLastWriteTime;
+-    sb->nFileSizeHigh = fa.nFileSizeHigh;
+-    sb->nFileSizeLow = fa.nFileSizeLow;
++    if (rc != 0) {
++        sb->dwFileAttributes = fa.dwFileAttributes;
++        sb->ftCreationTime = fa.ftCreationTime;
++        sb->ftLastAccessTime = fa.ftLastAccessTime;
++        sb->ftLastWriteTime = fa.ftLastWriteTime;
++        sb->nFileSizeHigh = fa.nFileSizeHigh;
++        sb->nFileSizeLow = fa.nFileSizeLow;
++    }
+ 
+ failed:

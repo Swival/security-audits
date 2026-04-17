@@ -1,0 +1,56 @@
+diff --git a/src/os/win32/ngx_files.c b/src/os/win32/ngx_files.c
+index 90644ad..6d6efc7 100644
+--- a/src/os/win32/ngx_files.c
++++ b/src/os/win32/ngx_files.c
+@@ -558,8 +558,51 @@ ngx_close_file_mapping(ngx_file_mapping_t *fm)
+ u_char *
+ ngx_realpath(u_char *path, u_char *resolved)
+ {
+-    /* STUB */
+-    return path;
++    size_t      len;
++    u_char     *p;
++    u_short    *u;
++    ngx_err_t   err;
++    u_short     utf16[NGX_MAX_PATH];
++    u_short     utf16path[NGX_MAX_PATH];
++
++    len = NGX_MAX_PATH;
++    u = ngx_utf8_to_utf16(utf16, path, &len, 0);
++
++    if (u == NULL) {
++        return NULL;
++    }
++
++    len = GetFullPathNameW(u, NGX_MAX_PATH, utf16path, NULL);
++
++    if (u != utf16) {
++        err = ngx_errno;
++        ngx_free(u);
++        ngx_set_errno(err);
++    }
++
++    if (len == 0) {
++        return NULL;
++    }
++
++    if (len >= NGX_MAX_PATH) {
++        ngx_set_errno(ERROR_INSUFFICIENT_BUFFER);
++        return NULL;
++    }
++
++    len = NGX_MAX_PATH;
++    p = ngx_utf16_to_utf8(resolved, utf16path, &len, NULL);
++
++    if (p == NULL) {
++        return NULL;
++    }
++
++    if (p != resolved) {
++        ngx_free(p);
++        ngx_set_errno(ERROR_INSUFFICIENT_BUFFER);
++        return NULL;
++    }
++
++    return resolved;
+ }

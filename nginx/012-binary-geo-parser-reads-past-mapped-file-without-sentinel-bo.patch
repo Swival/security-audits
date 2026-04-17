@@ -1,0 +1,98 @@
+diff --git a/src/stream/ngx_stream_geo_module.c b/src/stream/ngx_stream_geo_module.c
+index 316de92..302ab12 100644
+--- a/src/stream/ngx_stream_geo_module.c
++++ b/src/stream/ngx_stream_geo_module.c
+@@ -1345,7 +1345,7 @@ static ngx_int_t
+ ngx_stream_geo_include_binary_base(ngx_conf_t *cf,
+     ngx_stream_geo_conf_ctx_t *ctx, ngx_str_t *name)
+ {
+-    u_char                       *base, ch;
++    u_char                       *base, *last, ch;
+     time_t                        mtime;
+     size_t                        size, len;
+     ssize_t                       n;
+@@ -1446,20 +1446,47 @@ ngx_stream_geo_include_binary_base(ngx_conf_t *cf,
+ 
+     ngx_crc32_init(crc32);
+ 
++    last = base + size;
+     vv = (ngx_stream_variable_value_t *)
+             (base + sizeof(ngx_stream_geo_header_t));
+ 
+-    while (vv->data) {
++    while ((u_char *) vv < last) {
++        if ((size_t) (last - (u_char *) vv)
++            < sizeof(ngx_stream_variable_value_t))
++        {
++            goto failed;
++        }
++
++        if (vv->data == NULL) {
++            break;
++        }
++
+         len = ngx_align(sizeof(ngx_stream_variable_value_t) + vv->len,
+                         sizeof(void *));
++
++        if (len > (size_t) (last - (u_char *) vv)) {
++            goto failed;
++        }
++
+         ngx_crc32_update(&crc32, (u_char *) vv, len);
+         vv->data += (size_t) base;
+         vv = (ngx_stream_variable_value_t *) ((u_char *) vv + len);
+     }
++
++    if ((u_char *) vv == last) {
++        goto failed;
++    }
++
+     ngx_crc32_update(&crc32, (u_char *) vv,
+                      sizeof(ngx_stream_variable_value_t));
+     vv++;
+ 
++    if ((size_t) (last - (u_char *) vv)
++        < 0x10000 * sizeof(ngx_stream_geo_range_t *))
++    {
++        goto failed;
++    }
++
+     ranges = (ngx_stream_geo_range_t **) vv;
+ 
+     for (i = 0; i < 0x10000; i++) {
+@@ -1472,14 +1499,33 @@ ngx_stream_geo_include_binary_base(ngx_conf_t *cf,
+ 
+     range = (ngx_stream_geo_range_t *) &ranges[0x10000];
+ 
+-    while ((u_char *) range < base + size) {
+-        while (range->value) {
++    while ((u_char *) range < last) {
++        while ((u_char *) range < last) {
++            if ((size_t) (last - (u_char *) range) < sizeof(void *)) {
++                goto failed;
++            }
++
++            if (range->value == NULL) {
++                break;
++            }
++
++            if ((size_t) (last - (u_char *) range)
++                < sizeof(ngx_stream_geo_range_t))
++            {
++                goto failed;
++            }
++
+             ngx_crc32_update(&crc32, (u_char *) range,
+                              sizeof(ngx_stream_geo_range_t));
+             range->value = (ngx_stream_variable_value_t *)
+                                ((u_char *) range->value + (size_t) base);
+             range++;
+         }
++
++        if ((u_char *) range == last) {
++            goto failed;
++        }
++
+         ngx_crc32_update(&crc32, (u_char *) range, sizeof(void *));
+         range = (ngx_stream_geo_range_t *) ((u_char *) range + sizeof(void *));
+     }

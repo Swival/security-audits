@@ -1,0 +1,26 @@
+diff --git a/src/http/modules/ngx_http_slice_filter_module.c b/src/http/modules/ngx_http_slice_filter_module.c
+index 67dc14c..276ec5a 100644
+--- a/src/http/modules/ngx_http_slice_filter_module.c
++++ b/src/http/modules/ngx_http_slice_filter_module.c
+@@ -274,6 +274,10 @@ ngx_http_slice_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
+ 
+     slcf = ngx_http_get_module_loc_conf(r, ngx_http_slice_filter_module);
+ 
++    if (ctx->start > NGX_MAX_OFF_T_VALUE - (off_t) slcf->size + 1) {
++        return NGX_ERROR;
++    }
++
+     ctx->range.len = ngx_sprintf(ctx->range.data, "bytes=%O-%O", ctx->start,
+                                  ctx->start + (off_t) slcf->size - 1)
+                      - ctx->range.data;
+@@ -428,6 +432,10 @@ ngx_http_slice_range_variable(ngx_http_request_t *r,
+ 
+         ctx->start = slcf->size * (ngx_http_slice_get_start(r) / slcf->size);
+ 
++        if (ctx->start > NGX_MAX_OFF_T_VALUE - (off_t) slcf->size + 1) {
++            return NGX_ERROR;
++        }
++
+         ctx->range.data = p;
+         ctx->range.len = ngx_sprintf(p, "bytes=%O-%O", ctx->start,
+                                      ctx->start + (off_t) slcf->size - 1)

@@ -1,0 +1,122 @@
+diff --git a/src/http/modules/ngx_http_geo_module.c b/src/http/modules/ngx_http_geo_module.c
+index 5018e1a..7b2c878 100644
+--- a/src/http/modules/ngx_http_geo_module.c
++++ b/src/http/modules/ngx_http_geo_module.c
+@@ -1419,7 +1419,7 @@ static ngx_int_t
+ ngx_http_geo_include_binary_base(ngx_conf_t *cf, ngx_http_geo_conf_ctx_t *ctx,
+     ngx_str_t *name)
+ {
+-    u_char                     *base, ch;
++    u_char                     *base, *last, ch;
+     time_t                      mtime;
+     size_t                      size, len;
+     ssize_t                     n;
+@@ -1510,30 +1510,60 @@ ngx_http_geo_include_binary_base(ngx_conf_t *cf, ngx_http_geo_conf_ctx_t *ctx,
+         goto failed;
+     }
+ 
+-    header = (ngx_http_geo_header_t *) base;
++    if (size < sizeof(ngx_http_geo_header_t)
++               + sizeof(ngx_http_variable_value_t)
++               + 0x10000 * sizeof(void *))
++    {
++        goto invalid;
++    }
+ 
+-    if (size < 16 || ngx_memcmp(&ngx_http_geo_header, header, 12) != 0) {
+-        ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
+-             "incompatible binary geo range base \"%s\"", name->data);
+-        goto failed;
++    header = (ngx_http_geo_header_t *) base;
++    last = base + size;
++
++    if (ngx_memcmp(&ngx_http_geo_header, header, 12) != 0) {
++        goto invalid;
+     }
+ 
+     ngx_crc32_init(crc32);
+ 
+     vv = (ngx_http_variable_value_t *) (base + sizeof(ngx_http_geo_header_t));
+ 
+-    while (vv->data) {
++    for ( ;; ) {
++        if ((u_char *) vv + sizeof(ngx_http_variable_value_t) > last) {
++            goto invalid;
++        }
++
++        if (vv->data == NULL) {
++            break;
++        }
++
++        if (vv->len > (size_t) (last - (u_char *) vv)
++                      - sizeof(ngx_http_variable_value_t))
++        {
++            goto invalid;
++        }
++
+         len = ngx_align(sizeof(ngx_http_variable_value_t) + vv->len,
+                         sizeof(void *));
++
++        if ((u_char *) vv + len > last) {
++            goto invalid;
++        }
++
+         ngx_crc32_update(&crc32, (u_char *) vv, len);
+         vv->data += (size_t) base;
+         vv = (ngx_http_variable_value_t *) ((u_char *) vv + len);
+     }
++
+     ngx_crc32_update(&crc32, (u_char *) vv, sizeof(ngx_http_variable_value_t));
+     vv++;
+ 
+     ranges = (ngx_http_geo_range_t **) vv;
+ 
++    if ((u_char *) ranges + 0x10000 * sizeof(void *) > last) {
++        goto invalid;
++    }
++
+     for (i = 0; i < 0x10000; i++) {
+         ngx_crc32_update(&crc32, (u_char *) &ranges[i], sizeof(void *));
+         if (ranges[i]) {
+@@ -1544,14 +1574,27 @@ ngx_http_geo_include_binary_base(ngx_conf_t *cf, ngx_http_geo_conf_ctx_t *ctx,
+ 
+     range = (ngx_http_geo_range_t *) &ranges[0x10000];
+ 
+-    while ((u_char *) range < base + size) {
+-        while (range->value) {
++    while ((u_char *) range < last) {
++        for ( ;; ) {
++            if ((u_char *) range + sizeof(void *) > last) {
++                goto invalid;
++            }
++
++            if (range->value == NULL) {
++                break;
++            }
++
++            if ((u_char *) range + sizeof(ngx_http_geo_range_t) > last) {
++                goto invalid;
++            }
++
+             ngx_crc32_update(&crc32, (u_char *) range,
+                              sizeof(ngx_http_geo_range_t));
+             range->value = (ngx_http_variable_value_t *)
+                                ((u_char *) range->value + (size_t) base);
+             range++;
+         }
++
+         ngx_crc32_update(&crc32, (u_char *) range, sizeof(void *));
+         range = (ngx_http_geo_range_t *) ((u_char *) range + sizeof(void *));
+     }
+@@ -1574,6 +1617,11 @@ ngx_http_geo_include_binary_base(ngx_conf_t *cf, ngx_http_geo_conf_ctx_t *ctx,
+ 
+     goto done;
+ 
++invalid:
++
++    ngx_conf_log_error(NGX_LOG_WARN, cf, 0,
++         "incompatible binary geo range base \"%s\"", name->data);
++
+ failed:
+ 
+     rc = NGX_DECLINED;
