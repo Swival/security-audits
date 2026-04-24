@@ -1,0 +1,31 @@
+diff --git a/src/body.rs b/src/body.rs
+index 9df3130..783cc39 100644
+--- a/src/body.rs
++++ b/src/body.rs
+@@ -20,6 +20,8 @@ use {
+ 
+ type DecoderState = Box<GzDecoder<bytes::buf::Writer<BytesMut>>>;
+ 
++const MAX_READ_INTO_VEC_BYTES: usize = 64 * 1024 * 1024;
++
+ /// A chunk of bytes in a [`Body`].
+ ///
+ /// A chunk represents a block of data in a body. Representing bodies as chunks allows us to append
+@@ -151,6 +153,17 @@ impl Body {
+         let mut bytes = Vec::new();
+ 
+         while let Some(chunk) = body.data().await.transpose()? {
++            let new_len = bytes
++                .len()
++                .checked_add(chunk.len())
++                .ok_or(Error::LimitExceeded {
++                    msg: "Body exceeded maximum buffered size",
++                })?;
++            if new_len > MAX_READ_INTO_VEC_BYTES {
++                return Err(Error::LimitExceeded {
++                    msg: "Body exceeded maximum buffered size",
++                });
++            }
+             bytes.extend_from_slice(&chunk);
+         }
+         Ok(bytes)

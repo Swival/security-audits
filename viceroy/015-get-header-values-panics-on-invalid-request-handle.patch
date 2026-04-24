@@ -1,0 +1,12 @@
+diff --git a/src/component/compute/http_req.rs b/src/component/compute/http_req.rs
+index c9e8220..07a0fc0 100644
+--- a/src/component/compute/http_req.rs
++++ b/src/component/compute/http_req.rs
+@@ -238,7 +238,7 @@ impl http_req::HostRequest for ComponentCtx {
+         max_len: u64,
+         cursor: u32,
+     ) -> Result<(Vec<u8>, Option<u32>), types::Error> {
+-        let headers = &self.session().request_parts(h.into()).unwrap().headers;
++        let headers = &self.session().request_parts(h.into())?.headers;
+ 
+         let (buf, next) = get_values(headers, &name, max_len, cursor)?;

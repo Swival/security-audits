@@ -1,0 +1,33 @@
+diff --git a/src/config/backends/client_cert_info.rs b/src/config/backends/client_cert_info.rs
+index 02b1a44..bc6dddc 100644
+--- a/src/config/backends/client_cert_info.rs
++++ b/src/config/backends/client_cert_info.rs
+@@ -125,15 +125,24 @@ fn read_certificates<R: std::io::BufRead>(
+ }
+ 
+ fn read_key<R: std::io::BufRead>(reader: &mut R) -> Result<PrivateKey, ClientCertError> {
++    let mut keys = Vec::new();
++
+     for item in rustls_pemfile::read_all(reader)? {
+         match item {
+-            rustls_pemfile::Item::RSAKey(x) => return Ok(PrivateKey(x)),
+-            rustls_pemfile::Item::PKCS8Key(x) => return Ok(PrivateKey(x)),
+-            rustls_pemfile::Item::ECKey(x) => return Ok(PrivateKey(x)),
++            rustls_pemfile::Item::RSAKey(x) => keys.push(PrivateKey(x)),
++            rustls_pemfile::Item::PKCS8Key(x) => keys.push(PrivateKey(x)),
++            rustls_pemfile::Item::ECKey(x) => keys.push(PrivateKey(x)),
+             _ => {}
+         }
+     }
+-    Err(ClientCertError::NoKeysFound)
++
++    if keys.is_empty() {
++        Err(ClientCertError::NoKeysFound)
++    } else if keys.len() > 1 {
++        Err(ClientCertError::TooManyKeys(keys.len()))
++    } else {
++        Ok(keys.remove(0))
++    }
+ }
+ 
+ impl TryFrom<toml::Value> for ClientCertInfo {

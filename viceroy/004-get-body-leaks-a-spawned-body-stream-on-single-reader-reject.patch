@@ -1,0 +1,31 @@
+diff --git a/src/wiggle_abi/cache.rs b/src/wiggle_abi/cache.rs
+index c657d31..22e6bde 100644
+--- a/src/wiggle_abi/cache.rs
++++ b/src/wiggle_abi/cache.rs
+@@ -588,23 +588,19 @@ impl FastlyCache for Session {
+ 
+         let entry = self.cache_entry(handle).await?;
+ 
+-        // Preemptively (optimistically) start a read. Don't worry, the Drop impl for Body will
+-        // clean up the copying task.
+-        // We have to do this to allow `found`'s lifetime to end before self.session.body, which
+-        // has to re-borrow self.self.session.
+-        let body = entry.body(from, to).await?;
+-
+         let found = entry
+             .found()
+             .ok_or(Error::CacheError(crate::cache::Error::Missing))?;
+ 
+         if let Some(prev_handle) = found.last_body_handle {
+-            // Check if they're still reading the previous handle.
++            // Check if they're still reading the previous handle before spawning another reader.
+             if self.body(prev_handle).is_ok() {
+                 return Err(Error::CacheError(crate::cache::Error::HandleBodyUsed));
+             }
+         };
+ 
++        let body = entry.body(from, to).await?;
++
+         let body_handle = self.insert_body(body);
+         // Finalize by committing the handle as "the last read".
+         // We have to borrow `found` again, this time as mutable.

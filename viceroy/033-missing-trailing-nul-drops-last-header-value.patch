@@ -1,0 +1,17 @@
+diff --git a/src/wiggle_abi/headers.rs b/src/wiggle_abi/headers.rs
+index c7b9663..e6b8f59 100644
+--- a/src/wiggle_abi/headers.rs
++++ b/src/wiggle_abi/headers.rs
+@@ -148,8 +148,10 @@ impl HttpHeaders for HeaderMap<HeaderValue> {
+             let values_bytes = memory.as_slice(values)?.ok_or(Error::SharedMemory)?;
+             // split slice along nul bytes
+             let mut iter = values_bytes.split(|b| *b == 0);
+-            // drop the empty item at the end
+-            iter.next_back();
++            // Only discard the trailing empty segment when the input is NUL-terminated.
++            if values_bytes.ends_with(&[0]) {
++                iter.next_back();
++            }
+             iter.map(HeaderValue::from_bytes)
+                 .collect::<Result<Vec<HeaderValue>, _>>()?
+         };

@@ -1,0 +1,52 @@
+diff --git a/src/shift_mem.rs b/src/shift_mem.rs
+index 78273b0..ed5341a 100644
+--- a/src/shift_mem.rs
++++ b/src/shift_mem.rs
+@@ -16,7 +16,7 @@ use walrus::*;
+ const OFFSET_PAGES: i32 = 2;
+ // This const should always equal to the OFFSET defined in wasm_abi/adapter/src/lib.rs
+ const OFFSET: i32 = OFFSET_PAGES * 64 * 1024;
+-fn shift_func(r#gen: &mut ModuleLocals, func: &mut LocalFunction) {
++fn shift_func(r#gen: &mut ModuleLocals, func: &mut LocalFunction) -> anyhow::Result<()> {
+     let start = func.entry_block();
+     let mut locals = vec![];
+     let mut stack = vec![start];
+@@ -137,7 +137,9 @@ fn shift_func(r#gen: &mut ModuleLocals, func: &mut LocalFunction) {
+                     kind,
+                     arg: MemArg { align, offset },
+                 }) => {
+-                    let offset = offset.checked_add(OFFSET as u32).unwrap();
++                    let offset = offset.checked_add(OFFSET as u32).ok_or_else(|| {
++                        anyhow::anyhow!("memory load offset overflow while shifting module")
++                    })?;
+                     let instr = Instr::Load(Load {
+                         memory,
+                         kind,
+@@ -150,7 +152,9 @@ fn shift_func(r#gen: &mut ModuleLocals, func: &mut LocalFunction) {
+                     kind,
+                     arg: MemArg { align, offset },
+                 }) => {
+-                    let offset = offset.checked_add(OFFSET as u32).unwrap();
++                    let offset = offset.checked_add(OFFSET as u32).ok_or_else(|| {
++                        anyhow::anyhow!("memory store offset overflow while shifting module")
++                    })?;
+                     let instr = Instr::Store(Store {
+                         memory,
+                         kind,
+@@ -169,6 +173,7 @@ fn shift_func(r#gen: &mut ModuleLocals, func: &mut LocalFunction) {
+         }
+         seq.instrs = instrs;
+     }
++    Ok(())
+ }
+ fn get_local(r#gen: &mut ModuleLocals, locals: &mut Vec<LocalId>, idx: usize) -> LocalId {
+     if idx < locals.len() {
+@@ -217,7 +222,7 @@ pub fn shift_main_module(bytes: &[u8]) -> anyhow::Result<Vec<u8>> {
+     }
+     // shift memory access
+     for (_, func) in module.funcs.iter_local_mut() {
+-        shift_func(&mut module.locals, func);
++        shift_func(&mut module.locals, func)?;
+     }
+     Ok(module.emit_wasm())
+ }

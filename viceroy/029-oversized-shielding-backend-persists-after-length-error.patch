@@ -1,0 +1,25 @@
+diff --git a/src/component/shielding.rs b/src/component/shielding.rs
+index 8e4b03a..638f144 100644
+--- a/src/component/shielding.rs
++++ b/src/component/shielding.rs
+@@ -31,10 +31,6 @@ pub(crate) fn backend_for_shield(
+         health: crate::config::BackendHealth::Unknown,
+     };
+ 
+-    if !session.add_backend(&new_name, new_backend) {
+-        return Err(Error::BackendNameRegistryError(new_name).into());
+-    }
+-
+     let target_len = new_name.len() as u64;
+ 
+     if target_len > max_len {
+@@ -45,5 +41,9 @@ pub(crate) fn backend_for_shield(
+         .into());
+     }
+ 
++    if !session.add_backend(&new_name, new_backend) {
++        return Err(Error::BackendNameRegistryError(new_name).into());
++    }
++
+     Ok(new_name)
+ }

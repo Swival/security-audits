@@ -1,0 +1,80 @@
+diff --git a/src/component/compute/kv_store.rs b/src/component/compute/kv_store.rs
+index 3e28e61..e2c7c9e 100644
+--- a/src/component/compute/kv_store.rs
++++ b/src/component/compute/kv_store.rs
+@@ -73,13 +73,11 @@ impl kv_store::Host for ComponentCtx {
+         Result<Option<wasmtime::component::Resource<kv_store::Entry>>, kv_store::KvError>,
+     > {
+         let handle = KvStoreLookupHandle::from(handle).into();
+-        let resp = self
+-            .session_mut()
+-            .take_pending_kv_lookup(handle)
+-            .unwrap()
+-            .task()
+-            .recv()
+-            .await?;
++        let pending = match self.session_mut().take_pending_kv_lookup(handle) {
++            Ok(pending) => pending,
++            Err(err) => return Ok(Err(Error::from(err).into())),
++        };
++        let resp = pending.task().recv().await?;
+ 
+         match resp {
+             Ok(Some(value)) => {
+@@ -106,13 +104,11 @@ impl kv_store::Host for ComponentCtx {
+         handle: Resource<kv_store::PendingInsert>,
+     ) -> Result<(), kv_store::KvError> {
+         let handle = KvStoreInsertHandle::from(handle).into();
+-        let resp = self
+-            .session_mut()
+-            .take_pending_kv_insert(handle)
+-            .unwrap()
+-            .task()
+-            .recv()
+-            .await?;
++        let pending = match self.session_mut().take_pending_kv_insert(handle) {
++            Ok(pending) => pending,
++            Err(err) => return Err(Error::from(err).into()),
++        };
++        let resp = pending.task().recv().await?;
+ 
+         match resp {
+             Ok(()) => Ok(()),
+@@ -125,13 +121,11 @@ impl kv_store::Host for ComponentCtx {
+         handle: Resource<kv_store::PendingDelete>,
+     ) -> Result<bool, kv_store::KvError> {
+         let handle = KvStoreDeleteHandle::from(handle).into();
+-        let resp = self
+-            .session_mut()
+-            .take_pending_kv_delete(handle)
+-            .unwrap()
+-            .task()
+-            .recv()
+-            .await?;
++        let pending = match self.session_mut().take_pending_kv_delete(handle) {
++            Ok(pending) => pending,
++            Err(err) => return Err(Error::from(err).into()),
++        };
++        let resp = pending.task().recv().await?;
+ 
+         match resp {
+             Ok(res) => Ok(res),
+@@ -144,13 +138,11 @@ impl kv_store::Host for ComponentCtx {
+         handle: Resource<kv_store::PendingList>,
+     ) -> Result<Resource<kv_store::Body>, kv_store::KvError> {
+         let handle = KvStoreListHandle::from(handle).into();
+-        let resp = self
+-            .session_mut()
+-            .take_pending_kv_list(handle)
+-            .unwrap()
+-            .task()
+-            .recv()
+-            .await?;
++        let pending = match self.session_mut().take_pending_kv_list(handle) {
++            Ok(pending) => pending,
++            Err(err) => return Err(Error::from(err).into()),
++        };
++        let resp = pending.task().recv().await?;
+ 
+         match resp {
+             Ok(value) => Ok(self.session_mut().insert_body(value.into()).into()),

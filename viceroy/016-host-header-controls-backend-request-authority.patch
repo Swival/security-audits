@@ -1,0 +1,25 @@
+diff --git a/src/upstream.rs b/src/upstream.rs
+index bf71c20..14093d0 100644
+--- a/src/upstream.rs
++++ b/src/upstream.rs
+@@ -250,16 +250,16 @@ impl hyper::service::Service<Uri> for BackendConnector {
+ }
+ 
+ fn canonical_host_header(
+-    original_headers: &HeaderMap,
+-    original_uri: &Uri,
++    _original_headers: &HeaderMap,
++    _original_uri: &Uri,
+     backend: &Backend,
+ ) -> HeaderValue {
+     backend
+         .override_host
+         .clone()
+-        .or_else(|| original_headers.get(hyper::header::HOST).cloned())
+         .or_else(|| {
+-            original_uri
++            backend
++                .uri
+                 .authority()
+                 .and_then(|auth| HeaderValue::from_str(auth.as_str()).ok())
+         })

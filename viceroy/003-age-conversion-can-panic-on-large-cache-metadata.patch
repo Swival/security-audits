@@ -1,0 +1,13 @@
+diff --git a/src/component/compute/cache.rs b/src/component/compute/cache.rs
+index e50263e..a07b5da 100644
+--- a/src/component/compute/cache.rs
++++ b/src/component/compute/cache.rs
+@@ -578,7 +578,7 @@ impl api::HostEntry for ComponentCtx {
+     ) -> Result<Option<u64>, types::Error> {
+         let entry = self.session_mut().cache_entry_mut(handle.into()).await?;
+         if let Some(found) = entry.found() {
+-            Ok(Some(found.meta().age().as_nanos().try_into().unwrap()))
++            Ok(Some(found.meta().age().as_nanos().try_into().unwrap_or(u64::MAX)))
+         } else {
+             Ok(None)
+         }

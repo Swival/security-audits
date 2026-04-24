@@ -1,0 +1,19 @@
+diff --git a/src/config/backends/client_cert_info.rs b/src/config/backends/client_cert_info.rs
+index 02b1a44..3b9dbb3 100644
+--- a/src/config/backends/client_cert_info.rs
++++ b/src/config/backends/client_cert_info.rs
+@@ -164,7 +164,13 @@ impl TryFrom<toml::Value> for ClientCertInfo {
+                 match (found_cert, found_key) {
+                     (None, _) => Err(ClientCertError::NoCertsFound),
+                     (_, None) => Err(ClientCertError::NoKeysFound),
+-                    (Some(certificates), Some(key)) => Ok(ClientCertInfo { certificates, key }),
++                    (Some(certificates), Some(key)) => {
++                        if certificates.is_empty() {
++                            Err(ClientCertError::NoCertsFound)
++                        } else {
++                            Ok(ClientCertInfo { certificates, key })
++                        }
++                    }
+                 }
+             }
+             _ => Err(ClientCertError::InvalidToml),

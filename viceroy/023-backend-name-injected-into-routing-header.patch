@@ -1,0 +1,43 @@
+diff --git a/src/execute.rs b/src/execute.rs
+index adcde13..57f33f0 100644
+--- a/src/execute.rs
++++ b/src/execute.rs
+@@ -503,6 +503,7 @@ impl ExecuteCtx {
+ 
+                     let proxy_resp = proxy_through_pushpin(
+                         SocketAddr::new(Ipv4Addr::LOCALHOST.into(), local_pushpin_proxy_port),
++                        self.backends(),
+                         backend_name,
+                         redirect_request_info,
+                         orig_request_info_for_pushpin,
+diff --git a/src/pushpin.rs b/src/pushpin.rs
+index b30a8fd..9559f8f 100644
+--- a/src/pushpin.rs
++++ b/src/pushpin.rs
+@@ -2,6 +2,7 @@
+ 
+ use tracing::debug;
+ use {
++    crate::config::Backends,
+     http::{
+         HeaderMap, Response, StatusCode,
+         request::{Parts, Request},
+@@ -72,12 +73,18 @@ const PROTECTED_REQ_HEADERS: &[&str] = &[
+ /// the request. Pushpin routes should be configured with `id=<backend_name>`.
+ pub async fn proxy_through_pushpin(
+     pushpin_addr: SocketAddr,
++    pushpin_routes: &Backends,
+     backend_name: String,
+     redirect_request_info: Option<PushpinRedirectRequestInfo>,
+     original_request_info: PushpinRedirectRequestInfo,
+     original_request_body: Body,
+     original_request_on_upgrade: OnUpgrade,
+ ) -> Response<Body> {
++    if !pushpin_routes.contains_key(&backend_name) {
++        warn!("Rejected Pushpin redirect for unknown backend '{}'.", backend_name);
++        return build_error_response(StatusCode::BAD_REQUEST, "Unknown Pushpin backend");
++    }
++
+     debug!("Proxying through Pushpin backend '{}'.", backend_name);
+ 
+     let pushpin_stream = match TcpStream::connect(pushpin_addr).await {

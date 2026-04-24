@@ -1,0 +1,54 @@
+diff --git a/src/object_store.rs b/src/object_store.rs
+index 24bcde1..21e0cbe 100644
+--- a/src/object_store.rs
++++ b/src/object_store.rs
+@@ -95,10 +95,26 @@ impl ObjectStores {
+         metadata: Option<String>,
+         ttl: Option<std::time::Duration>,
+     ) -> Result<(), KvStoreError> {
+-        // manages ttl
+-        let existing = self
+-            .lookup(obj_store_key.clone(), obj_key.clone())
++        let mut stores = self
++            .stores
++            .write()
+             .map_err(|_| KvStoreError::InternalError)?;
++        let store = stores.entry(obj_store_key).or_insert_with(BTreeMap::new);
++
++        // Re-read and validate under the write lock so preconditions and insert are atomic.
++        let existing = match store.get(&obj_key).cloned() {
++            Some(val) => {
++                if let Some(exp) = val.expiration
++                    && SystemTime::now() >= exp
++                {
++                    store.remove(&obj_key);
++                    None
++                } else {
++                    Some(val)
++                }
++            }
++            None => None,
++        };
+ 
+         if let Some(g) = generation
+             && let Some(val) = &existing
+@@ -167,18 +183,7 @@ impl ObjectStores {
+             obj_val.metadata = m;
+         }
+ 
+-        self.stores
+-            .write()
+-            .map_err(|_| KvStoreError::InternalError)?
+-            .entry(obj_store_key)
+-            .and_modify(|store| {
+-                store.insert(obj_key.clone(), obj_val.clone());
+-            })
+-            .or_insert_with(|| {
+-                let mut store = BTreeMap::new();
+-                store.insert(obj_key, obj_val);
+-                store
+-            });
++        store.insert(obj_key, obj_val);
+ 
+         Ok(())
+     }

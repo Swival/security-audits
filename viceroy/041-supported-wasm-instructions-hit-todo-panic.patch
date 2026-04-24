@@ -1,0 +1,41 @@
+diff --git a/src/shift_mem.rs b/src/shift_mem.rs
+index 78273b0..ba640ee 100644
+--- a/src/shift_mem.rs
++++ b/src/shift_mem.rs
+@@ -16,7 +16,7 @@ use walrus::*;
+ const OFFSET_PAGES: i32 = 2;
+ // This const should always equal to the OFFSET defined in wasm_abi/adapter/src/lib.rs
+ const OFFSET: i32 = OFFSET_PAGES * 64 * 1024;
+-fn shift_func(r#gen: &mut ModuleLocals, func: &mut LocalFunction) {
++fn shift_func(r#gen: &mut ModuleLocals, func: &mut LocalFunction) -> anyhow::Result<()> {
+     let start = func.entry_block();
+     let mut locals = vec![];
+     let mut stack = vec![start];
+@@ -162,13 +162,16 @@ fn shift_func(r#gen: &mut ModuleLocals, func: &mut LocalFunction) {
+                 | Instr::AtomicNotify(_)
+                 | Instr::AtomicWait(_)
+                 | Instr::AtomicRmw(_)
+-                | Instr::Cmpxchg(_) => todo!(),
+-                Instr::LoadSimd(_) => todo!(),
++                | Instr::Cmpxchg(_)
++                | Instr::LoadSimd(_) => {
++                    anyhow::bail!("unsupported atomic or SIMD memory instruction in main module")
++                }
+                 _ => instrs.push((instr, loc)),
+             }
+         }
+         seq.instrs = instrs;
+     }
++    Ok(())
+ }
+ fn get_local(r#gen: &mut ModuleLocals, locals: &mut Vec<LocalId>, idx: usize) -> LocalId {
+     if idx < locals.len() {
+@@ -217,7 +220,7 @@ pub fn shift_main_module(bytes: &[u8]) -> anyhow::Result<Vec<u8>> {
+     }
+     // shift memory access
+     for (_, func) in module.funcs.iter_local_mut() {
+-        shift_func(&mut module.locals, func);
++        shift_func(&mut module.locals, func)?;
+     }
+     Ok(module.emit_wasm())
+ }

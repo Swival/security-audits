@@ -1,0 +1,46 @@
+diff --git a/src/wiggle_abi/kv_store_impl.rs b/src/wiggle_abi/kv_store_impl.rs
+index 4ce94cb..cc8e7e0 100644
+--- a/src/wiggle_abi/kv_store_impl.rs
++++ b/src/wiggle_abi/kv_store_impl.rs
+@@ -82,26 +82,24 @@ impl FastlyKvStore for Session {
+ 
+         match resp {
+             Ok(Some(value)) => {
++                let meta_len_u32 = u32::try_from(value.metadata_len)
++                    .expect("metadata len is outside the bounds of u32");
++                if meta_len_u32 > metadata_buf_len {
++                    return Err(Error::BufferLengthError {
++                        buf: "metadata",
++                        len: "specified length",
++                    });
++                }
++
+                 let body_handle = self.insert_body(value.body.into());
+ 
+                 memory.write(body_handle_out, body_handle)?;
+-                match value.metadata_len {
+-                    0 => memory.write(nwritten_out, 0)?,
+-                    len => {
+-                        let meta_len_u32 =
+-                            u32::try_from(len).expect("metadata len is outside the bounds of u32");
+-                        memory.write(nwritten_out, meta_len_u32)?;
+-                        if meta_len_u32 > metadata_buf_len {
+-                            return Err(Error::BufferLengthError {
+-                                buf: "metadata",
+-                                len: "specified length",
+-                            });
+-                        }
+-                        memory.copy_from_slice(
+-                            value.metadata.as_bytes(),
+-                            metadata_buf.as_array(meta_len_u32),
+-                        )?;
+-                    }
++                memory.write(nwritten_out, meta_len_u32)?;
++                if meta_len_u32 != 0 {
++                    memory.copy_from_slice(
++                        value.metadata.as_bytes(),
++                        metadata_buf.as_array(meta_len_u32),
++                    )?;
+                 }
+                 memory.write(generation_out, 0)?;
+                 memory.write(kv_error_out, KvError::Ok)?;

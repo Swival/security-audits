@@ -1,0 +1,16 @@
+diff --git a/src/wiggle_abi/obj_store_impl.rs b/src/wiggle_abi/obj_store_impl.rs
+index 44a6da6..e0a527b 100644
+--- a/src/wiggle_abi/obj_store_impl.rs
++++ b/src/wiggle_abi/obj_store_impl.rs
+@@ -154,7 +154,10 @@ impl FastlyObjectStore for Session {
+         key: GuestPtr<str>,
+         opt_pending_delete_handle_out: GuestPtr<PendingKvDeleteHandle>,
+     ) -> Result<(), Error> {
+-        let store = self.get_kv_store_key(store.into()).unwrap().clone();
++        let store = self
++            .get_kv_store_key(store.into())
++            .ok_or(Error::InvalidObjectStoreHandle(store))?
++            .clone();
+         let key = ObjectKey::new(memory.as_str(key)?.ok_or(Error::SharedMemory)?.to_string())?;
+         let fut = futures::future::ok(self.kv_delete(store, key));
+         let task = PeekableTask::spawn(fut).await;

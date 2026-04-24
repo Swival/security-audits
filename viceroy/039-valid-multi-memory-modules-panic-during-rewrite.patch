@@ -1,0 +1,21 @@
+diff --git a/src/shift_mem.rs b/src/shift_mem.rs
+index 78273b0..34b7be0 100644
+--- a/src/shift_mem.rs
++++ b/src/shift_mem.rs
+@@ -188,13 +188,14 @@ pub fn shift_main_module(bytes: &[u8]) -> anyhow::Result<Vec<u8>> {
+         module
+             .memories
+             .add_local(false, false, OFFSET_PAGES as u64, None, None);
+-    } else {
+-        assert!(module.memories.len() == 1);
++    } else if module.memories.len() == 1 {
+         let mem = module.memories.iter_mut().next().unwrap();
+         mem.initial += OFFSET_PAGES as u64;
+         mem.maximum = mem
+             .maximum
+             .map(|m| m.checked_add(OFFSET_PAGES as u64).unwrap());
++    } else {
++        anyhow::bail!("multi-memory modules are not supported");
+     }
+     // shift data
+     let data_ids: Vec<_> = module.data.iter().map(|d| d.id()).collect();

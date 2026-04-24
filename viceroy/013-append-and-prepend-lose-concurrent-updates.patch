@@ -1,0 +1,112 @@
+diff --git a/src/object_store.rs b/src/object_store.rs
+index 24bcde1..7a234e1 100644
+--- a/src/object_store.rs
++++ b/src/object_store.rs
+@@ -89,16 +89,34 @@ impl ObjectStores {
+         &self,
+         obj_store_key: ObjectStoreKey,
+         obj_key: ObjectKey,
+-        obj: Vec<u8>,
++        mut obj: Vec<u8>,
+         mode: KvInsertMode,
+         generation: Option<u64>,
+         metadata: Option<String>,
+         ttl: Option<std::time::Duration>,
+     ) -> Result<(), KvStoreError> {
+-        // manages ttl
+-        let existing = self
+-            .lookup(obj_store_key.clone(), obj_key.clone())
++        let exp = ttl.map(|t| SystemTime::now() + t);
++        let mut stores = self
++            .stores
++            .write()
+             .map_err(|_| KvStoreError::InternalError)?;
++        let store = stores.entry(obj_store_key).or_insert_with(BTreeMap::new);
++
++        // Keep the read-modify-write sequence under one lock so append/prepend
++        // cannot overwrite a concurrent update with a stale snapshot.
++        let existing = match store.get(&obj_key).cloned() {
++            Some(val) => {
++                if let Some(exp) = val.expiration
++                    && SystemTime::now() >= exp
++                {
++                    store.remove(&obj_key);
++                    None
++                } else {
++                    Some(val)
++                }
++            }
++            None => None,
++        };
+ 
+         if let Some(g) = generation
+             && let Some(val) = &existing
+@@ -116,36 +134,22 @@ impl ObjectStores {
+                 }
+                 obj
+             }
+-            KvInsertMode::Append => {
+-                let mut out_obj;
+-                match existing {
+-                    None => {
+-                        out_obj = obj;
+-                    }
+-                    Some(v) => {
+-                        out_obj = v.body;
+-                        out_obj.append(&mut obj.clone());
+-                    }
++            KvInsertMode::Append => match existing {
++                None => obj,
++                Some(mut v) => {
++                    v.body.append(&mut obj);
++                    v.body
+                 }
+-                out_obj
+-            }
+-            KvInsertMode::Prepend => {
+-                let mut out_obj;
+-                match existing {
+-                    None => {
+-                        out_obj = obj;
+-                    }
+-                    Some(mut v) => {
+-                        out_obj = obj;
+-                        out_obj.append(&mut v.body);
+-                    }
++            },
++            KvInsertMode::Prepend => match existing {
++                None => obj,
++                Some(mut v) => {
++                    obj.append(&mut v.body);
++                    obj
+                 }
+-                out_obj
+-            }
++            },
+         };
+ 
+-        let exp = ttl.map(|t| SystemTime::now() + t);
+-
+         let mut obj_val = ObjectValue {
+             body: out_obj,
+             metadata: String::new(),
+@@ -167,18 +171,7 @@ impl ObjectStores {
+             obj_val.metadata = m;
+         }
+ 
+-        self.stores
+-            .write()
+-            .map_err(|_| KvStoreError::InternalError)?
+-            .entry(obj_store_key)
+-            .and_modify(|store| {
+-                store.insert(obj_key.clone(), obj_val.clone());
+-            })
+-            .or_insert_with(|| {
+-                let mut store = BTreeMap::new();
+-                store.insert(obj_key, obj_val);
+-                store
+-            });
++        store.insert(obj_key, obj_val);
+ 
+         Ok(())
+     }
