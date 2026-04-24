@@ -1,0 +1,13 @@
+diff --git a/src/component/compute/http_resp.rs b/src/component/compute/http_resp.rs
+index 53cc3b8..ff49d2b 100644
+--- a/src/component/compute/http_resp.rs
++++ b/src/component/compute/http_resp.rs
+@@ -325,7 +325,7 @@ impl http_resp::HostResponse for ComponentCtx {
+     }
+ 
+     fn get_remote_port(&mut self, resp_handle: Resource<http_resp::Response>) -> Option<u16> {
+-        let resp = self.session().response_parts(resp_handle.into()).unwrap();
++        let resp = self.session().response_parts(resp_handle.into()).ok()?;
+         let md = resp.extensions.get::<upstream::ConnMetadata>()?;
+         let port = md.remote_addr.port();
+         Some(port)

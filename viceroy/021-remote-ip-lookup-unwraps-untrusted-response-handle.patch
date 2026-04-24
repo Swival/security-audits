@@ -1,0 +1,13 @@
+diff --git a/src/component/compute/http_resp.rs b/src/component/compute/http_resp.rs
+index 53cc3b8..ccb0c31 100644
+--- a/src/component/compute/http_resp.rs
++++ b/src/component/compute/http_resp.rs
+@@ -318,7 +318,7 @@ impl http_resp::HostResponse for ComponentCtx {
+         &mut self,
+         resp_handle: Resource<http_resp::Response>,
+     ) -> Option<http_resp::IpAddress> {
+-        let resp = self.session().response_parts(resp_handle.into()).unwrap();
++        let resp = self.session().response_parts(resp_handle.into()).ok()?;
+         let md = resp.extensions.get::<upstream::ConnMetadata>()?;
+ 
+         Some(md.remote_addr.ip().into())

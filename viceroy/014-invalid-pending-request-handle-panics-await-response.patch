@@ -1,0 +1,14 @@
+diff --git a/src/component/compute/http_req.rs b/src/component/compute/http_req.rs
+index c9e8220..8ab8363 100644
+--- a/src/component/compute/http_req.rs
++++ b/src/component/compute/http_req.rs
+@@ -124,7 +124,8 @@ impl http_req::Host for ComponentCtx {
+         let pending_req = self
+             .session_mut()
+             .take_pending_request(h.into())
+-            .unwrap()
++            .map_err(|_| types::Error::InvalidArgument.with_empty_detail())?;
++        let pending_req = pending_req
+             .recv()
+             .await
+             .map_err(Into::into)

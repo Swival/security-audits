@@ -1,0 +1,42 @@
+diff --git a/src/body_tee.rs b/src/body_tee.rs
+index 832f9ce..9806351 100644
+--- a/src/body_tee.rs
++++ b/src/body_tee.rs
+@@ -70,11 +70,32 @@ pub async fn tee(mut hyper_body: Body) -> (Body, Body) {
+     if HttpBody::size_hint(&hyper_body).exact().is_some() {
+         // If the size is known, we MUST buffer the body to preserve the
+         // Content-Length.
+-        let bytes = hyper::body::to_bytes(hyper_body)
+-            .await
+-            .expect("Failed to buffer known-size body");
+-        // `Bytes` is cheap to clone.
+-        return (hyper::Body::from(bytes.clone()), hyper::Body::from(bytes));
++        match hyper::body::to_bytes(hyper_body).await {
++            Ok(bytes) => {
++                // `Bytes` is cheap to clone.
++                return (hyper::Body::from(bytes.clone()), hyper::Body::from(bytes));
++            }
++            Err(err) => {
++                let mut state = SharedState::default();
++                state
++                    .buffer
++                    .push_back(Err(StringError(err.to_string())));
++                state.is_done = true;
++                let shared_state = Arc::new(Mutex::new(state));
++
++                let s1 = BodyTeeStream {
++                    shared: shared_state.clone(),
++                    id: 0,
++                };
++
++                let s2 = BodyTeeStream {
++                    shared: shared_state.clone(),
++                    id: 1,
++                };
++
++                return (Body::wrap_stream(s1), Body::wrap_stream(s2));
++            }
++        }
+     }
+ 
+     let shared_state = Arc::new(Mutex::new(SharedState::default()));

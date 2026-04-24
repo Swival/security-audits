@@ -1,0 +1,16 @@
+diff --git a/src/component/compute/http_resp.rs b/src/component/compute/http_resp.rs
+index 53cc3b8..0b89130 100644
+--- a/src/component/compute/http_resp.rs
++++ b/src/component/compute/http_resp.rs
+@@ -162,7 +162,10 @@ impl http_resp::HostResponse for ComponentCtx {
+                     return Ok(Err(Error::InvalidArgument.into()));
+                 }
+ 
+-                let headers = &self.session().response_parts(h.into()).unwrap().headers;
++                let headers = match self.session().response_parts(h.into()) {
++                    Ok(parts) => &parts.headers,
++                    Err(err) => return Ok(Err(err)),
++                };
+ 
+                 let (buf, next) = match get_values(
+                     headers,
