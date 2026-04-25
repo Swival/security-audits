@@ -1,0 +1,20 @@
+diff --git a/src/crypto/x509/x509.go b/src/crypto/x509/x509.go
+index 7953b615f5..2966e36ee9 100644
+--- a/src/crypto/x509/x509.go
++++ b/src/crypto/x509/x509.go
+@@ -2439,6 +2439,15 @@ func CreateRevocationList(rand io.Reader, template *RevocationList, issuer *Cert
+ 		return nil, err
+ 	}
+ 
++	type privateKey interface {
++		Equal(crypto.PublicKey) bool
++	}
++	if privPub, ok := priv.Public().(privateKey); !ok {
++		return nil, errors.New("x509: internal error: supported public key does not implement Equal")
++	} else if !privPub.Equal(issuer.PublicKey) {
++		return nil, errors.New("x509: provided PrivateKey doesn't match issuer's PublicKey")
++	}
++
+ 	var revokedCerts []pkix.RevokedCertificate
+ 	// Only process the deprecated RevokedCertificates field if it is populated
+ 	// and the new RevokedCertificateEntries field is not populated.

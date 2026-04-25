@@ -1,0 +1,15 @@
+diff --git a/src/crypto/internal/fips140/aes/ctr.go b/src/crypto/internal/fips140/aes/ctr.go
+index 2e55d233d3..96043f0519 100644
+--- a/src/crypto/internal/fips140/aes/ctr.go
++++ b/src/crypto/internal/fips140/aes/ctr.go
+@@ -143,6 +143,9 @@ func ctrBlocks(b *Block, dst, src []byte, ivlo, ivhi uint64) {
+ 
+ func add128(lo, hi uint64, x uint64) (uint64, uint64) {
+ 	lo, c := bits.Add64(lo, x, 0)
+-	hi, _ = bits.Add64(hi, 0, c)
++	hi, c = bits.Add64(hi, 0, c)
++	if c != 0 {
++		panic("crypto/aes: counter overflow")
++	}
+ 	return lo, hi
+ }

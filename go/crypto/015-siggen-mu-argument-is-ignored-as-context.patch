@@ -1,0 +1,15 @@
+diff --git a/src/crypto/internal/fips140test/acvp_fips140v1.26_test.go b/src/crypto/internal/fips140test/acvp_fips140v1.26_test.go
+index 10a44f1492..090acb1001 100644
+--- a/src/crypto/internal/fips140test/acvp_fips140v1.26_test.go
++++ b/src/crypto/internal/fips140test/acvp_fips140v1.26_test.go
+@@ -53,8 +53,8 @@ func cmdMlDsaSigGenAft() command {
+ 			skSmiExpanded := args[0]
+ 			message := args[1]         // Optional, exclusive with mu
+ 			randomizer := args[2]      // Optional
+-			context := string(args[3]) // Optional
+-			mu := args[4]              // Optional, exclusive with message
++			mu := args[3]              // Optional, exclusive with message
++			context := string(args[4]) // Optional
+ 
+ 			sk, err := mldsa.TestingOnlyNewPrivateKeyFromSemiExpanded(skSmiExpanded)
+ 			if err != nil {

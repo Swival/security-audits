@@ -1,0 +1,24 @@
+diff --git a/src/crypto/internal/boring/ecdh.go b/src/crypto/internal/boring/ecdh.go
+index 4a887fdfd6..5da0163171 100644
+--- a/src/crypto/internal/boring/ecdh.go
++++ b/src/crypto/internal/boring/ecdh.go
+@@ -34,15 +34,15 @@ func (k *PrivateKeyECDH) finalize() {
+ }
+ 
+ func NewPublicKeyECDH(curve string, bytes []byte) (*PublicKeyECDH, error) {
+-	if len(bytes) != 1+2*curveSize(curve) {
+-		return nil, errors.New("NewPublicKeyECDH: wrong key length")
+-	}
+-
+ 	nid, err := curveNID(curve)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 
++	if len(bytes) != 1+2*curveSize(curve) {
++		return nil, errors.New("NewPublicKeyECDH: wrong key length")
++	}
++
+ 	group := C._goboringcrypto_EC_GROUP_new_by_curve_name(nid)
+ 	if group == nil {
+ 		return nil, fail("EC_GROUP_new_by_curve_name")

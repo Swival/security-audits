@@ -1,0 +1,13 @@
+diff --git a/src/crypto/tls/ech.go b/src/crypto/tls/ech.go
+index fcbd13bb88..1b3a81ddf3 100644
+--- a/src/crypto/tls/ech.go
++++ b/src/crypto/tls/ech.go
+@@ -141,7 +141,7 @@ func parseECHConfigList(data []byte) ([]echConfig, error) {
+ 		if err != nil {
+ 			return nil, err
+ 		}
+-		s = s[configLen+4:]
++		s = s[int(configLen)+4:]
+ 		if !skip {
+ 			configs = append(configs, ec)
+ 		}

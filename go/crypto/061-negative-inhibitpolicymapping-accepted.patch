@@ -1,0 +1,24 @@
+diff --git a/src/crypto/x509/parser.go b/src/crypto/x509/parser.go
+index e255f7d604..7a687a2bd8 100644
+--- a/src/crypto/x509/parser.go
++++ b/src/crypto/x509/parser.go
+@@ -765,6 +765,9 @@ func processExtensions(out *Certificate) error {
+ 					if !val.ReadASN1Int64WithTag(&v, cryptobyte_asn1.Tag(0).ContextSpecific()) {
+ 						return errors.New("x509: invalid policy constraints extension")
+ 					}
++					if v < 0 {
++						return errors.New("x509: invalid policy constraints extension")
++					}
+ 					out.RequireExplicitPolicy = int(v)
+ 					// Check for overflow.
+ 					if int64(out.RequireExplicitPolicy) != v {
+@@ -777,6 +780,9 @@ func processExtensions(out *Certificate) error {
+ 					if !val.ReadASN1Int64WithTag(&v, cryptobyte_asn1.Tag(1).ContextSpecific()) {
+ 						return errors.New("x509: invalid policy constraints extension")
+ 					}
++					if v < 0 {
++						return errors.New("x509: invalid policy constraints extension")
++					}
+ 					out.InhibitPolicyMapping = int(v)
+ 					// Check for overflow.
+ 					if int64(out.InhibitPolicyMapping) != v {

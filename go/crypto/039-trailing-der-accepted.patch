@@ -1,0 +1,17 @@
+diff --git a/src/crypto/x509/sec1.go b/src/crypto/x509/sec1.go
+index 6212c2d4ff..5e0984e10b 100644
+--- a/src/crypto/x509/sec1.go
++++ b/src/crypto/x509/sec1.go
+@@ -86,7 +86,11 @@ func marshalECDHPrivateKey(key *ecdh.PrivateKey) ([]byte, error) {
+ // that may exist in the EC private key structure.
+ func parseECPrivateKey(namedCurveOID *asn1.ObjectIdentifier, der []byte) (key *ecdsa.PrivateKey, err error) {
+ 	var privKey ecPrivateKey
+-	if _, err := asn1.Unmarshal(der, &privKey); err != nil {
++	rest, err := asn1.Unmarshal(der, &privKey)
++	if len(rest) > 0 {
++		return nil, asn1.SyntaxError{Msg: "trailing data"}
++	}
++	if err != nil {
+ 		if _, err := asn1.Unmarshal(der, &pkcs8{}); err == nil {
+ 			return nil, errors.New("x509: failed to parse private key (use ParsePKCS8PrivateKey instead for this key format)")
+ 		}

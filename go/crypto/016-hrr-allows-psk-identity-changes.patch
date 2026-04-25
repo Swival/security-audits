@@ -1,0 +1,32 @@
+diff --git a/src/crypto/tls/handshake_server_tls13.go b/src/crypto/tls/handshake_server_tls13.go
+index b45d7cbc53..277b7511d0 100644
+--- a/src/crypto/tls/handshake_server_tls13.go
++++ b/src/crypto/tls/handshake_server_tls13.go
+@@ -661,7 +661,9 @@ func illegalClientHelloChange(ch, ch1 *clientHelloMsg) bool {
+ 		len(ch.supportedCurves) != len(ch1.supportedCurves) ||
+ 		len(ch.supportedSignatureAlgorithms) != len(ch1.supportedSignatureAlgorithms) ||
+ 		len(ch.supportedSignatureAlgorithmsCert) != len(ch1.supportedSignatureAlgorithmsCert) ||
+-		len(ch.alpnProtocols) != len(ch1.alpnProtocols) {
++		len(ch.alpnProtocols) != len(ch1.alpnProtocols) ||
++		len(ch.pskIdentities) != len(ch1.pskIdentities) ||
++		len(ch.pskBinders) != len(ch1.pskBinders) {
+ 		return true
+ 	}
+ 	for i := range ch.supportedVersions {
+@@ -694,6 +696,16 @@ func illegalClientHelloChange(ch, ch1 *clientHelloMsg) bool {
+ 			return true
+ 		}
+ 	}
++	for i := range ch.pskIdentities {
++		if !bytes.Equal(ch.pskIdentities[i].label, ch1.pskIdentities[i].label) {
++			return true
++		}
++	}
++	for i := range ch.pskBinders {
++		if len(ch.pskBinders[i]) != len(ch1.pskBinders[i]) {
++			return true
++		}
++	}
+ 	return ch.vers != ch1.vers ||
+ 		!bytes.Equal(ch.random, ch1.random) ||
+ 		!bytes.Equal(ch.sessionId, ch1.sessionId) ||

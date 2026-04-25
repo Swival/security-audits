@@ -1,0 +1,12 @@
+diff --git a/src/crypto/x509/verify.go b/src/crypto/x509/verify.go
+index 0c089273bd..b5899d7a3a 100644
+--- a/src/crypto/x509/verify.go
++++ b/src/crypto/x509/verify.go
+@@ -1393,7 +1393,7 @@ func policiesValid(chain []*Certificate, opts VerifyOptions) bool {
+ 		}
+ 	}
+ 
+-	if explicitPolicy == 0 && len(userConstrainedPolicySet) == 0 {
++	if len(userConstrainedPolicySet) == 0 && (explicitPolicy == 0 || len(opts.CertificatePolicies) > 0) {
+ 		return false
+ 	}

@@ -1,0 +1,12 @@
+diff --git a/src/crypto/internal/fips140test/acvp_test.go b/src/crypto/internal/fips140test/acvp_test.go
+index 6a0b46af2b..4317da1041 100644
+--- a/src/crypto/internal/fips140test/acvp_test.go
++++ b/src/crypto/internal/fips140test/acvp_test.go
+@@ -1542,7 +1542,7 @@ func cmdCmacAesVerifyAft() command {
+ 			cmac := gcm.NewCMAC(blockCipher)
+ 			tag := cmac.MAC(message)
+ 
+-			if subtle.ConstantTimeCompare(tag[:len(claimedMAC)], claimedMAC) != 1 {
++			if len(claimedMAC) > len(tag) || subtle.ConstantTimeCompare(tag[:len(claimedMAC)], claimedMAC) != 1 {
+ 				return [][]byte{{0}}, nil
+ 			}

@@ -1,0 +1,14 @@
+diff --git a/src/crypto/internal/entropy/v1.0.0/entropy.go b/src/crypto/internal/entropy/v1.0.0/entropy.go
+index f5b2f53752..969b8ba57f 100644
+--- a/src/crypto/internal/entropy/v1.0.0/entropy.go
++++ b/src/crypto/internal/entropy/v1.0.0/entropy.go
+@@ -157,6 +157,9 @@ func (s *source) Sample() uint8 {
+ //	sage: 1 + ceil(-log(α, 2) / H)
+ //	41
+ func RepetitionCountTest(samples []uint8) error {
++	if len(samples) == 0 {
++		return nil
++	}
+ 	x := samples[0]
+ 	count := 1
+ 	for _, y := range samples[1:] {

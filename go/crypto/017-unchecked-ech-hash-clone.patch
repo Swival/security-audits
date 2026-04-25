@@ -1,0 +1,15 @@
+diff --git a/src/crypto/tls/handshake_server_tls13.go b/src/crypto/tls/handshake_server_tls13.go
+index b45d7cbc53..31eb43ef5d 100644
+--- a/src/crypto/tls/handshake_server_tls13.go
++++ b/src/crypto/tls/handshake_server_tls13.go
+@@ -716,6 +716,10 @@ func (hs *serverHandshakeStateTLS13) sendServerParameters() error {
+ 	if hs.echContext != nil {
+ 		copy(hs.hello.random[32-8:], make([]byte, 8))
+ 		echTranscript := cloneHash(hs.transcript, hs.suite.hash)
++		if echTranscript == nil {
++			c.sendAlert(alertInternalError)
++			return errors.New("tls: internal error: failed to clone hash")
++		}
+ 		echTranscript.Write(hs.clientHello.original)
+ 		if err := transcriptMsg(hs.hello, echTranscript); err != nil {
+ 			return err

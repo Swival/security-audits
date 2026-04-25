@@ -1,0 +1,19 @@
+diff --git a/src/crypto/internal/fips140/sha3/sha3.go b/src/crypto/internal/fips140/sha3/sha3.go
+index 5c77fae4e7..b3482c4b7e 100644
+--- a/src/crypto/internal/fips140/sha3/sha3.go
++++ b/src/crypto/internal/fips140/sha3/sha3.go
+@@ -223,10 +223,13 @@ func (d *Digest) UnmarshalBinary(b []byte) error {
+ 	if n > d.rate {
+ 		return errors.New("sha3: invalid hash state")
+ 	}
+-	d.n = n
+ 	if state != spongeAbsorbing && state != spongeSqueezing {
+ 		return errors.New("sha3: invalid hash state")
+ 	}
++	if state == spongeAbsorbing && n == d.rate {
++		return errors.New("sha3: invalid hash state")
++	}
++	d.n = n
+ 	d.state = state
+ 
+ 	return nil

@@ -1,0 +1,14 @@
+diff --git a/src/crypto/internal/fips140/nistec/p256_asm.go b/src/crypto/internal/fips140/nistec/p256_asm.go
+index f00e70d99d..6e657f76f7 100644
+--- a/src/crypto/internal/fips140/nistec/p256_asm.go
++++ b/src/crypto/internal/fips140/nistec/p256_asm.go
+@@ -434,6 +434,9 @@ func (r *P256Point) ScalarMult(q *P256Point, scalar []byte) (*P256Point, error)
+ 	if len(scalar) != 32 {
+ 		return nil, errors.New("invalid scalar length")
+ 	}
++	if q.isInfinity() == 1 {
++		return r.Set(q), nil
++	}
+ 	scalarReversed := new(p256OrdElement)
+ 	p256OrdBigToLittle(scalarReversed, (*[32]byte)(scalar))
+ 	p256OrdReduce(scalarReversed)

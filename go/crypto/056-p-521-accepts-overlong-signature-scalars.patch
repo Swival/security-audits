@@ -1,0 +1,13 @@
+diff --git a/src/crypto/internal/fips140/ecdsa/ecdsa_s390x.go b/src/crypto/internal/fips140/ecdsa/ecdsa_s390x.go
+index d0a49cad61..09f4ef1219 100644
+--- a/src/crypto/internal/fips140/ecdsa/ecdsa_s390x.go
++++ b/src/crypto/internal/fips140/ecdsa/ecdsa_s390x.go
+@@ -169,7 +169,8 @@ func verify[P Point[P]](c *Curve[P], pub *PublicKey, hash []byte, sig *Signature
+ 	}
+ 
+ 	r, s := sig.R, sig.S
+-	if len(r) > blockSize || len(s) > blockSize {
++	elementSize := (c.N.BitLen() + 7) / 8
++	if len(r) > elementSize || len(s) > elementSize {
+ 		return errors.New("invalid signature")
+ 	}

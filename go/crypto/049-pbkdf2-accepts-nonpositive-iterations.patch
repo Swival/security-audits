@@ -1,0 +1,14 @@
+diff --git a/src/crypto/internal/fips140/pbkdf2/pbkdf2.go b/src/crypto/internal/fips140/pbkdf2/pbkdf2.go
+index 3a2c8fea26..1207573072 100644
+--- a/src/crypto/internal/fips140/pbkdf2/pbkdf2.go
++++ b/src/crypto/internal/fips140/pbkdf2/pbkdf2.go
+@@ -26,6 +26,9 @@ func Key[Hash hash.Hash](h func() Hash, password string, salt []byte, iter, keyL
+ 	if keyLength <= 0 {
+ 		return nil, errors.New("pbkdf2: keyLength must be larger than 0")
+ 	}
++	if iter <= 0 {
++		return nil, errors.New("pbkdf2: iter must be larger than 0")
++	}
+ 
+ 	prf := hmac.New(h, []byte(password))
+ 	hmac.MarkAsUsedInKDF(prf)

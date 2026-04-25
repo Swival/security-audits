@@ -1,0 +1,12 @@
+diff --git a/src/crypto/x509/x509.go b/src/crypto/x509/x509.go
+index 7953b615f5..247ca44e14 100644
+--- a/src/crypto/x509/x509.go
++++ b/src/crypto/x509/x509.go
+@@ -1704,7 +1704,7 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub, priv
+ 	// We _should_ also restrict serials to <= 20 octets, but it turns out a lot of people
+ 	// get this wrong, in part because the encoding can itself alter the length of the
+ 	// serial. For now we accept these non-conformant serials.
+-	if serialNumber.Sign() == -1 {
++	if serialNumber.Sign() <= 0 {
+ 		return nil, errors.New("x509: serial number must be positive")
+ 	}

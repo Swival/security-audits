@@ -1,0 +1,14 @@
+diff --git a/src/crypto/ecdh/ecdh.go b/src/crypto/ecdh/ecdh.go
+index 3f85a28336..7f9aff9cc9 100644
+--- a/src/crypto/ecdh/ecdh.go
++++ b/src/crypto/ecdh/ecdh.go
+@@ -129,6 +129,9 @@ type PrivateKey struct {
+ // For [X25519], this performs ECDH as specified in RFC 7748, Section 6.1. If
+ // the result is the all-zero value, ECDH returns an error.
+ func (k *PrivateKey) ECDH(remote *PublicKey) ([]byte, error) {
++	if remote == nil {
++		return nil, errors.New("crypto/ecdh: public key is nil")
++	}
+ 	if k.curve != remote.curve {
+ 		return nil, errors.New("crypto/ecdh: private key and public key curves do not match")
+ 	}
