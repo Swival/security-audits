@@ -1,0 +1,14 @@
+diff --git a/src/crypto/rsa/fips.go b/src/crypto/rsa/fips.go
+index fb2395886b..77e5e7aebf 100644
+--- a/src/crypto/rsa/fips.go
++++ b/src/crypto/rsa/fips.go
+@@ -203,6 +203,9 @@ func EncryptOAEP(hash hash.Hash, random io.Reader, pub *PublicKey, msg []byte, l
+ //
+ // See [EncryptOAEP] for additional details.
+ func EncryptOAEPWithOptions(random io.Reader, pub *PublicKey, msg []byte, opts *OAEPOptions) ([]byte, error) {
++	if opts == nil {
++		return nil, errors.New("crypto/rsa: missing OAEPOptions")
++	}
+ 	if opts.MGFHash == 0 {
+ 		return encryptOAEP(opts.Hash.New(), opts.Hash.New(), random, pub, msg, opts.Label)
+ 	}

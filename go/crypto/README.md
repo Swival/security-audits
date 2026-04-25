@@ -4,7 +4,7 @@ Security audit of the Go standard library `crypto` package. Each finding include
 
 ## Summary
 
-**Total findings: 64** -- High: 2, Medium: 37, Low: 25
+**Total findings: 69** -- High: 3, Medium: 41, Low: 25
 
 ## Findings
 
@@ -25,6 +25,7 @@ Security audit of the Go standard library `crypto` package. Each finding include
 | [052](052-oversized-ekm-context-allocates-before-validation.md) | Oversized EKM context allocates before validation | Low |
 | [053](053-negative-ekm-length-panics.md) | Negative EKM length panics | Low |
 | [059](059-cleanup-uses-mutable-der-key.md) | Cleanup uses mutable DER key | Low |
+| [072](072-peer-transport-parameters-alias-caller-buffer.md) | Peer transport parameters alias caller buffer | Medium |
 
 ### X.509
 
@@ -57,6 +58,7 @@ Security audit of the Go standard library `crypto` package. Each finding include
 | [056](056-p-521-accepts-overlong-signature-scalars.md) | P-521 accepts overlong signature scalars | Medium |
 | [066](066-non-invertible-signature-panics-verification.md) | Non-invertible signature panics verification | Medium |
 | [067](067-invalid-order-loops-forever.md) | Invalid order loops forever | Medium |
+| [073](073-nil-inverse-dereference-on-non-invertible-nonce.md) | Nil inverse dereference on non-invertible nonce | Medium |
 
 ### ECDH
 
@@ -76,6 +78,8 @@ Security audit of the Go standard library `crypto` package. Each finding include
 | [064](064-unchecked-oaep-mgf-hash-approval.md) | Unchecked OAEP MGF hash approval | Medium |
 | [065](065-unchecked-oaep-mgf-hash-approval.md) | Unchecked OAEP MGF hash approval | Medium |
 | [070](070-mgf-hash-bypasses-fips-approval.md) | MGF hash bypasses FIPS approval | Medium |
+| [074](074-nil-oaep-options-panic-before-validation.md) | Nil OAEP options panic before validation | Medium |
+| [075](075-zero-hash-panics-in-pkcs1v15-fips-checks.md) | Zero hash panics in PKCS1v15 FIPS checks | Medium |
 
 ### AES / GCM
 
@@ -136,3 +140,4 @@ Security audit of the Go standard library `crypto` package. Each finding include
 | [013](013-file-descriptor-leak-on-write-error.md) | File descriptor leak on write error | Low |
 | [015](015-siggen-mu-argument-is-ignored-as-context.md) | sigGen mu argument is ignored as context | Medium |
 | [040](040-empty-samples-panic.md) | Empty samples panic | Low |
+| [071](071-unbounded-request-argument-count-can-exhaust-memory.md) | Unbounded request argument count can exhaust memory | High |

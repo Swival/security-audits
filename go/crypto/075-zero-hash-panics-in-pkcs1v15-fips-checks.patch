@@ -1,0 +1,21 @@
+diff --git a/src/crypto/rsa/fips.go b/src/crypto/rsa/fips.go
+index fb2395886b..09fdf6c244 100644
+--- a/src/crypto/rsa/fips.go
++++ b/src/crypto/rsa/fips.go
+@@ -342,7 +342,7 @@ func SignPKCS1v15(random io.Reader, priv *PrivateKey, hash crypto.Hash, hashed [
+ 	if err := checkFIPS140OnlyPrivateKey(priv); err != nil {
+ 		return nil, err
+ 	}
+-	if fips140only.Enforced() && !fips140only.ApprovedHash(fips140hash.Unwrap(hash.New())) {
++	if fips140only.Enforced() && (hash == crypto.Hash(0) || !fips140only.ApprovedHash(fips140hash.Unwrap(hash.New()))) {
+ 		return nil, errors.New("crypto/rsa: use of hash functions other than SHA-2 or SHA-3 is not allowed in FIPS 140-only mode")
+ 	}
+ 
+@@ -388,7 +388,7 @@ func VerifyPKCS1v15(pub *PublicKey, hash crypto.Hash, hashed []byte, sig []byte)
+ 	if err := checkFIPS140OnlyPublicKey(pub); err != nil {
+ 		return err
+ 	}
+-	if fips140only.Enforced() && !fips140only.ApprovedHash(fips140hash.Unwrap(hash.New())) {
++	if fips140only.Enforced() && (hash == crypto.Hash(0) || !fips140only.ApprovedHash(fips140hash.Unwrap(hash.New()))) {
+ 		return errors.New("crypto/rsa: use of hash functions other than SHA-2 or SHA-3 is not allowed in FIPS 140-only mode")
+ 	}
