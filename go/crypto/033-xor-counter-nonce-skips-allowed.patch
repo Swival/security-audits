@@ -1,0 +1,15 @@
+diff --git a/src/crypto/internal/fips140/aes/gcm/gcm_nonces.go b/src/crypto/internal/fips140/aes/gcm/gcm_nonces.go
+index 4ae570d9a5..fbed0bedd9 100644
+--- a/src/crypto/internal/fips140/aes/gcm/gcm_nonces.go
++++ b/src/crypto/internal/fips140/aes/gcm/gcm_nonces.go
+@@ -271,8 +271,8 @@ func (g *GCMWithXORCounterNonce) Seal(dst, nonce, plaintext, data []byte) []byte
+ 		if counter == math.MaxUint64 {
+ 			panic("crypto/cipher: counter exhausted")
+ 		}
+-		if counter < g.next {
+-			panic("crypto/cipher: counter decreased or remained the same")
++		if counter != g.next {
++			panic("crypto/cipher: counter decreased, repeated, or skipped")
+ 		}
+ 		g.next = counter + 1
+ 	}

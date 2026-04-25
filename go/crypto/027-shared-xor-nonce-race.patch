@@ -1,0 +1,38 @@
+diff --git a/src/crypto/tls/cipher_suites.go b/src/crypto/tls/cipher_suites.go
+index 6ed63ccc2d..d7911a1600 100644
+--- a/src/crypto/tls/cipher_suites.go
++++ b/src/crypto/tls/cipher_suites.go
+@@ -491,27 +491,19 @@ func (f *xorNonceAEAD) Overhead() int         { return f.aead.Overhead() }
+ func (f *xorNonceAEAD) explicitNonceLen() int { return 0 }
+ 
+ func (f *xorNonceAEAD) Seal(out, nonce, plaintext, additionalData []byte) []byte {
++	maskedNonce := f.nonceMask
+ 	for i, b := range nonce {
+-		f.nonceMask[4+i] ^= b
++		maskedNonce[4+i] ^= b
+ 	}
+-	result := f.aead.Seal(out, f.nonceMask[:], plaintext, additionalData)
+-	for i, b := range nonce {
+-		f.nonceMask[4+i] ^= b
+-	}
+-
+-	return result
++	return f.aead.Seal(out, maskedNonce[:], plaintext, additionalData)
+ }
+ 
+ func (f *xorNonceAEAD) Open(out, nonce, ciphertext, additionalData []byte) ([]byte, error) {
++	maskedNonce := f.nonceMask
+ 	for i, b := range nonce {
+-		f.nonceMask[4+i] ^= b
++		maskedNonce[4+i] ^= b
+ 	}
+-	result, err := f.aead.Open(out, f.nonceMask[:], ciphertext, additionalData)
+-	for i, b := range nonce {
+-		f.nonceMask[4+i] ^= b
+-	}
+-
+-	return result, err
++	return f.aead.Open(out, maskedNonce[:], ciphertext, additionalData)
+ }
+ 
+ func aeadAESGCM(key, noncePrefix []byte) aead {

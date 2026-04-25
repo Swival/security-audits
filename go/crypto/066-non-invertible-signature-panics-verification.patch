@@ -1,0 +1,14 @@
+diff --git a/src/crypto/ecdsa/ecdsa_legacy.go b/src/crypto/ecdsa/ecdsa_legacy.go
+index 2fb1b21a60..9532a6d9d2 100644
+--- a/src/crypto/ecdsa/ecdsa_legacy.go
++++ b/src/crypto/ecdsa/ecdsa_legacy.go
+@@ -181,6 +181,9 @@ func verifyLegacy(pub *PublicKey, hash []byte, sig []byte) bool {
+ 	// SEC 1, Version 2.0, Section 4.1.4
+ 	e := hashToInt(hash, c)
+ 	w := new(big.Int).ModInverse(s, N)
++	if w == nil {
++		return false
++	}
+ 
+ 	u1 := e.Mul(e, w)
+ 	u1.Mod(u1, N)

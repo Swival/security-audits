@@ -1,0 +1,12 @@
+diff --git a/src/crypto/internal/fips140/mlkem/mlkem768.go b/src/crypto/internal/fips140/mlkem/mlkem768.go
+index c4c3a9deaf..f164b9eeb6 100644
+--- a/src/crypto/internal/fips140/mlkem/mlkem768.go
++++ b/src/crypto/internal/fips140/mlkem/mlkem768.go
+@@ -207,6 +207,7 @@ func newKeyFromSeed(dk *DecapsulationKey768, seed []byte) (*DecapsulationKey768,
+ 	d := (*[32]byte)(seed[:32])
+ 	z := (*[32]byte)(seed[32:])
+ 	kemKeyGen(dk, d, z)
++	fips140.PCT("ML-KEM PCT", func() error { return kemPCT(dk) })
+ 	fips140.RecordApproved()
+ 	return dk, nil
+ }

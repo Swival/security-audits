@@ -1,0 +1,13 @@
+diff --git a/src/crypto/internal/fips140/ecdh/ecdh.go b/src/crypto/internal/fips140/ecdh/ecdh.go
+index 967032aab2..a7281d9496 100644
+--- a/src/crypto/internal/fips140/ecdh/ecdh.go
++++ b/src/crypto/internal/fips140/ecdh/ecdh.go
+@@ -41,7 +41,7 @@ type PublicKey struct {
+ }
+ 
+ func (pub *PublicKey) Bytes() []byte {
+-	return pub.q
++	return bytes.Clone(pub.q)
+ }
+ 
+ type curveID string

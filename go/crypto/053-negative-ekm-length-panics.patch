@@ -1,0 +1,14 @@
+diff --git a/src/crypto/tls/prf.go b/src/crypto/tls/prf.go
+index 19f80ac2c9..df5bc1ff51 100644
+--- a/src/crypto/tls/prf.go
++++ b/src/crypto/tls/prf.go
+@@ -259,6 +259,9 @@ func ekmFromMasterSecret(version uint16, suite *cipherSuite, masterSecret, clien
+ 			// These values are reserved and may not be used.
+ 			return nil, fmt.Errorf("crypto/tls: reserved ExportKeyingMaterial label: %s", label)
+ 		}
++		if length < 0 {
++			return nil, fmt.Errorf("crypto/tls: negative ExportKeyingMaterial length")
++		}
+ 
+ 		seedLen := len(serverRandom) + len(clientRandom)
+ 		if context != nil {

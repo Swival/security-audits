@@ -1,0 +1,13 @@
+diff --git a/src/crypto/internal/fips140/ecdh/ecdh.go b/src/crypto/internal/fips140/ecdh/ecdh.go
+index 967032aab2..bcddc592ad 100644
+--- a/src/crypto/internal/fips140/ecdh/ecdh.go
++++ b/src/crypto/internal/fips140/ecdh/ecdh.go
+@@ -28,7 +28,7 @@ type PrivateKey struct {
+ }
+ 
+ func (priv *PrivateKey) Bytes() []byte {
+-	return priv.d
++	return bytes.Clone(priv.d)
+ }
+ 
+ func (priv *PrivateKey) PublicKey() *PublicKey {

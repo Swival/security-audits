@@ -1,0 +1,12 @@
+diff --git a/src/crypto/internal/fips140/rsa/pkcs1v22.go b/src/crypto/internal/fips140/rsa/pkcs1v22.go
+index 4a043213fd..b4ad076061 100644
+--- a/src/crypto/internal/fips140/rsa/pkcs1v22.go
++++ b/src/crypto/internal/fips140/rsa/pkcs1v22.go
+@@ -380,6 +380,7 @@ func EncryptOAEP(hash, mgfHash hash.Hash, random io.Reader, pub *PublicKey, msg
+ 	fipsSelfTest()
+ 	fips140.RecordApproved()
+ 	checkApprovedHash(hash)
++	checkApprovedHash(mgfHash)
+ 	if fipsApproved, err := checkPublicKey(pub); err != nil {
+ 		return nil, err
+ 	} else if !fipsApproved {

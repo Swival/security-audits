@@ -1,0 +1,50 @@
+diff --git a/src/crypto/internal/fips140/drbg/rand.go b/src/crypto/internal/fips140/drbg/rand.go
+index 7129bd08a6..b0e4aaf717 100644
+--- a/src/crypto/internal/fips140/drbg/rand.go
++++ b/src/crypto/internal/fips140/drbg/rand.go
+@@ -12,17 +12,21 @@ import (
+ 	"crypto/internal/fips140"
+ 	"crypto/internal/sysrand"
+ 	"io"
++	"sync"
+ )
+ 
+ // Read fills b with cryptographically secure random bytes. In FIPS mode, it
+ // uses an SP 800-90A Rev. 1 Deterministic Random Bit Generator (DRBG).
+ // Otherwise, it uses the operating system's random number generator.
+ func Read(b []byte) {
+-	if testingReader != nil {
++	testingReaderMu.Lock()
++	r := testingReader
++	testingReaderMu.Unlock()
++	if r != nil {
+ 		fips140.RecordNonApproved()
+ 		// Avoid letting b escape in the non-testing case.
+ 		bb := make([]byte, len(b))
+-		testingReader.Read(bb)
++		r.Read(bb)
+ 		copy(b, bb)
+ 		return
+ 	}
+@@ -35,7 +39,10 @@ func Read(b []byte) {
+ 	readFromEntropy(b)
+ }
+ 
+-var testingReader io.Reader
++var (
++	testingReaderMu sync.Mutex
++	testingReader   io.Reader
++)
+ 
+ // SetTestingReader sets a global, deterministic cryptographic randomness source
+ // for testing purposes. Its Read method must never return an error, it must
+@@ -43,7 +50,9 @@ var testingReader io.Reader
+ //
+ // This is only intended to be used by the testing/cryptotest package.
+ func SetTestingReader(r io.Reader) {
++	testingReaderMu.Lock()
+ 	testingReader = r
++	testingReaderMu.Unlock()
+ }
+ 
+ // DefaultReader is a sentinel type, embedded in the default

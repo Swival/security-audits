@@ -1,0 +1,14 @@
+diff --git a/src/crypto/ecdsa/ecdsa.go b/src/crypto/ecdsa/ecdsa.go
+index b336f32eb6..6e39e661b6 100644
+--- a/src/crypto/ecdsa/ecdsa.go
++++ b/src/crypto/ecdsa/ecdsa.go
+@@ -604,6 +604,9 @@ func privateKeyToFIPS[P ecdsa.Point[P]](c *ecdsa.Curve[P], priv *PrivateKey) (*e
+ func pointFromAffine(curve elliptic.Curve, x, y *big.Int) ([]byte, error) {
+ 	bitSize := curve.Params().BitSize
+ 	// Reject values that would not get correctly encoded.
++	if x == nil || y == nil {
++		return nil, errors.New("nil coordinate")
++	}
+ 	if x.Sign() < 0 || y.Sign() < 0 {
+ 		return nil, errors.New("negative coordinate")
+ 	}

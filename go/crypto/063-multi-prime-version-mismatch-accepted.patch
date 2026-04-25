@@ -1,0 +1,12 @@
+diff --git a/src/crypto/x509/pkcs1.go b/src/crypto/x509/pkcs1.go
+index 68aa8dd980..942a25b800 100644
+--- a/src/crypto/x509/pkcs1.go
++++ b/src/crypto/x509/pkcs1.go
+@@ -67,7 +67,7 @@ func ParsePKCS1PrivateKey(der []byte) (*rsa.PrivateKey, error) {
+ 		return nil, err
+ 	}
+ 
+-	if priv.Version > 1 {
++	if priv.Version > 1 || priv.Version == 0 && len(priv.AdditionalPrimes) > 0 {
+ 		return nil, errors.New("x509: unsupported private key version")
+ 	}

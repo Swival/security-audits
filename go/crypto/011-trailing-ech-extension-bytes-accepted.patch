@@ -1,0 +1,15 @@
+diff --git a/src/crypto/tls/ech.go b/src/crypto/tls/ech.go
+index fcbd13bb88..3eae8d50d8 100644
+--- a/src/crypto/tls/ech.go
++++ b/src/crypto/tls/ech.go
+@@ -544,6 +544,10 @@ func parseECHExt(ext []byte) (echType echExtType, cs echCipher, configID uint8,
+ 		err = errMalformedECHExt
+ 		return
+ 	}
++	if !s.Empty() {
++		err = errMalformedECHExt
++		return
++	}
+ 
+ 	// NOTE: clone encap and payload so that mutating them does not mutate the
+ 	// raw extension bytes.

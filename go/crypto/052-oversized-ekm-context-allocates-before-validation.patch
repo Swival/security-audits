@@ -1,0 +1,25 @@
+diff --git a/src/crypto/tls/prf.go b/src/crypto/tls/prf.go
+index 19f80ac2c9..7d179538a5 100644
+--- a/src/crypto/tls/prf.go
++++ b/src/crypto/tls/prf.go
+@@ -260,6 +260,10 @@ func ekmFromMasterSecret(version uint16, suite *cipherSuite, masterSecret, clien
+ 			return nil, fmt.Errorf("crypto/tls: reserved ExportKeyingMaterial label: %s", label)
+ 		}
+ 
++		if context != nil && len(context) >= 1<<16 {
++			return nil, fmt.Errorf("crypto/tls: ExportKeyingMaterial context too long")
++		}
++
+ 		seedLen := len(serverRandom) + len(clientRandom)
+ 		if context != nil {
+ 			seedLen += 2 + len(context)
+@@ -270,9 +274,6 @@ func ekmFromMasterSecret(version uint16, suite *cipherSuite, masterSecret, clien
+ 		seed = append(seed, serverRandom...)
+ 
+ 		if context != nil {
+-			if len(context) >= 1<<16 {
+-				return nil, fmt.Errorf("crypto/tls: ExportKeyingMaterial context too long")
+-			}
+ 			seed = append(seed, byte(len(context)>>8), byte(len(context)))
+ 			seed = append(seed, context...)
+ 		}

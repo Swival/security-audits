@@ -1,0 +1,19 @@
+diff --git a/src/crypto/tls/conn.go b/src/crypto/tls/conn.go
+index 7ce69e914a..18fa532fe0 100644
+--- a/src/crypto/tls/conn.go
++++ b/src/crypto/tls/conn.go
+@@ -1535,10 +1535,12 @@ func (c *Conn) handshakeContext(ctx context.Context) (ret error) {
+ 	} else if ctx.Done() != nil {
+ 		// Close the connection if ctx is canceled before the function returns.
+ 		stop := context.AfterFunc(ctx, func() {
+-			_ = c.conn.Close()
++			if !c.isHandshakeComplete.Load() {
++				_ = c.conn.Close()
++			}
+ 		})
+ 		defer func() {
+-			if !stop() {
++			if !stop() && !c.isHandshakeComplete.Load() {
+ 				// Return context error to user.
+ 				ret = ctx.Err()
+ 			}

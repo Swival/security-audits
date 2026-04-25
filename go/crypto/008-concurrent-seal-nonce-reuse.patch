@@ -1,0 +1,32 @@
+diff --git a/src/crypto/hpke/hpke.go b/src/crypto/hpke/hpke.go
+index 5ad3b8a4ca..94a1c3fd5b 100644
+--- a/src/crypto/hpke/hpke.go
++++ b/src/crypto/hpke/hpke.go
+@@ -12,6 +12,7 @@ import (
+ 	"crypto/cipher"
+ 	"errors"
+ 	"internal/byteorder"
++	"sync"
+ )
+ 
+ type context struct {
+@@ -21,6 +22,7 @@ type context struct {
+ 
+ 	aead      cipher.AEAD
+ 	baseNonce []byte
++	seqNumMu  sync.Mutex
+ 	// seqNum starts at zero and is incremented for each Seal/Open call.
+ 	// 64 bits are enough not to overflow for 500 years at 1ns per operation.
+ 	seqNum uint64
+@@ -172,8 +174,11 @@ func (s *Sender) Seal(aad, plaintext []byte) ([]byte, error) {
+ 	if s.aead == nil {
+ 		return nil, errors.New("export-only instantiation")
+ 	}
+-	ciphertext := s.aead.Seal(nil, s.nextNonce(), plaintext, aad)
++	s.seqNumMu.Lock()
++	nonce := s.nextNonce()
+ 	s.seqNum++
++	s.seqNumMu.Unlock()
++	ciphertext := s.aead.Seal(nil, nonce, plaintext, aad)
+ 	return ciphertext, nil
+ }
