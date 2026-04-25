@@ -1,0 +1,14 @@
+diff --git a/src/crypto/internal/fips140/hkdf/hkdf.go b/src/crypto/internal/fips140/hkdf/hkdf.go
+index 2e8b83d41d..6ed01069b0 100644
+--- a/src/crypto/internal/fips140/hkdf/hkdf.go
++++ b/src/crypto/internal/fips140/hkdf/hkdf.go
+@@ -25,6 +25,9 @@ func Extract[H hash.Hash](h func() H, secret, salt []byte) []byte {
+ }
+ 
+ func Expand[H hash.Hash](h func() H, pseudorandomKey []byte, info string, keyLen int) []byte {
++	if keyLen > h().Size()*255 {
++		return nil
++	}
+ 	out := make([]byte, 0, keyLen)
+ 	expander := hmac.New(h, pseudorandomKey)
+ 	hmac.MarkAsUsedInKDF(expander)

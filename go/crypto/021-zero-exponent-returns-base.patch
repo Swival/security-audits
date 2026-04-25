@@ -1,0 +1,17 @@
+diff --git a/src/crypto/internal/fips140/bigmod/nat.go b/src/crypto/internal/fips140/bigmod/nat.go
+index 2d5921dbbc..17d1f78c82 100644
+--- a/src/crypto/internal/fips140/bigmod/nat.go
++++ b/src/crypto/internal/fips140/bigmod/nat.go
+@@ -1043,6 +1043,12 @@ func (out *Nat) ExpShortVarTime(x *Nat, e uint, m *Modulus) *Nat {
+ 	if !m.odd {
+ 		panic("bigmod: modulus for ExpShortVarTime must be odd")
+ 	}
++	if e == 0 {
++		out.resetFor(m)
++		out.limbs[0] = 1
++		return out
++	}
++
+ 	// For short exponents, precomputing a table and using a window like in Exp
+ 	// doesn't pay off. Instead, we do a simple conditional square-and-multiply
+ 	// chain, skipping the initial run of zeroes.

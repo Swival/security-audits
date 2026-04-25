@@ -1,0 +1,78 @@
+diff --git a/src/crypto/x509/constraints.go b/src/crypto/x509/constraints.go
+index b7eb1e0f57..3059f483e4 100644
+--- a/src/crypto/x509/constraints.go
++++ b/src/crypto/x509/constraints.go
+@@ -56,13 +56,13 @@ import (
+ //
+ // Email addresses also require some additional logic, which does not make use
+ // of nameConstraintsSet, to handle constraints which define full email
+-// addresses (i.e. 'test@example.com'). For bare domain constraints, we use the
+-// dnsConstraints type described above, querying the domain portion of the email
+-// address. For full email addresses, we also hold a map of email addresses with
+-// the domain portion of the email lowercased, since it is case insensitive. When
+-// looking up an email address in the constraint set, we first check the full
+-// email address map, and if we don't find anything, we check the domain portion
+-// of the email address against the dnsConstraints.
++// addresses (i.e. 'test@example.com'). For bare domain constraints, a domain
++// matches exactly and a leading-dot domain matches only subdomains. For full
++// email addresses, we also hold a map of email addresses with the domain portion
++// of the email lowercased, since it is case insensitive. When looking up an
++// email address in the constraint set, we first check the full email address
++// map, and if we don't find anything, we check the domain portion of the email
++// address against the domain constraints.
+ 
+ type nameConstraintsSet[T *net.IPNet | string, V net.IP | string] struct {
+ 	set []T
+@@ -387,7 +387,9 @@ func (dnc *dnsConstraints) query(s string) (string, bool) {
+ }
+ 
+ type emailConstraints struct {
+-	dnsConstraints interface{ query(string) (string, bool) }
++	// domains is a list of rfc822Name domain constraints. Bare domains match
++	// exactly, while leading-dot domains match only subdomains.
++	domains []string
+ 
+ 	// fullEmails is map of rfc2821Mailboxs that are fully specified in the
+ 	// constraints, which we need to check for separately since they don't
+@@ -398,7 +400,7 @@ type emailConstraints struct {
+ 	fullEmails map[rfc2821Mailbox]struct{}
+ }
+ 
+-func newEmailConstraints(l []string, permitted bool) interface {
++func newEmailConstraints(l []string, _ bool) interface {
+ 	query(rfc2821Mailbox) (string, bool)
+ } {
+ 	if len(l) == 0 {
+@@ -422,13 +424,10 @@ func newEmailConstraints(l []string, permitted bool) interface {
+ 		parsed.domain = strings.ToLower(parsed.domain)
+ 		exactMap[parsed] = struct{}{}
+ 	}
+-	ec := &emailConstraints{
++	return &emailConstraints{
++		domains:    domains,
+ 		fullEmails: exactMap,
+ 	}
+-	if len(domains) > 0 {
+-		ec.dnsConstraints = newDNSConstraints(domains, permitted)
+-	}
+-	return ec
+ }
+ 
+ func (ec *emailConstraints) query(s rfc2821Mailbox) (string, bool) {
+@@ -437,11 +436,12 @@ func (ec *emailConstraints) query(s rfc2821Mailbox) (string, bool) {
+ 			return fmt.Sprintf("%s@%s", s.local, s.domain), true
+ 		}
+ 	}
+-	if ec.dnsConstraints == nil {
+-		return "", false
++	for _, constraint := range ec.domains {
++		if constraint == "" || constraint[0] == '.' && dnsHasSuffix(constraint, s.domain) || strings.EqualFold(constraint, s.domain) {
++			return constraint, true
++		}
+ 	}
+-	constraint, found := ec.dnsConstraints.query(s.domain)
+-	return constraint, found
++	return "", false
+ }
+ 
+ type constraints[T any, V any] struct {

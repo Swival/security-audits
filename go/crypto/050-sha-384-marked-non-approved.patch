@@ -1,0 +1,13 @@
+diff --git a/src/crypto/internal/fips140/tls12/tls12.go b/src/crypto/internal/fips140/tls12/tls12.go
+index 5b4dcae101..baf5db8185 100644
+--- a/src/crypto/internal/fips140/tls12/tls12.go
++++ b/src/crypto/internal/fips140/tls12/tls12.go
+@@ -59,7 +59,7 @@ func MasterSecret[H hash.Hash](hash func() H, preMasterSecret, transcript []byte
+ 			fips140.RecordNonApproved()
+ 		}
+ 	case *sha512.Digest:
+-		if h.Size() != 46 && h.Size() != 64 {
++		if h.Size() != 48 && h.Size() != 64 {
+ 			fips140.RecordNonApproved()
+ 		}
+ 	default:

@@ -1,0 +1,13 @@
+diff --git a/src/crypto/x509/root_windows.go b/src/crypto/x509/root_windows.go
+index 4bea108161..e0de6bf7ef 100644
+--- a/src/crypto/x509/root_windows.go
++++ b/src/crypto/x509/root_windows.go
+@@ -224,7 +224,7 @@ func (c *Certificate) systemVerify(opts *VerifyOptions) (chains [][]*Certificate
+ 			oids = append(oids, &oid[0])
+ 		}
+ 	}
+-	if oids != nil {
++	if len(oids) > 0 {
+ 		para.RequestedUsage.Type = syscall.USAGE_MATCH_TYPE_OR
+ 		para.RequestedUsage.Usage.Length = uint32(len(oids))
+ 		para.RequestedUsage.Usage.UsageIdentifiers = &oids[0]

@@ -1,0 +1,12 @@
+diff --git a/src/crypto/internal/fips140/rsa/pkcs1v22.go b/src/crypto/internal/fips140/rsa/pkcs1v22.go
+index 4a043213fd..b77aede985 100644
+--- a/src/crypto/internal/fips140/rsa/pkcs1v22.go
++++ b/src/crypto/internal/fips140/rsa/pkcs1v22.go
+@@ -417,6 +417,7 @@ func DecryptOAEP(hash, mgfHash hash.Hash, priv *PrivateKey, ciphertext []byte, l
+ 	fipsSelfTest()
+ 	fips140.RecordApproved()
+ 	checkApprovedHash(hash)
++	checkApprovedHash(mgfHash)
+ 
+ 	k := priv.pub.Size()
+ 	if len(ciphertext) > k ||

@@ -1,0 +1,13 @@
+diff --git a/src/crypto/internal/fips140/aes/gcm/gcm_nonces.go b/src/crypto/internal/fips140/aes/gcm/gcm_nonces.go
+index 4ae570d9a5..c17c35a90a 100644
+--- a/src/crypto/internal/fips140/aes/gcm/gcm_nonces.go
++++ b/src/crypto/internal/fips140/aes/gcm/gcm_nonces.go
+@@ -129,7 +129,7 @@ func (g *GCMWithCounterNonce) Seal(dst, nonce, plaintext, data []byte) []byte {
+ 		if counter == math.MaxUint64 {
+ 			panic("crypto/cipher: counter exhausted")
+ 		}
+-		if counter < g.next {
++		if counter != g.next {
+ 			panic("crypto/cipher: counter decreased or remained the same")
+ 		}
+ 		g.next = counter + 1

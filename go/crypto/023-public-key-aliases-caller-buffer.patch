@@ -1,0 +1,13 @@
+diff --git a/src/crypto/internal/fips140/ecdsa/ecdsa.go b/src/crypto/internal/fips140/ecdsa/ecdsa.go
+index 1c00f55810..0836618683 100644
+--- a/src/crypto/internal/fips140/ecdsa/ecdsa.go
++++ b/src/crypto/internal/fips140/ecdsa/ecdsa.go
+@@ -192,7 +192,7 @@ func NewPublicKey[P Point[P]](c *Curve[P], Q []byte) (*PublicKey, error) {
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	return &PublicKey{curve: c.curve, q: Q}, nil
++	return &PublicKey{curve: c.curve, q: bytes.Clone(Q)}, nil
+ }
+ 
+ // GenerateKey generates a new ECDSA private key pair for the specified curve.

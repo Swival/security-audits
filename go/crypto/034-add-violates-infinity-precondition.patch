@@ -1,0 +1,26 @@
+diff --git a/src/crypto/internal/fips140/nistec/p256_asm.go b/src/crypto/internal/fips140/nistec/p256_asm.go
+index f00e70d99d..0493195023 100644
+--- a/src/crypto/internal/fips140/nistec/p256_asm.go
++++ b/src/crypto/internal/fips140/nistec/p256_asm.go
+@@ -394,14 +394,19 @@ func p256OrdBigToLittle(l *p256OrdElement, b *[32]byte) {
+ 
+ // Add sets q = p1 + p2, and returns q. The points may overlap.
+ func (q *P256Point) Add(r1, r2 *P256Point) *P256Point {
+-	var sum, double P256Point
+ 	r1IsInfinity := r1.isInfinity()
+ 	r2IsInfinity := r2.isInfinity()
++	if r1IsInfinity == 1 {
++		return q.Set(r2)
++	}
++	if r2IsInfinity == 1 {
++		return q.Set(r1)
++	}
++
++	var sum, double P256Point
+ 	pointsEqual := p256PointAddAsm(&sum, r1, r2)
+ 	p256PointDoubleAsm(&double, r1)
+ 	p256MovCond(&sum, &double, &sum, pointsEqual)
+-	p256MovCond(&sum, r1, &sum, r2IsInfinity)
+-	p256MovCond(&sum, r2, &sum, r1IsInfinity)
+ 	return q.Set(&sum)
+ }

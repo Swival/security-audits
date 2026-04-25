@@ -1,0 +1,22 @@
+diff --git a/src/crypto/hpke/hpke.go b/src/crypto/hpke/hpke.go
+index 5ad3b8a4ca..00a4a121c1 100644
+--- a/src/crypto/hpke/hpke.go
++++ b/src/crypto/hpke/hpke.go
+@@ -12,6 +12,7 @@ import (
+ 	"crypto/cipher"
+ 	"errors"
+ 	"internal/byteorder"
++	"math"
+ )
+ 
+ type context struct {
+@@ -172,6 +173,9 @@ func (s *Sender) Seal(aad, plaintext []byte) ([]byte, error) {
+ 	if s.aead == nil {
+ 		return nil, errors.New("export-only instantiation")
+ 	}
++	if s.seqNum == math.MaxUint64 {
++		return nil, errors.New("message limit reached")
++	}
+ 	ciphertext := s.aead.Seal(nil, s.nextNonce(), plaintext, aad)
+ 	s.seqNum++
+ 	return ciphertext, nil

@@ -1,0 +1,14 @@
+diff --git a/src/crypto/ecdsa/ecdsa.go b/src/crypto/ecdsa/ecdsa.go
+index b336f32eb6..bb5c80d751 100644
+--- a/src/crypto/ecdsa/ecdsa.go
++++ b/src/crypto/ecdsa/ecdsa.go
+@@ -578,6 +578,9 @@ func privateKeyToFIPS[P ecdsa.Point[P]](c *ecdsa.Curve[P], priv *PrivateKey) (*e
+ 	}
+ 
+ 	// Reject values that would not get correctly encoded.
++	if priv.D == nil {
++		return nil, errors.New("ecdsa: invalid private key")
++	}
+ 	if priv.D.BitLen() > priv.Curve.Params().N.BitLen() {
+ 		return nil, errors.New("ecdsa: private key scalar too large")
+ 	}
