@@ -1,0 +1,13 @@
+diff --git a/src/crypto/tls/quic.go b/src/crypto/tls/quic.go
+index c7d8508acb..cf35e6027e 100644
+--- a/src/crypto/tls/quic.go
++++ b/src/crypto/tls/quic.go
+@@ -369,7 +369,7 @@ func (q *QUICConn) SetTransportParameters(params []byte) {
+ 	if params == nil {
+ 		params = []byte{}
+ 	}
+-	q.conn.quic.transportParams = params
++	q.conn.quic.transportParams = append([]byte{}, params...)
+ 	if q.conn.quic.started {
+ 		<-q.conn.quic.signalc
+ 		<-q.conn.quic.blockedc
