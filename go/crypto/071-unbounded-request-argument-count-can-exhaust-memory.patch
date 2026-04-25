@@ -1,0 +1,23 @@
+diff --git a/src/crypto/internal/fips140test/acvp_test.go b/src/crypto/internal/fips140test/acvp_test.go
+index 6a0b46af2b..38be9034bb 100644
+--- a/src/crypto/internal/fips140test/acvp_test.go
++++ b/src/crypto/internal/fips140test/acvp_test.go
+@@ -119,6 +119,8 @@ const (
+ 	aesDecrypt
+ )
+ 
++const maxRequestArgs uint32 = 9 // Command name plus the maximum supported argument count.
++
+ var (
+ 
+ 	// Separate capabilities specific to testing the entropy source's SHA2-384 implementation.
+@@ -384,6 +386,9 @@ func readRequest(reader io.Reader) (*request, error) {
+ 	if numArgs == 0 {
+ 		return nil, errors.New("invalid request: zero args")
+ 	}
++	if numArgs > maxRequestArgs {
++		return nil, fmt.Errorf("invalid request: too many args: %d", numArgs)
++	}
+ 
+ 	args, err := readArgs(reader, numArgs)
+ 	if err != nil {
