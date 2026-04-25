@@ -4,7 +4,7 @@ Security audit of the Go standard library `crypto` package. Each finding include
 
 ## Summary
 
-**Total findings: 61** -- High: 2, Medium: 35, Low: 24
+**Total findings: 64** -- High: 2, Medium: 37, Low: 25
 
 ## Findings
 
@@ -16,7 +16,9 @@ Security audit of the Go standard library `crypto` package. Each finding include
 | [005](005-context-cancellation-can-close-completed-handshake.md) | Context cancellation can close completed handshake | Medium |
 | [010](010-echconfiglist-parser-can-loop-forever.md) | ECHConfigList parser can loop forever | Medium |
 | [011](011-trailing-ech-extension-bytes-accepted.md) | Trailing ECH extension bytes accepted | Low |
+| [014](014-start-error-leaves-blocking-state.md) | Start error leaves blocking state | Low |
 | [016](016-hrr-allows-psk-identity-changes.md) | HRR allows PSK identity changes | Low |
+| [017](017-unchecked-ech-hash-clone.md) | Unchecked ECH hash clone | Medium |
 | [027](027-shared-xor-nonce-race.md) | Shared XOR nonce race | Medium |
 | [050](050-sha-384-marked-non-approved.md) | SHA-384 marked non-approved | Medium |
 | [051](051-hkdf-label-length-truncation.md) | HKDF label length truncation | Medium |
@@ -128,6 +130,7 @@ Security audit of the Go standard library `crypto` package. Each finding include
 
 | # | Finding | Severity |
 |---|---------|----------|
+| [002](002-short-randnonce-ciphertext-panics.md) | Short randNonce ciphertext panics | Medium |
 | [003](003-oversized-cmac-panics.md) | Oversized CMAC panics | Medium |
 | [004](004-oversized-rsa-exponent-panics.md) | Oversized RSA exponent panics | Medium |
 | [013](013-file-descriptor-leak-on-write-error.md) | File descriptor leak on write error | Low |
