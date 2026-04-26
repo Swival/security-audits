@@ -48,9 +48,7 @@ func TestPoC034AddInfinityPrecondition(t *testing.T) {
 	pointsEqual := p256PointAddAsm(&sum, inf, g)
 	t.Logf("CONFIRMED: p256PointAddAsm called with infinity operand. Contract says res and return are undefined.")
 	t.Logf("  pointsEqual return value (undefined per contract) = %d", pointsEqual)
-	t.Logf("  sum.x.limbs[0]                                    = %#x", sum.x[0])
-	t.Logf("  sum.y.limbs[0]                                    = %#x", sum.y[0])
-	t.Logf("  sum.z.limbs[0]                                    = %#x", sum.z[0])
+	t.Logf("  sum.Bytes() (raw undefined intermediate) = %x", sum.Bytes())
 
 	gMatch := bytes.Equal(sum.Bytes(), gBytes)
 	t.Logf("  sum.Bytes() == G.Bytes() ? %v (no contract on either outcome)", gMatch)
