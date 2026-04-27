@@ -6,7 +6,7 @@ Logic error, medium severity.
 
 ## Affected Locations
 
-`library/std/src/os/unix/net/stream.rs:678`
+`library/std/src/os/unix/net/stream.rs:681`
 
 ## Summary
 
@@ -26,13 +26,13 @@ Confidence: certain.
 
 ## Proof
 
-At `library/std/src/os/unix/net/stream.rs:674`, scalar writes use:
+At `library/std/src/os/unix/net/stream.rs:677`, scalar writes use:
 
 ```rust
 self.0.send_with_flags(buf, MSG_NOSIGNAL)
 ```
 
-At `library/std/src/os/unix/net/stream.rs:678`, vectored writes previously used:
+At `library/std/src/os/unix/net/stream.rs:681`, vectored writes previously used:
 
 ```rust
 self.0.write_vectored(bufs)
