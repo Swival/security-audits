@@ -1,0 +1,19 @@
+diff --git a/packages/cli/src/core/format.ts b/packages/cli/src/core/format.ts
+index 395ad8a..1e2ef75 100644
+--- a/packages/cli/src/core/format.ts
++++ b/packages/cli/src/core/format.ts
+@@ -43,10 +43,11 @@ export function formatDateTime(
+ 
+ /** Escape a value for CSV output. */
+ export function csvEscape(value: string): string {
+-  if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+-    return `"${value.replace(/"/g, '""')}"`;
++  const safeValue = /^[=+\-@]/.test(value) ? `'${value}` : value;
++  if (safeValue.includes(",") || safeValue.includes('"') || safeValue.includes("\n")) {
++    return `"${safeValue.replace(/"/g, '""')}"`;
+   }
+-  return value;
++  return safeValue;
+ }
+ 
+ /** Escape pipe characters for markdown table cells. */

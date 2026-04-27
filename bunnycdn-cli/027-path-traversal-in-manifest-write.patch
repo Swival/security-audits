@@ -1,0 +1,42 @@
+diff --git a/packages/cli/src/core/manifest.ts b/packages/cli/src/core/manifest.ts
+index 956029b..05c2b26 100644
+--- a/packages/cli/src/core/manifest.ts
++++ b/packages/cli/src/core/manifest.ts
+@@ -5,7 +5,7 @@ import {
+   unlinkSync,
+   writeFileSync,
+ } from "node:fs";
+-import { dirname, join, resolve } from "node:path";
++import { dirname, isAbsolute, join, resolve } from "node:path";
+ import { UserError } from "./errors.ts";
+ 
+ const MANIFEST_DIR = ".bunny";
+@@ -16,6 +16,12 @@ export interface ManifestData {
+   scriptType?: number;
+ }
+ 
++function assertManifestFilename(filename: string): void {
++  if (isAbsolute(filename) || filename.includes("..") || /[/\\]/.test(filename)) {
++    throw new UserError("Invalid manifest filename.");
++  }
++}
++
+ /**
+  * Walk up the directory tree looking for a `.bunny/<filename>` file.
+  * Returns the project root (the directory containing `.bunny/`),
+@@ -62,6 +68,7 @@ export function saveManifest<T extends object = ManifestData>(
+   filename: string,
+   data: T,
+ ): void {
++  assertManifestFilename(filename);
+   const dir = manifestDir(filename);
+   mkdirSync(dir, { recursive: true });
+   writeFileSync(join(dir, filename), `${JSON.stringify(data, null, 2)}\n`, {
+@@ -83,6 +90,7 @@ export function saveManifestAt<T extends object = ManifestData>(
+   filename: string,
+   data: T,
+ ): void {
++  assertManifestFilename(filename);
+   const dir = join(root, MANIFEST_DIR);
+   mkdirSync(dir, { recursive: true });
+   writeFileSync(join(dir, filename), `${JSON.stringify(data, null, 2)}\n`, {

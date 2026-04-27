@@ -1,0 +1,28 @@
+diff --git a/packages/database-rest/dev.ts b/packages/database-rest/dev.ts
+index 3654f24..c814c4e 100644
+--- a/packages/database-rest/dev.ts
++++ b/packages/database-rest/dev.ts
+@@ -35,9 +35,22 @@ await client.executeMultiple(`
+ const schema = await introspect({ client });
+ const executor = createLibSQLExecutor({ client });
+ const handler = createRestHandler(executor, schema);
++const authToken = process.env.DATABASE_REST_AUTH_TOKEN;
++if (!authToken) {
++  throw new Error("DATABASE_REST_AUTH_TOKEN must be set to run dev server");
++}
+ 
+ const port = Number(process.env.PORT) || 8080;
+-const server = Bun.serve({ port, fetch: handler });
++const server = Bun.serve({
++  port,
++  fetch: (request) => {
++    if (request.headers.get("Authorization") !== `Bearer ${authToken}`) {
++      return new Response("Unauthorized", { status: 401 });
++    }
++
++    return handler(request);
++  },
++});
+ 
+ console.log(`Listening on http://localhost:${server.port}`);
+ console.log();

@@ -1,0 +1,12 @@
+diff --git a/packages/database-shell/src/views.ts b/packages/database-shell/src/views.ts
+index 314a56d..f809943 100644
+--- a/packages/database-shell/src/views.ts
++++ b/packages/database-shell/src/views.ts
+@@ -36,6 +36,7 @@ export function saveView(viewsDir: string, name: string, sql: string): void {
+ 
+ /** Load a named view and return its SQL, or null if it doesn't exist. */
+ export function loadView(viewsDir: string, name: string): string | null {
++  if (!isValidViewName(name)) return null;
+   const path = join(viewsDir, name + VIEW_EXT);
+   if (!existsSync(path)) return null;
+   return readFileSync(path, "utf-8").trim();

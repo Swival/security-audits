@@ -1,0 +1,13 @@
+diff --git a/packages/cli/src/commands/scripts/init.ts b/packages/cli/src/commands/scripts/init.ts
+index cba3449..4e4f595 100644
+--- a/packages/cli/src/commands/scripts/init.ts
++++ b/packages/cli/src/commands/scripts/init.ts
+@@ -298,7 +298,7 @@ export const scriptsInitCommand = defineCommand<InitArgs>({
+       existsSync(`${dirPath}/package.json`) &&
+       args[ARG_SKIP_INSTALL] !== true
+     ) {
+-      const shouldInstall = interactive
++      const shouldInstall = interactive || args[ARG_TEMPLATE_REPO]
+         ? await confirm("Install dependencies?")
+         : true;
+       if (shouldInstall) {

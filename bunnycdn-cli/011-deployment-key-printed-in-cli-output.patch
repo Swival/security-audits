@@ -1,0 +1,12 @@
+diff --git a/packages/cli/src/commands/scripts/show.ts b/packages/cli/src/commands/scripts/show.ts
+index 1478d24..321c298 100644
+--- a/packages/cli/src/commands/scripts/show.ts
++++ b/packages/cli/src/commands/scripts/show.ts
+@@ -90,7 +90,6 @@ export const scriptsShowCommand = defineCommand<ShowArgs>({
+           },
+           { key: "Default Hostname", value: script.DefaultHostname ?? "" },
+           { key: "System Hostname", value: script.SystemHostname ?? "" },
+-          { key: "Deployment Key", value: script.DeploymentKey ?? "" },
+           {
+             key: "Current Release",
+             value: String(script.CurrentReleaseId ?? "—"),

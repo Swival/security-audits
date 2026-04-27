@@ -20,6 +20,7 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | Project                                                       | Findings | Description                                    |
 | ------------------------------------------------------------- | -------: | ---------------------------------------------- |
 | [boringssl](boringssl/)                                       |       15 | Google's fork of OpenSSL                       |
+| [bunnycdn-cli](bunnycdn-cli/)                                 |       31 | BunnyCDN command-line client                   |
 | [bunnycdn-tokenauthentication](bunnycdn-tokenauthentication/) |       10 | BunnyCDN token authentication library          |
 | [go/crypto](go/crypto/)                                       |       69 | Go standard library `crypto/*` packages        |
 | [h2o](h2o/)                                                   |       25 | HTTP/1, HTTP/2 and HTTP/3 server               |

@@ -1,0 +1,35 @@
+diff --git a/packages/cli/src/commands/db/tokens/create.ts b/packages/cli/src/commands/db/tokens/create.ts
+index ff8fde1..6bee503 100644
+--- a/packages/cli/src/commands/db/tokens/create.ts
++++ b/packages/cli/src/commands/db/tokens/create.ts
+@@ -180,21 +180,20 @@ export const dbTokensCreateCommand = defineCommand<{
+     const spin = spinner("Generating token...");
+     spin.start();
+ 
+-    // Fetch token and database details in parallel
+-    const [tokenResult, dbResult] = await Promise.all([
+-      client.PUT("/v2/databases/{db_id}/auth/generate", {
++    const tokenResult = await client.PUT("/v2/databases/{db_id}/auth/generate", {
++      params: { path: { db_id: databaseId } },
++      body: { authorization, expires_at: expiresAt },
++    });
++    const dbResult = await client
++      .GET("/v2/databases/{db_id}", {
+         params: { path: { db_id: databaseId } },
+-        body: { authorization, expires_at: expiresAt },
+-      }),
+-      client.GET("/v2/databases/{db_id}", {
+-        params: { path: { db_id: databaseId } },
+-      }),
+-    ]);
++      })
++      .catch(() => undefined);
+ 
+     spin.stop();
+ 
+     const token = tokenResult.data?.token;
+-    const dbUrl = dbResult.data?.db?.url;
++    const dbUrl = dbResult?.data?.db?.url;
+ 
+     if (output === "json") {
+       logger.log(
