@@ -1,0 +1,12 @@
+diff --git a/library/std/src/sys/env/solid.rs b/library/std/src/sys/env/solid.rs
+index 0ce5a22b425..8f6f55ff369 100644
+--- a/library/std/src/sys/env/solid.rs
++++ b/library/std/src/sys/env/solid.rs
+@@ -24,6 +24,7 @@ pub fn env() -> Env {
+     unsafe {
+         let _guard = env_read_lock();
+         let mut result = Vec::new();
++        let mut environ = environ;
+         if !environ.is_null() {
+             while !(*environ).is_null() {
+                 if let Some(key_value) = parse(CStr::from_ptr(*environ).to_bytes()) {

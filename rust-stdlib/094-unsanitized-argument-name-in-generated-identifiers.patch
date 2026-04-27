@@ -1,0 +1,34 @@
+diff --git a/library/stdarch/crates/intrinsic-test/src/common/argument.rs b/library/stdarch/crates/intrinsic-test/src/common/argument.rs
+index 385cf32d3bf..0a607a73800 100644
+--- a/library/stdarch/crates/intrinsic-test/src/common/argument.rs
++++ b/library/stdarch/crates/intrinsic-test/src/common/argument.rs
+@@ -16,6 +16,20 @@ pub struct Argument<T: IntrinsicTypeDefinition> {
+     pub constraint: Option<Constraint>,
+ }
+ 
++fn sanitize_identifier(name: &str) -> String {
++    let mut sanitized = String::with_capacity(name.len());
++
++    for (i, c) in name.chars().enumerate() {
++        if c == '_' || c.is_ascii_alphabetic() || (i > 0 && c.is_ascii_digit()) {
++            sanitized.push(c);
++        } else {
++            sanitized.push('_');
++        }
++    }
++
++    sanitized
++}
++
+ impl<T> Argument<T>
+ where
+     T: IntrinsicTypeDefinition,
+@@ -23,7 +37,7 @@ impl<T> Argument<T>
+     pub fn new(pos: usize, name: String, ty: T, constraint: Option<Constraint>) -> Self {
+         Argument {
+             pos,
+-            name,
++            name: sanitize_identifier(&name),
+             ty,
+             constraint,
+         }

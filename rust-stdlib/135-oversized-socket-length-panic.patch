@@ -1,0 +1,18 @@
+diff --git a/library/std/src/os/unix/net/addr.rs b/library/std/src/os/unix/net/addr.rs
+index 0748f6984a8..c9e4ebd4cf3 100644
+--- a/library/std/src/os/unix/net/addr.rs
++++ b/library/std/src/os/unix/net/addr.rs
+@@ -115,6 +115,13 @@ pub(super) fn from_parts(
+                 .map_or(len, |new_len| (new_len + SUN_PATH_OFFSET) as libc::socklen_t);
+         }
+ 
++        if len as usize > size_of::<libc::sockaddr_un>() {
++            return Err(io::const_error!(
++                io::ErrorKind::InvalidInput,
++                "socket address length exceeded sockaddr_un size",
++            ));
++        }
++
+         if len == 0 {
+             // When there is a datagram from unnamed unix socket
+             // linux returns zero bytes of address

@@ -1,0 +1,21 @@
+diff --git a/library/core/src/mem/type_info.rs b/library/core/src/mem/type_info.rs
+index e4d47dedb86..1bfdac5437b 100644
+--- a/library/core/src/mem/type_info.rs
++++ b/library/core/src/mem/type_info.rs
+@@ -46,15 +46,9 @@ pub const fn info(self) -> Type {
+ impl Type {
+     /// Returns the type information of the generic type parameter.
+     ///
+-    /// Note: Unlike `TypeId`s obtained via `TypeId::of`, the `Type`
+-    /// struct and its fields contain `TypeId`s that are not necessarily
+-    /// derived from types that outlive `'static`. This means that using
+-    /// the `TypeId`s (transitively) obtained from this function will
+-    /// be able to break invariants that other `TypeId` consuming crates
+-    /// may have assumed to hold.
+     #[unstable(feature = "type_info", issue = "146922")]
+     #[rustc_const_unstable(feature = "type_info", issue = "146922")]
+-    pub const fn of<T: ?Sized>() -> Self {
++    pub const fn of<T: ?Sized + 'static>() -> Self {
+         const { type_id::<T>().info() }
+     }
+ }

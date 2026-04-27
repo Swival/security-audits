@@ -1,0 +1,12 @@
+diff --git a/library/std/src/sys/io/error/unix.rs b/library/std/src/sys/io/error/unix.rs
+index b10343b2752..cc4d8b000e8 100644
+--- a/library/std/src/sys/io/error/unix.rs
++++ b/library/std/src/sys/io/error/unix.rs
+@@ -174,7 +174,7 @@ pub fn error_string(errno: i32) -> String {
+ 
+     let p = buf.as_mut_ptr();
+     unsafe {
+-        if strerror_r(errno as c_int, p, buf.len()) < 0 {
++        if strerror_r(errno as c_int, p, buf.len()) != 0 {
+             panic!("strerror_r failure");
+         }

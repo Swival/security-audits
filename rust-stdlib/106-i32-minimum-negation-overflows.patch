@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/pal/hermit/mod.rs b/library/std/src/sys/pal/hermit/mod.rs
+index 53f6ddd7065..226464b99e8 100644
+--- a/library/std/src/sys/pal/hermit/mod.rs
++++ b/library/std/src/sys/pal/hermit/mod.rs
+@@ -99,7 +99,7 @@ fn is_negative(&self) -> bool {
+     }
+ 
+     fn negate(&self) -> i32 {
+-        -(*self)
++        (*self).saturating_neg()
+     }
+ }
+ impl_is_negative! { i8 i16 i64 isize }

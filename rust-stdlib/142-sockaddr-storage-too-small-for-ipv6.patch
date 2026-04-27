@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/pal/solid/abi/sockets.rs b/library/std/src/sys/pal/solid/abi/sockets.rs
+index 80802dd42e2..420ebf3975f 100644
+--- a/library/std/src/sys/pal/solid/abi/sockets.rs
++++ b/library/std/src/sys/pal/solid/abi/sockets.rs
+@@ -118,7 +118,7 @@ pub struct sockaddr_storage {
+     pub s2_len: u8,
+     pub ss_family: sa_family_t,
+     pub s2_data1: [c_char; 2usize],
+-    pub s2_data2: [u32; 3usize],
++    pub s2_data2: [u32; 6usize],
+ }
+ 
+ #[repr(C)]

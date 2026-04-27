@@ -1,0 +1,16 @@
+diff --git a/library/stdarch/crates/intrinsic-test/src/arm/json_parser.rs b/library/stdarch/crates/intrinsic-test/src/arm/json_parser.rs
+index c1563a7364c..a6a157f7c20 100644
+--- a/library/stdarch/crates/intrinsic-test/src/arm/json_parser.rs
++++ b/library/stdarch/crates/intrinsic-test/src/arm/json_parser.rs
+@@ -134,8 +134,10 @@ fn try_from(prep: ArgPrep) -> Result<Self, Self::Error> {
+         if let Ok((min, max)) = parsed_ints {
+             if min == max {
+                 Ok(Constraint::Equal(min))
+-            } else {
++            } else if max < i64::MAX {
+                 Ok(Constraint::Range(min..max + 1))
++            } else {
++                Err(())
+             }
+         } else {
+             Err(())

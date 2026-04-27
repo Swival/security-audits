@@ -1,0 +1,56 @@
+diff --git a/library/std/src/sys/process/unix/vxworks.rs b/library/std/src/sys/process/unix/vxworks.rs
+index 346ca6d74c9..bc1dc68d91a 100644
+--- a/library/std/src/sys/process/unix/vxworks.rs
++++ b/library/std/src/sys/process/unix/vxworks.rs
+@@ -37,19 +37,33 @@ pub fn spawn(
+         let mut p = Process { pid: 0, status: None };
+ 
+         unsafe {
++            let mut orig_stdin = libc::STDIN_FILENO;
++            let mut orig_stdout = libc::STDOUT_FILENO;
++            let mut orig_stderr = libc::STDERR_FILENO;
++
+             macro_rules! t {
+                 ($e:expr) => {
+                     match $e {
+                         Ok(e) => e,
+-                        Err(e) => return Err(e.into()),
++                        Err(e) => {
++                            if orig_stdin != libc::STDIN_FILENO {
++                                let _ = cvt_r(|| libc::dup2(orig_stdin, libc::STDIN_FILENO));
++                                libc::close(orig_stdin);
++                            }
++                            if orig_stdout != libc::STDOUT_FILENO {
++                                let _ = cvt_r(|| libc::dup2(orig_stdout, libc::STDOUT_FILENO));
++                                libc::close(orig_stdout);
++                            }
++                            if orig_stderr != libc::STDERR_FILENO {
++                                let _ = cvt_r(|| libc::dup2(orig_stderr, libc::STDERR_FILENO));
++                                libc::close(orig_stderr);
++                            }
++                            return Err(e.into());
++                        }
+                     }
+                 };
+             }
+ 
+-            let mut orig_stdin = libc::STDIN_FILENO;
+-            let mut orig_stdout = libc::STDOUT_FILENO;
+-            let mut orig_stderr = libc::STDERR_FILENO;
+-
+             if let Some(fd) = theirs.stdin.fd() {
+                 orig_stdin = t!(cvt_r(|| libc::dup(libc::STDIN_FILENO)));
+                 t!(cvt_r(|| libc::dup2(fd, libc::STDIN_FILENO)));
+@@ -99,10 +113,12 @@ macro_rules! t {
+             if orig_stdin != libc::STDIN_FILENO {
+                 t!(cvt_r(|| libc::dup2(orig_stdin, libc::STDIN_FILENO)));
+                 libc::close(orig_stdin);
++                orig_stdin = libc::STDIN_FILENO;
+             }
+             if orig_stdout != libc::STDOUT_FILENO {
+                 t!(cvt_r(|| libc::dup2(orig_stdout, libc::STDOUT_FILENO)));
+                 libc::close(orig_stdout);
++                orig_stdout = libc::STDOUT_FILENO;
+             }
+             if orig_stderr != libc::STDERR_FILENO {
+                 t!(cvt_r(|| libc::dup2(orig_stderr, libc::STDERR_FILENO)));

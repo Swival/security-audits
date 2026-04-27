@@ -1,0 +1,13 @@
+diff --git a/library/stdarch/crates/stdarch-gen-arm/spec/sve/aarch64.spec.yml b/library/stdarch/crates/stdarch-gen-arm/spec/sve/aarch64.spec.yml
+index 383e50b7cc7..0a57e6ebfc1 100644
+--- a/library/stdarch/crates/stdarch-gen-arm/spec/sve/aarch64.spec.yml
++++ b/library/stdarch/crates/stdarch-gen-arm/spec/sve/aarch64.spec.yml
+@@ -1875,7 +1875,7 @@ intrinsics:
+     doc: Load two-element tuples into two vectors
+     safety:
+       unsafe:
+-        - pointer_offset: predicated
++        - pointer_offset_vnum: predicated
+         - dereference: predicated
+     arguments: ["pg: {predicate}", "base: *{type}", "vnum: i64"]
+     return_type: "{sve_type_x2}"

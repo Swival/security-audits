@@ -1,0 +1,15 @@
+diff --git a/library/core/src/index.rs b/library/core/src/index.rs
+index 70372163c6e..44c2841b08a 100644
+--- a/library/core/src/index.rs
++++ b/library/core/src/index.rs
+@@ -171,8 +171,9 @@ unsafe impl<T> SliceIndex<[T]> for Clamp<range::RangeInclusive<usize>> {
+     type Output = [T];
+ 
+     fn get(self, slice: &[T]) -> Option<&Self::Output> {
+-        let start = cmp::min(self.0.start, slice.len() - 1);
+-        let end = cmp::min(self.0.last, slice.len() - 1);
++        let last = slice.len().checked_sub(1)?;
++        let start = cmp::min(self.0.start, last);
++        let end = cmp::min(self.0.last, last);
+         (start..=end).get(slice)
+     }

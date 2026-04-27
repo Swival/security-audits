@@ -1,0 +1,14 @@
+diff --git a/library/std/src/sys/net/connection/xous/dns.rs b/library/std/src/sys/net/connection/xous/dns.rs
+index b139376f597..0583c0ceac2 100644
+--- a/library/std/src/sys/net/connection/xous/dns.rs
++++ b/library/std/src/sys/net/connection/xous/dns.rs
+@@ -61,6 +61,9 @@ fn next(&mut self) -> Option<SocketAddr> {
+ 
+ pub fn lookup_host(query: &str, port: u16) -> io::Result<LookupHost> {
+     let mut result = LookupHost { data: LookupHostQuery([0u8; 4096]), offset: 0, count: 0, port };
++    if query.as_bytes().len() > result.data.0.len() {
++        return Err(io::const_error!(io::ErrorKind::InvalidInput, "DNS query too long"));
++    }
+ 
+     // Copy the query into the message that gets sent to the DNS server
+     for (query_byte, result_byte) in query.as_bytes().iter().zip(result.data.0.iter_mut()) {

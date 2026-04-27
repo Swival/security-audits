@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/personality/dwarf/mod.rs b/library/std/src/sys/personality/dwarf/mod.rs
+index 2bc91951b49..f9ce87ef5a6 100644
+--- a/library/std/src/sys/personality/dwarf/mod.rs
++++ b/library/std/src/sys/personality/dwarf/mod.rs
+@@ -56,7 +56,7 @@ pub unsafe fn read_sleb128(&mut self) -> i64 {
+             byte = unsafe { self.read::<u8>() };
+             result |= ((byte & 0x7F) as u64) << shift;
+             shift += 7;
+-            if byte & 0x80 == 0 {
++            if byte & 0x80 == 0 || shift >= u64::BITS {
+                 break;
+             }
+         }

@@ -1,0 +1,12 @@
+diff --git a/library/std/src/sync/poison/rwlock.rs b/library/std/src/sync/poison/rwlock.rs
+index 4cfd9d19df7..c2fec33b59c 100644
+--- a/library/std/src/sync/poison/rwlock.rs
++++ b/library/std/src/sync/poison/rwlock.rs
+@@ -882,6 +882,7 @@ unsafe fn new(lock: &'rwlock RwLock<T>) -> LockResult<RwLockWriteGuard<'rwlock,
+     #[stable(feature = "rwlock_downgrade", since = "1.92.0")]
+     pub fn downgrade(s: Self) -> RwLockReadGuard<'rwlock, T> {
+         let lock = s.lock;
++        lock.poison.done(&s.poison);
+ 
+         // We don't want to call the destructor since that calls `write_unlock`.
+         forget(s);

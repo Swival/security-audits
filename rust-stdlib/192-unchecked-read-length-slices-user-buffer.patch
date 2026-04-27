@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/pal/sgx/abi/usercalls/mod.rs b/library/std/src/sys/pal/sgx/abi/usercalls/mod.rs
+index e413bae6ab4..87a43344d0b 100644
+--- a/library/std/src/sys/pal/sgx/abi/usercalls/mod.rs
++++ b/library/std/src/sys/pal/sgx/abi/usercalls/mod.rs
+@@ -21,7 +21,7 @@ pub fn read(fd: Fd, bufs: &mut [IoSliceMut<'_>]) -> io::Result<usize> {
+         let total_len = bufs.iter().fold(0usize, |sum, buf| sum.saturating_add(buf.len()));
+         let mut userbuf = alloc::User::<[u8]>::uninitialized(total_len);
+         let ret_len = raw::read(fd, userbuf.as_mut_ptr(), userbuf.len()).from_sgx_result()?;
+-        let userbuf = &userbuf[..ret_len];
++        let userbuf = &userbuf[..cmp::min(ret_len, userbuf.len())];
+         let mut index = 0;
+         for buf in bufs {
+             let end = cmp::min(index + buf.len(), userbuf.len());

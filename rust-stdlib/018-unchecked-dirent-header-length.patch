@@ -1,0 +1,30 @@
+diff --git a/library/std/src/sys/fs/hermit.rs b/library/std/src/sys/fs/hermit.rs
+index 5992766b5a4..74937689882 100644
+--- a/library/std/src/sys/fs/hermit.rs
++++ b/library/std/src/sys/fs/hermit.rs
+@@ -195,7 +195,16 @@ fn next(&mut self) -> Option<io::Result<DirEntry>> {
+                 return None;
+             }
+ 
++            let remaining = self.inner.dir.len() - offset;
++            if remaining < mem::size_of::<dirent64>() {
++                return Some(Err(io::const_error!(ErrorKind::InvalidData, "invalid directory entry")));
++            }
++
+             let dir = unsafe { &*(self.inner.dir.as_ptr().add(offset) as *const dirent64) };
++            let reclen = usize::from(dir.d_reclen);
++            if reclen < mem::size_of::<dirent64>() || reclen > remaining {
++                return Some(Err(io::const_error!(ErrorKind::InvalidData, "invalid directory entry")));
++            }
+ 
+             if counter == self.pos {
+                 self.pos += 1;
+@@ -219,7 +228,7 @@ fn next(&mut self) -> Option<io::Result<DirEntry>> {
+             counter += 1;
+ 
+             // move to the next dirent64, which is directly stored after the previous one
+-            offset = offset + usize::from(dir.d_reclen);
++            offset = offset + reclen;
+         }
+     }
+ }

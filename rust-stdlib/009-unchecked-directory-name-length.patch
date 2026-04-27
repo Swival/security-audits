@@ -1,0 +1,29 @@
+diff --git a/library/std/src/sys/fs/windows.rs b/library/std/src/sys/fs/windows.rs
+index 74854cdeb49..8041f0e9ca7 100644
+--- a/library/std/src/sys/fs/windows.rs
++++ b/library/std/src/sys/fs/windows.rs
+@@ -969,8 +969,24 @@ fn next(&mut self) -> Option<Self::Item> {
+             // it does not seem that reality is so kind, and assuming this
+             // caused crashes in some cases (https://github.com/rust-lang/rust/issues/104530)
+             // presumably, this can be blamed on buggy filesystem drivers, but who knows.
++            let name_offset = offset_of!(c::FILE_ID_BOTH_DIR_INFO, FileName);
++            if buffer.len() < name_offset {
++                self.buffer = None;
++                return None;
++            }
++
+             let next_entry = (&raw const (*info).NextEntryOffset).read_unaligned() as usize;
+             let length = (&raw const (*info).FileNameLength).read_unaligned() as usize;
++            let entry_len = if next_entry == 0 { buffer.len() } else { next_entry };
++            if entry_len > buffer.len()
++                || entry_len < name_offset
++                || length % size_of::<u16>() != 0
++                || length > entry_len - name_offset
++            {
++                self.buffer = None;
++                return None;
++            }
++
+             let attrs = (&raw const (*info).FileAttributes).read_unaligned();
+             let name = from_maybe_unaligned(
+                 (&raw const (*info).FileName).cast::<u16>(),

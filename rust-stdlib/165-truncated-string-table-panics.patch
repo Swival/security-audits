@@ -1,0 +1,14 @@
+diff --git a/library/test/src/term/terminfo/parser/compiled.rs b/library/test/src/term/terminfo/parser/compiled.rs
+index d1dd0f10d86..e471f158daf 100644
+--- a/library/test/src/term/terminfo/parser/compiled.rs
++++ b/library/test/src/term/terminfo/parser/compiled.rs
+@@ -280,6 +280,9 @@ macro_rules! read_nonneg {
+ 
+         let mut string_table = Vec::new();
+         t!(file.take(string_table_bytes as u64).read_to_end(&mut string_table));
++        if string_table.len() != string_table_bytes {
++            return Err("invalid file: truncated string table".to_string());
++        }
+ 
+         t!(string_offsets
+             .into_iter()

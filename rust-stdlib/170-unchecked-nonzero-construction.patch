@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/thread/hermit.rs b/library/std/src/sys/thread/hermit.rs
+index faeaa9ae2df..550d3d4714e 100644
+--- a/library/std/src/sys/thread/hermit.rs
++++ b/library/std/src/sys/thread/hermit.rs
+@@ -71,7 +71,7 @@ pub fn join(self) {
+ }
+ 
+ pub fn available_parallelism() -> io::Result<NonZero<usize>> {
+-    unsafe { Ok(NonZero::new_unchecked(hermit_abi::available_parallelism())) }
++    NonZero::new(hermit_abi::available_parallelism()).ok_or(io::Error::UNKNOWN_THREAD_COUNT)
+ }
+ 
+ #[inline]

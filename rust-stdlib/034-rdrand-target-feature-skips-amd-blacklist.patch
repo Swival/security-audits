@@ -1,0 +1,58 @@
+diff --git a/library/std/src/sys/random/uefi.rs b/library/std/src/sys/random/uefi.rs
+index f7a76008351..21b9bb82159 100644
+--- a/library/std/src/sys/random/uefi.rs
++++ b/library/std/src/sys/random/uefi.rs
+@@ -103,31 +103,31 @@ unsafe fn self_test() -> bool {
+     }
+ 
+     fn is_rdrand_good() -> bool {
+-        #[cfg(not(target_feature = "rdrand"))]
+-        {
+-            // SAFETY: All Rust x86 targets are new enough to have CPUID, and we
+-            // check that leaf 1 is supported before using it.
+-            let cpuid0 = arch::__cpuid(0);
+-            if cpuid0.eax < 1 {
++        // SAFETY: All Rust x86 targets are new enough to have CPUID, and we
++        // check that leaf 1 is supported before using it.
++        let cpuid0 = arch::__cpuid(0);
++        if cpuid0.eax < 1 {
++            return false;
++        }
++        let cpuid1 = arch::__cpuid(1);
++
++        let vendor_id =
++            [cpuid0.ebx.to_le_bytes(), cpuid0.edx.to_le_bytes(), cpuid0.ecx.to_le_bytes()];
++        if vendor_id == [*b"Auth", *b"enti", *b"cAMD"] {
++            let mut family = (cpuid1.eax >> 8) & 0xF;
++            if family == 0xF {
++                family += (cpuid1.eax >> 20) & 0xFF;
++            }
++            // AMD CPUs families before 17h (Zen) sometimes fail to set CF when
++            // RDRAND fails after suspend. Don't use RDRAND on those families.
++            // See https://bugzilla.redhat.com/show_bug.cgi?id=1150286
++            if family < 0x17 {
+                 return false;
+             }
+-            let cpuid1 = arch::__cpuid(1);
+-
+-            let vendor_id =
+-                [cpuid0.ebx.to_le_bytes(), cpuid0.edx.to_le_bytes(), cpuid0.ecx.to_le_bytes()];
+-            if vendor_id == [*b"Auth", *b"enti", *b"cAMD"] {
+-                let mut family = (cpuid1.eax >> 8) & 0xF;
+-                if family == 0xF {
+-                    family += (cpuid1.eax >> 20) & 0xFF;
+-                }
+-                // AMD CPUs families before 17h (Zen) sometimes fail to set CF when
+-                // RDRAND fails after suspend. Don't use RDRAND on those families.
+-                // See https://bugzilla.redhat.com/show_bug.cgi?id=1150286
+-                if family < 0x17 {
+-                    return false;
+-                }
+-            }
++        }
+ 
++        #[cfg(not(target_feature = "rdrand"))]
++        {
+             const RDRAND_FLAG: u32 = 1 << 30;
+             if cpuid1.ecx & RDRAND_FLAG == 0 {
+                 return false;

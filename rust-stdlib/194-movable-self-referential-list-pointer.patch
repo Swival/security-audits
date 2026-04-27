@@ -1,0 +1,53 @@
+diff --git a/library/std/src/sys/pal/sgx/waitqueue/unsafe_list.rs b/library/std/src/sys/pal/sgx/waitqueue/unsafe_list.rs
+index c736cab576e..dbe7c5ce3c1 100644
+--- a/library/std/src/sys/pal/sgx/waitqueue/unsafe_list.rs
++++ b/library/std/src/sys/pal/sgx/waitqueue/unsafe_list.rs
+@@ -44,18 +44,35 @@ unsafe fn init(&mut self) {
+             // SAFETY: `self.head_tail` must meet all requirements for a mutable reference.
+             unsafe { self.head_tail.as_mut() }.next = self.head_tail;
+             unsafe { self.head_tail.as_mut() }.prev = self.head_tail;
++        } else {
++            let mut head_tail =
++                unsafe { NonNull::new_unchecked(self.head_tail_entry.as_mut().unwrap()) };
++            if self.head_tail != head_tail {
++                let old_head_tail = mem::replace(&mut self.head_tail, head_tail);
++                let head_tail_entry = unsafe { head_tail.as_mut() };
++                if head_tail_entry.next == old_head_tail {
++                    head_tail_entry.next = head_tail;
++                } else {
++                    unsafe { head_tail_entry.next.as_mut() }.prev = head_tail;
++                }
++                if head_tail_entry.prev == old_head_tail {
++                    head_tail_entry.prev = head_tail;
++                } else {
++                    unsafe { head_tail_entry.prev.as_mut() }.next = head_tail;
++                }
++            }
+         }
+     }
+ 
+     pub fn is_empty(&self) -> bool {
+-        if self.head_tail_entry.is_some() {
+-            let first = unsafe { self.head_tail.as_ref() }.next;
+-            if first == self.head_tail {
++        if let Some(head_tail_entry) = self.head_tail_entry.as_ref() {
++            let head_tail = NonNull::from(head_tail_entry);
++            let first = head_tail_entry.next;
++            if first == head_tail || first == self.head_tail {
+                 // ,-------> /---------\ next ---,
+                 // |         |head_tail|         |
+                 // `--- prev \---------/ <-------`
+-                // SAFETY: `self.head_tail` must meet all requirements for a reference.
+-                unsafe { rtassert!(self.head_tail.as_ref().prev == first) };
++                rtassert!(head_tail_entry.prev == first);
+                 true
+             } else {
+                 false
+@@ -135,6 +152,7 @@ pub unsafe fn pop<'a>(&mut self) -> Option<&'a T> {
+     /// The caller must ensure that `entry` has been pushed onto `self`
+     /// prior to this call and has not moved since then.
+     pub unsafe fn remove(&mut self, entry: &mut UnsafeListEntry<T>) {
++        unsafe { self.init() };
+         rtassert!(!self.is_empty());
+         // BEFORE:
+         //     /----\ next ---> /-----\ next ---> /----\

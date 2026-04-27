@@ -1,0 +1,16 @@
+diff --git a/library/stdarch/crates/intrinsic-test/src/common/gen_rust.rs b/library/stdarch/crates/intrinsic-test/src/common/gen_rust.rs
+index 82b97701bb1..41ba8f2d840 100644
+--- a/library/stdarch/crates/intrinsic-test/src/common/gen_rust.rs
++++ b/library/stdarch/crates/intrinsic-test/src/common/gen_rust.rs
+@@ -170,6 +170,11 @@ pub fn compile_rust_programs(
+ 
+     let mut rust_flags = "-Cdebuginfo=0".to_string();
+     if let Some(linker) = linker {
++        if linker.chars().any(char::is_whitespace) {
++            error!("linker must not contain whitespace");
++            return false;
++        }
++
+         rust_flags.push_str(" -C linker=");
+         rust_flags.push_str(linker);
+         rust_flags.push_str(" -C link-args=-static");

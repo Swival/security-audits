@@ -1,0 +1,38 @@
+diff --git a/library/std/src/os/windows/io/socket.rs b/library/std/src/os/windows/io/socket.rs
+index 28e972925e6..376ae02ef89 100644
+--- a/library/std/src/os/windows/io/socket.rs
++++ b/library/std/src/os/windows/io/socket.rs
+@@ -122,32 +122,7 @@ pub fn try_clone_to_owned(&self) -> io::Result<OwnedSocket> {
+         if socket != sys::c::INVALID_SOCKET {
+             unsafe { Ok(OwnedSocket::from_raw_socket(socket as RawSocket)) }
+         } else {
+-            let error = unsafe { sys::c::WSAGetLastError() };
+-
+-            if error != sys::c::WSAEPROTOTYPE && error != sys::c::WSAEINVAL {
+-                return Err(io::Error::from_raw_os_error(error));
+-            }
+-
+-            let socket = unsafe {
+-                sys::c::WSASocketW(
+-                    info.iAddressFamily,
+-                    info.iSocketType,
+-                    info.iProtocol,
+-                    &info,
+-                    0,
+-                    sys::c::WSA_FLAG_OVERLAPPED,
+-                )
+-            };
+-
+-            if socket == sys::c::INVALID_SOCKET {
+-                return Err(last_error());
+-            }
+-
+-            unsafe {
+-                let socket = OwnedSocket::from_raw_socket(socket as RawSocket);
+-                socket.set_no_inherit()?;
+-                Ok(socket)
+-            }
++            Err(last_error())
+         }
+     }
+ }

@@ -1,0 +1,41 @@
+diff --git a/library/stdarch/ci/run.sh b/library/stdarch/ci/run.sh
+index ea012b42f98..a96b6819383 100755
+--- a/library/stdarch/ci/run.sh
++++ b/library/stdarch/ci/run.sh
+@@ -64,13 +64,20 @@ echo "STDARCH_TEST_SKIP_FUNCTION=${STDARCH_TEST_SKIP_FUNCTION}"
+ echo "PROFILE=${PROFILE}"
+ 
+ cargo_test() {
+-    cmd="cargo"
++    cargo_arg=$1
++    test_arg=$2
+     subcmd="test"
+     if [ "$NORUN" = "1" ]; then
+         export subcmd="build"
+     fi
+-    cmd="$cmd ${subcmd} --target=$TARGET --profile=$PROFILE $1"
+-    cmd="$cmd -- $2"
++    set -- cargo "${subcmd}" --target="${TARGET}" --profile="${PROFILE}"
++    if [ -n "${cargo_arg}" ]; then
++        set -- "$@" "${cargo_arg}"
++    fi
++    set -- "$@" --
++    if [ -n "${test_arg}" ]; then
++        set -- "$@" "${test_arg}"
++    fi
+ 
+     case ${TARGET} in
+         # wasm targets can't catch panics so if a test failures make sure the test
+@@ -83,10 +90,10 @@ cargo_test() {
+               dir="debug"
+             fi
+             export CARGO_TARGET_WASM32_WASIP1_RUNNER="wasmtime -Wexceptions --dir /checkout/target/wasm32-wasip1/$dir/deps::."
+-            cmd="$cmd --nocapture"
++            set -- "$@" --nocapture
+             ;;
+     esac
+-    $cmd
++    "$@"
+ }
+ 
+ CORE_ARCH="--manifest-path=crates/core_arch/Cargo.toml"

@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/personality/dwarf/eh.rs b/library/std/src/sys/personality/dwarf/eh.rs
+index ef5112ad74f..c134b55b383 100644
+--- a/library/std/src/sys/personality/dwarf/eh.rs
++++ b/library/std/src/sys/personality/dwarf/eh.rs
+@@ -254,7 +254,7 @@ unsafe fn read_encoded_pointer(
+     let mut ptr = if base_ptr.is_null() {
+         // any value encoding other than absptr would be nonsensical here;
+         // there would be no source of pointer provenance
+-        if encoding & 0x0F != DW_EH_PE_absptr {
++        if encoding & 0x0F != DW_EH_PE_absptr || encoding & DW_EH_PE_indirect != 0 {
+             return Err(());
+         }
+         unsafe { reader.read::<*const u8>() }

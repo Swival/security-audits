@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/process/motor.rs b/library/std/src/sys/process/motor.rs
+index 133633f7bc6..1381e196768 100644
+--- a/library/std/src/sys/process/motor.rs
++++ b/library/std/src/sys/process/motor.rs
+@@ -121,7 +121,7 @@ pub fn spawn(
+         } else {
+             default.try_clone()?.into_rt()
+         };
+-        let stderr = if let Some(stderr) = self.stdout.as_ref() {
++        let stderr = if let Some(stderr) = self.stderr.as_ref() {
+             stderr.try_clone()?.into_rt()
+         } else {
+             default.try_clone()?.into_rt()

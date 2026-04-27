@@ -1,0 +1,14 @@
+diff --git a/library/std/src/sys/time/uefi.rs b/library/std/src/sys/time/uefi.rs
+index 5a7eab9031e..ace1a4d3d18 100644
+--- a/library/std/src/sys/time/uefi.rs
++++ b/library/std/src/sys/time/uefi.rs
+@@ -160,6 +160,9 @@ fn try_handle(handle: NonNull<crate::ffi::c_void>) -> Option<u64> {
+             }
+ 
+             let freq = unsafe { properties.assume_init().frequency };
++            if freq == 0 {
++                return None;
++            }
+             let ts = unsafe { ((*protocol.as_ptr()).get_timestamp)() };
+             Some(mul_div_u64(ts, NS_PER_SEC, freq))
+         }

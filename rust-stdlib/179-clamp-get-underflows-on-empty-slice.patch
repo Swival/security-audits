@@ -1,0 +1,13 @@
+diff --git a/library/core/src/index.rs b/library/core/src/index.rs
+index 70372163c6e..2464353e366 100644
+--- a/library/core/src/index.rs
++++ b/library/core/src/index.rs
+@@ -54,6 +54,9 @@ unsafe impl<T> SliceIndex<[T]> for Clamp<usize> {
+     type Output = T;
+ 
+     fn get(self, slice: &[T]) -> Option<&Self::Output> {
++        if slice.is_empty() {
++            return None;
++        }
+         slice.get(cmp::min(self.0, slice.len() - 1))
+     }

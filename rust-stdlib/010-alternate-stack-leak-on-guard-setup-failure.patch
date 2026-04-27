@@ -1,0 +1,14 @@
+diff --git a/library/std/src/sys/pal/unix/stack_overflow.rs b/library/std/src/sys/pal/unix/stack_overflow.rs
+index 3b951899dfe..5d92b136144 100644
+--- a/library/std/src/sys/pal/unix/stack_overflow.rs
++++ b/library/std/src/sys/pal/unix/stack_overflow.rs
+@@ -237,7 +237,9 @@ unsafe fn get_stack() -> libc::stack_t {
+         }
+         let guard_result = libc::mprotect(stackp, page_size, PROT_NONE);
+         if guard_result != 0 {
+-            panic!("failed to set up alternative stack guard page: {}", io::Error::last_os_error());
++            let error = io::Error::last_os_error();
++            munmap(stackp, sigstack_size + page_size);
++            panic!("failed to set up alternative stack guard page: {error}");
+         }
+         let stackp = stackp.add(page_size);

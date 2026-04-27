@@ -1,0 +1,15 @@
+diff --git a/library/std/src/sys/personality/dwarf/eh.rs b/library/std/src/sys/personality/dwarf/eh.rs
+index ef5112ad74f..d9c620f7ebf 100644
+--- a/library/std/src/sys/personality/dwarf/eh.rs
++++ b/library/std/src/sys/personality/dwarf/eh.rs
+@@ -89,8 +89,9 @@ pub unsafe fn find_eh_action(lsda: *const u8, context: &EHContext<'_>) -> Result
+         reader.read::<u8>()
+     };
+     let action_table = unsafe {
+-        let call_site_table_length = reader.read_uleb128();
+-        reader.ptr.add(call_site_table_length as usize)
++        let call_site_table_length = usize::try_from(reader.read_uleb128()).map_err(|_| ())?;
++        let action_table_addr = reader.ptr.addr().checked_add(call_site_table_length).ok_or(())?;
++        reader.ptr.with_addr(action_table_addr)
+     };
+     let ip = context.ip;
