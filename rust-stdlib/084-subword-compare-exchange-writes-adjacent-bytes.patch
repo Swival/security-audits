@@ -1,0 +1,24 @@
+diff --git a/library/compiler-builtins/compiler-builtins/src/sync/arm_linux.rs b/library/compiler-builtins/compiler-builtins/src/sync/arm_linux.rs
+index 7edd76c0b8b..f4e94e32786 100644
+--- a/library/compiler-builtins/compiler-builtins/src/sync/arm_linux.rs
++++ b/library/compiler-builtins/compiler-builtins/src/sync/arm_linux.rs
+@@ -167,15 +167,16 @@ macro_rules! atomic_rmw {
+     };
+ }
+ macro_rules! atomic_cmpxchg {
+-    ($name:ident, $ty:ty) => {
++    ($name:ident, u32) => {
+         intrinsics! {
+-            pub unsafe extern "C" fn $name(ptr: *mut $ty, oldval: $ty, newval: $ty) -> $ty {
++            pub unsafe extern "C" fn $name(ptr: *mut u32, oldval: u32, newval: u32) -> u32 {
+                 // SAFETY: the caller must guarantee that the pointer is valid for read and write
+                 // and aligned to the element size.
+-                unsafe { atomic_cmpxchg(ptr, oldval as u32, newval as u32) as $ty }
++                unsafe { atomic_cmpxchg(ptr, oldval, newval) }
+             }
+         }
+     };
++    ($name:ident, $ty:ty) => {};
+ }
+ 
+ include!("arm_thumb_shared.rs");

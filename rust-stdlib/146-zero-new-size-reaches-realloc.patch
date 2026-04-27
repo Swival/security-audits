@@ -1,0 +1,15 @@
+diff --git a/library/std/src/sys/pal/wasi/cabi_realloc.rs b/library/std/src/sys/pal/wasi/cabi_realloc.rs
+index 78adf9002fd..dc90ad76889 100644
+--- a/library/std/src/sys/pal/wasi/cabi_realloc.rs
++++ b/library/std/src/sys/pal/wasi/cabi_realloc.rs
+@@ -47,7 +47,9 @@
+         layout = Layout::from_size_align_unchecked(new_len, align);
+         alloc::alloc(layout)
+     } else {
+-        debug_assert_ne!(new_len, 0, "non-zero old_len requires non-zero new_len!");
++        if new_len == 0 {
++            super::abort_internal();
++        }
+         layout = Layout::from_size_align_unchecked(old_len, align);
+         alloc::realloc(old_ptr, layout, new_len)
+     };

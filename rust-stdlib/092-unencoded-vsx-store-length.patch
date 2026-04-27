@@ -1,0 +1,13 @@
+diff --git a/library/stdarch/crates/core_arch/src/powerpc64/vsx.rs b/library/stdarch/crates/core_arch/src/powerpc64/vsx.rs
+index 7b42be8653c..96d8b6e43c4 100644
+--- a/library/stdarch/crates/core_arch/src/powerpc64/vsx.rs
++++ b/library/stdarch/crates/core_arch/src/powerpc64/vsx.rs
+@@ -84,7 +84,7 @@ impl VectorXstores for t_t_l!($ty) {
+                 #[inline]
+                 #[target_feature(enable = "power9-vector")]
+                 unsafe fn vec_xst_len(self, a: Self::Out, l: usize) {
+-                    stxvl(transmute(self), a as *mut u8, l)
++                    vec_stxvl(transmute(self), a as *mut u8, l)
+                 }
+             }
+         };

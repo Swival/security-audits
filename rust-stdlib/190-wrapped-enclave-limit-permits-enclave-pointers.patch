@@ -1,0 +1,16 @@
+diff --git a/library/std/src/sys/pal/sgx/abi/mem.rs b/library/std/src/sys/pal/sgx/abi/mem.rs
+index e6ce15bed3c..6c55c8eca8d 100644
+--- a/library/std/src/sys/pal/sgx/abi/mem.rs
++++ b/library/std/src/sys/pal/sgx/abi/mem.rs
+@@ -89,5 +89,10 @@ pub fn is_user_range(p: *const u8, len: usize) -> bool {
+     };
+ 
+     let base = image_base() as usize;
+-    end < base || start > base + (unsafe { ENCLAVE_SIZE } - 1) // unsafe ok: link-time constant
++    let enclave_end = if let Some(end) = base.checked_add(unsafe { ENCLAVE_SIZE } - 1) {
++        end
++    } else {
++        return false;
++    };
++    end < base || start > enclave_end // unsafe ok: link-time constant
+ }

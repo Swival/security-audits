@@ -1,0 +1,32 @@
+diff --git a/library/std/src/sys/pal/uefi/helpers.rs b/library/std/src/sys/pal/uefi/helpers.rs
+index 9db72db6067..28e8d10ed12 100644
+--- a/library/std/src/sys/pal/uefi/helpers.rs
++++ b/library/std/src/sys/pal/uefi/helpers.rs
+@@ -363,7 +363,11 @@ fn fmt(&self, f: &mut crate::fmt::Formatter<'_>) -> crate::fmt::Result {
+ 
+ impl<'a> DevicePathIterator<'a> {
+     const fn new(node: DevicePathNode<'a>) -> Self {
+-        if node.is_end() { Self(None) } else { Self(Some(node)) }
++        if node.is_end() || node.length() < size_of::<device_path::Protocol>() as u16 {
++            Self(None)
++        } else {
++            Self(Some(node))
++        }
+     }
+ }
+ 
+@@ -374,7 +378,13 @@ fn next(&mut self) -> Option<Self::Item> {
+         let cur_node = self.0?;
+ 
+         let next_node = unsafe { cur_node.next_node() };
+-        self.0 = if next_node.is_end() { None } else { Some(next_node) };
++        self.0 = if next_node.is_end()
++            || next_node.length() < size_of::<device_path::Protocol>() as u16
++        {
++            None
++        } else {
++            Some(next_node)
++        };
+ 
+         Some(cur_node)
+     }

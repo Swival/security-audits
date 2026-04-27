@@ -1,0 +1,123 @@
+diff --git a/library/compiler-builtins/compiler-builtins/src/sync/arm_linux.rs b/library/compiler-builtins/compiler-builtins/src/sync/arm_linux.rs
+index 7edd76c0b8b..d83e0d0cbac 100644
+--- a/library/compiler-builtins/compiler-builtins/src/sync/arm_linux.rs
++++ b/library/compiler-builtins/compiler-builtins/src/sync/arm_linux.rs
+@@ -101,43 +101,94 @@ unsafe fn atomic_load_aligned<T>(ptr: *mut u32) -> u32 {
+     }
+ }
+ 
++static SUBWORD_LOCK: AtomicU32 = AtomicU32::new(0);
++
++unsafe fn subword_lock() {
++    while unsafe { !__kuser_cmpxchg(0, 1, SUBWORD_LOCK.as_ptr()) } {
++        while SUBWORD_LOCK.load(Ordering::Relaxed) != 0 {
++            core::hint::spin_loop();
++        }
++    }
++}
++
++unsafe fn subword_unlock() {
++    while unsafe { !__kuser_cmpxchg(1, 0, SUBWORD_LOCK.as_ptr()) } {
++        core::hint::spin_loop();
++    }
++}
++
++unsafe fn atomic_load_subword<T>(ptr: *mut T) -> u32 {
++    match mem::size_of::<T>() {
++        1 => unsafe { (ptr as *const u8).read_volatile() as u32 },
++        2 => unsafe { (ptr as *const u16).read_volatile() as u32 },
++        _ => unreachable!(),
++    }
++}
++
++unsafe fn atomic_store_subword<T>(ptr: *mut T, val: u32) {
++    match mem::size_of::<T>() {
++        1 => unsafe { (ptr as *mut u8).write_volatile(val as u8) },
++        2 => unsafe { (ptr as *mut u16).write_volatile(val as u16) },
++        _ => unreachable!(),
++    }
++}
++
+ // Generic atomic read-modify-write operation
+ unsafe fn atomic_rmw<T, F: Fn(u32) -> u32, G: Fn(u32, u32) -> u32>(ptr: *mut T, f: F, g: G) -> u32 {
+-    let aligned_ptr = align_ptr(ptr);
+-    let (shift, mask) = get_shift_mask(ptr);
++    if mem::size_of::<T>() == 4 {
++        let aligned_ptr = align_ptr(ptr);
++        let (shift, mask) = get_shift_mask(ptr);
+ 
+-    loop {
+-        // FIXME(safety): preconditions review needed
+-        let curval_aligned = unsafe { atomic_load_aligned::<T>(aligned_ptr) };
+-        let curval = extract_aligned(curval_aligned, shift, mask);
+-        let newval = f(curval);
+-        let newval_aligned = insert_aligned(curval_aligned, newval, shift, mask);
+-        // FIXME(safety): preconditions review needed
+-        if unsafe { __kuser_cmpxchg(curval_aligned, newval_aligned, aligned_ptr) } {
+-            return g(curval, newval);
++        loop {
++            // FIXME(safety): preconditions review needed
++            let curval_aligned = unsafe { atomic_load_aligned::<T>(aligned_ptr) };
++            let curval = extract_aligned(curval_aligned, shift, mask);
++            let newval = f(curval);
++            let newval_aligned = insert_aligned(curval_aligned, newval, shift, mask);
++            // FIXME(safety): preconditions review needed
++            if unsafe { __kuser_cmpxchg(curval_aligned, newval_aligned, aligned_ptr) } {
++                return g(curval, newval);
++            }
+         }
++    } else {
++        unsafe { subword_lock() };
++        let curval = unsafe { atomic_load_subword(ptr) };
++        let newval = f(curval);
++        unsafe { atomic_store_subword(ptr, newval) };
++        unsafe { subword_unlock() };
++        g(curval, newval)
+     }
+ }
+ 
+ // Generic atomic compare-exchange operation
+ unsafe fn atomic_cmpxchg<T>(ptr: *mut T, oldval: u32, newval: u32) -> u32 {
+-    let aligned_ptr = align_ptr(ptr);
+-    let (shift, mask) = get_shift_mask(ptr);
++    if mem::size_of::<T>() == 4 {
++        let aligned_ptr = align_ptr(ptr);
++        let (shift, mask) = get_shift_mask(ptr);
+ 
+-    loop {
+-        // SAFETY: the caller must guarantee that the pointer is valid for read and write
+-        // and aligned to the element size.
+-        let curval_aligned = unsafe { atomic_load_aligned::<T>(aligned_ptr) };
+-        let curval = extract_aligned(curval_aligned, shift, mask);
+-        if curval != oldval {
+-            return curval;
++        loop {
++            // SAFETY: the caller must guarantee that the pointer is valid for read and write
++            // and aligned to the element size.
++            let curval_aligned = unsafe { atomic_load_aligned::<T>(aligned_ptr) };
++            let curval = extract_aligned(curval_aligned, shift, mask);
++            if curval != oldval {
++                return curval;
++            }
++            let newval_aligned = insert_aligned(curval_aligned, newval, shift, mask);
++            // SAFETY: the caller must guarantee that the pointer is valid for read and write
++            // and aligned to the element size.
++            if unsafe { __kuser_cmpxchg(curval_aligned, newval_aligned, aligned_ptr) } {
++                return oldval;
++            }
+         }
+-        let newval_aligned = insert_aligned(curval_aligned, newval, shift, mask);
+-        // SAFETY: the caller must guarantee that the pointer is valid for read and write
+-        // and aligned to the element size.
+-        if unsafe { __kuser_cmpxchg(curval_aligned, newval_aligned, aligned_ptr) } {
+-            return oldval;
++    } else {
++        unsafe { subword_lock() };
++        let curval = unsafe { atomic_load_subword(ptr) };
++        if curval == oldval {
++            unsafe { atomic_store_subword(ptr, newval) };
+         }
++        unsafe { subword_unlock() };
++        curval
+     }
+ }

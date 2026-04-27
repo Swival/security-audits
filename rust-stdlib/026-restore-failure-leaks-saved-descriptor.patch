@@ -1,0 +1,40 @@
+diff --git a/library/std/src/sys/process/unix/vxworks.rs b/library/std/src/sys/process/unix/vxworks.rs
+index 346ca6d74c9..6247a2ed225 100644
+--- a/library/std/src/sys/process/unix/vxworks.rs
++++ b/library/std/src/sys/process/unix/vxworks.rs
+@@ -97,15 +97,33 @@ macro_rules! t {
+             // Because FileDesc was not used, each duplicated file descriptor
+             // needs to be closed manually
+             if orig_stdin != libc::STDIN_FILENO {
+-                t!(cvt_r(|| libc::dup2(orig_stdin, libc::STDIN_FILENO)));
++                if let Err(e) = cvt_r(|| libc::dup2(orig_stdin, libc::STDIN_FILENO)) {
++                    libc::close(orig_stdin);
++                    if orig_stdout != libc::STDOUT_FILENO {
++                        libc::close(orig_stdout);
++                    }
++                    if orig_stderr != libc::STDERR_FILENO {
++                        libc::close(orig_stderr);
++                    }
++                    return Err(e.into());
++                }
+                 libc::close(orig_stdin);
+             }
+             if orig_stdout != libc::STDOUT_FILENO {
+-                t!(cvt_r(|| libc::dup2(orig_stdout, libc::STDOUT_FILENO)));
++                if let Err(e) = cvt_r(|| libc::dup2(orig_stdout, libc::STDOUT_FILENO)) {
++                    libc::close(orig_stdout);
++                    if orig_stderr != libc::STDERR_FILENO {
++                        libc::close(orig_stderr);
++                    }
++                    return Err(e.into());
++                }
+                 libc::close(orig_stdout);
+             }
+             if orig_stderr != libc::STDERR_FILENO {
+-                t!(cvt_r(|| libc::dup2(orig_stderr, libc::STDERR_FILENO)));
++                if let Err(e) = cvt_r(|| libc::dup2(orig_stderr, libc::STDERR_FILENO)) {
++                    libc::close(orig_stderr);
++                    return Err(e.into());
++                }
+                 libc::close(orig_stderr);
+             }

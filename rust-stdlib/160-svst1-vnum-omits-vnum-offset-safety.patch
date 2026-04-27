@@ -1,0 +1,13 @@
+diff --git a/library/stdarch/crates/stdarch-gen-arm/spec/sve/aarch64.spec.yml b/library/stdarch/crates/stdarch-gen-arm/spec/sve/aarch64.spec.yml
+index 383e50b7cc7..4195059b7e0 100644
+--- a/library/stdarch/crates/stdarch-gen-arm/spec/sve/aarch64.spec.yml
++++ b/library/stdarch/crates/stdarch-gen-arm/spec/sve/aarch64.spec.yml
+@@ -3352,7 +3352,7 @@ intrinsics:
+     doc: Non-truncating store
+     safety:
+       unsafe:
+-        - pointer_offset: predicated
++        - pointer_offset_vnum: predicated
+         - dereference: predicated
+     arguments:
+       ["pg: {predicate}", "base: *mut {type}", "vnum: i64", "data: {sve_type}"]

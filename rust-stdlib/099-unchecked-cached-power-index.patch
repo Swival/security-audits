@@ -1,0 +1,12 @@
+diff --git a/library/core/src/num/imp/flt2dec/strategy/grisu.rs b/library/core/src/num/imp/flt2dec/strategy/grisu.rs
+index f7ee4658293..d433fc54a2d 100644
+--- a/library/core/src/num/imp/flt2dec/strategy/grisu.rs
++++ b/library/core/src/num/imp/flt2dec/strategy/grisu.rs
+@@ -124,6 +124,7 @@ pub fn cached_power(alpha: i16, gamma: i16) -> (i16, Fp) {
+     let range = (CACHED_POW10.len() as i32) - 1;
+     let domain = (CACHED_POW10_LAST_E - CACHED_POW10_FIRST_E) as i32;
+     let idx = ((gamma as i32) - offset) * range / domain;
++    assert!((0..=range).contains(&idx));
+     let (f, e, k) = CACHED_POW10[idx as usize];
+     debug_assert!(alpha <= e && e <= gamma);
+     (k, Fp { f, e })

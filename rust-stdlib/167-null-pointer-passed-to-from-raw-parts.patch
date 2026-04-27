@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/pal/sgx/libunwind_integration.rs b/library/std/src/sys/pal/sgx/libunwind_integration.rs
+index b5419ad05de..a2dd6537646 100644
+--- a/library/std/src/sys/pal/sgx/libunwind_integration.rs
++++ b/library/std/src/sys/pal/sgx/libunwind_integration.rs
+@@ -48,7 +48,7 @@
+ 
+ #[unsafe(no_mangle)]
+ pub unsafe extern "C" fn __rust_print_err(m: *mut u8, s: i32) {
+-    if s < 0 {
++    if m.is_null() || s < 0 {
+         return;
+     }
+     let buf = unsafe { slice::from_raw_parts(m as *const u8, s as _) };

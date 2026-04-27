@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/net/connection/motor.rs b/library/std/src/sys/net/connection/motor.rs
+index 79a52879210..f4bd863dad4 100644
+--- a/library/std/src/sys/net/connection/motor.rs
++++ b/library/std/src/sys/net/connection/motor.rs
+@@ -28,7 +28,7 @@ pub fn into_socket(self) -> Socket {
+     }
+ 
+     pub fn connect<A: ToSocketAddrs>(addr: A) -> io::Result<TcpStream> {
+-        let addr = into_netc(&addr.to_socket_addrs()?.next().unwrap());
++        let addr = into_netc(&addr.to_socket_addrs()?.next().ok_or(io::Error::NO_ADDRESSES)?);
+         moto_rt::net::tcp_connect(&addr, Duration::MAX, false)
+             .map(|fd| Self { inner: unsafe { Socket::from_raw_fd(fd) } })
+             .map_err(map_motor_error)

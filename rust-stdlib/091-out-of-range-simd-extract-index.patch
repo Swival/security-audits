@@ -1,0 +1,13 @@
+diff --git a/library/stdarch/crates/core_arch/src/powerpc/altivec.rs b/library/stdarch/crates/core_arch/src/powerpc/altivec.rs
+index 78ec39f91ff..1d9a83ff9ae 100644
+--- a/library/stdarch/crates/core_arch/src/powerpc/altivec.rs
++++ b/library/stdarch/crates/core_arch/src/powerpc/altivec.rs
+@@ -457,7 +457,7 @@ pub trait VectorInsert {
+     }
+ 
+     const fn idx_in_vec<T, const IDX: u32>() -> u32 {
+-        IDX & (16 / crate::mem::size_of::<T>() as u32)
++        IDX % (16 / crate::mem::size_of::<T>() as u32)
+     }
+ 
+     macro_rules! impl_vec_insert {

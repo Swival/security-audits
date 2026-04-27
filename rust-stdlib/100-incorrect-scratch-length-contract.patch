@@ -1,0 +1,13 @@
+diff --git a/library/core/src/slice/sort/stable/quicksort.rs b/library/core/src/slice/sort/stable/quicksort.rs
+index acc8a5e838e..e316087ade5 100644
+--- a/library/core/src/slice/sort/stable/quicksort.rs
++++ b/library/core/src/slice/sort/stable/quicksort.rs
+@@ -7,7 +7,7 @@
+ use crate::{intrinsics, ptr};
+ 
+ /// Sorts `v` recursively using quicksort.
+-/// `scratch.len()` must be at least `max(v.len() - v.len() / 2, SMALL_SORT_GENERAL_SCRATCH_LEN)`
++/// `scratch.len()` must be at least `max(v.len(), SMALL_SORT_GENERAL_SCRATCH_LEN)`
+ /// otherwise the implementation may abort.
+ ///
+ /// `limit` when initialized with `c*log(v.len())` for some c ensures we do not

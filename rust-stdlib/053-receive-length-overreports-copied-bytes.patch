@@ -1,0 +1,18 @@
+diff --git a/library/std/src/sys/net/connection/xous/udp.rs b/library/std/src/sys/net/connection/xous/udp.rs
+index ce54ea3b79e..9e292ebf0ce 100644
+--- a/library/std/src/sys/net/connection/xous/udp.rs
++++ b/library/std/src/sys/net/connection/xous/udp.rs
+@@ -178,10 +178,11 @@ fn recv_inner(&self, buf: &mut [u8], do_peek: bool) -> io::Result<(usize, Socket
+                 } else {
+                     return Err(io::const_error!(io::ErrorKind::Other, "library error"));
+                 };
+-                for (&s, d) in rr[22..22 + rxlen as usize].iter().zip(buf.iter_mut()) {
++                let len = (rxlen as usize).min(buf.len());
++                for (&s, d) in rr[22..22 + len].iter().zip(buf.iter_mut()) {
+                     *d = s;
+                 }
+-                Ok((rxlen as usize, addr))
++                Ok((len, addr))
+             }
+         } else {
+             Err(io::const_error!(io::ErrorKind::InvalidInput, "unable to recv"))

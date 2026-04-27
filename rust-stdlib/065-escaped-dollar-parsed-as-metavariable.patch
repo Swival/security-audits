@@ -1,0 +1,23 @@
+diff --git a/library/proc_macro/src/quote.rs b/library/proc_macro/src/quote.rs
+index dbb55cd9fb3..198b71ec5c3 100644
+--- a/library/proc_macro/src/quote.rs
++++ b/library/proc_macro/src/quote.rs
+@@ -459,9 +459,15 @@ fn helper(stream: TokenStream, out: &mut Vec<Ident>) {
+         while let Some(tree) = iter.next() {
+             match &tree {
+                 TokenTree::Punct(tt) if tt.as_char() == '$' => {
+-                    if let Some(TokenTree::Ident(id)) = iter.peek() {
+-                        out.push(id.clone());
+-                        iter.next();
++                    match iter.peek() {
++                        Some(TokenTree::Punct(tt)) if tt.as_char() == '$' => {
++                            iter.next();
++                        }
++                        Some(TokenTree::Ident(id)) => {
++                            out.push(id.clone());
++                            iter.next();
++                        }
++                        _ => {}
+                     }
+                 }
+                 TokenTree::Group(tt) => {

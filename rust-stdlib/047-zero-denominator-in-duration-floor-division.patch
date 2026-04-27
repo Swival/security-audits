@@ -1,0 +1,13 @@
+diff --git a/library/core/src/time.rs b/library/core/src/time.rs
+index 9073131b35b..02cdd49ea81 100644
+--- a/library/core/src/time.rs
++++ b/library/core/src/time.rs
+@@ -1223,6 +1223,9 @@ pub const fn div_duration_f32(self, rhs: Duration) -> f32 {
+                   without modifying the original"]
+     #[inline]
+     pub const fn div_duration_floor(self, rhs: Duration) -> u128 {
++        if rhs.is_zero() {
++            panic!("divide by zero error when dividing durations");
++        }
+         self.as_nanos().div_floor(rhs.as_nanos())
+     }

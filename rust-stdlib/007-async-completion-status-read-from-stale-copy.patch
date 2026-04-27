@@ -1,0 +1,15 @@
+diff --git a/library/std/src/sys/net/connection/uefi/tcp4.rs b/library/std/src/sys/net/connection/uefi/tcp4.rs
+index ac38dd901e4..289a5ec4a9b 100644
+--- a/library/std/src/sys/net/connection/uefi/tcp4.rs
++++ b/library/std/src/sys/net/connection/uefi/tcp4.rs
+@@ -104,8 +104,8 @@ pub(crate) fn accept(&self) -> io::Result<Self> {
+ 
+         unsafe { self.wait_or_cancel(None, &mut listen_token.completion_token) }?;
+ 
+-        if completion_token.status.is_error() {
+-            Err(io::Error::from_raw_os_error(completion_token.status.as_usize()))
++        if listen_token.completion_token.status.is_error() {
++            Err(io::Error::from_raw_os_error(listen_token.completion_token.status.as_usize()))
+         } else {
+             // EDK2 internals seem to assume a single ServiceBinding Protocol for TCP4 and TCP6, and
+             // thus does not use any service binding protocol data in destroying child sockets. It

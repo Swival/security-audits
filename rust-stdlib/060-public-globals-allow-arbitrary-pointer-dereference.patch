@@ -1,0 +1,12 @@
+diff --git a/library/std/src/os/uefi/env.rs b/library/std/src/os/uefi/env.rs
+index 82e3fc9775c..18347c1d4f6 100644
+--- a/library/std/src/os/uefi/env.rs
++++ b/library/std/src/os/uefi/env.rs
+@@ -8,7 +8,7 @@
+ 
+ #[doc(hidden)]
+ #[cfg(not(test))]
+-pub mod globals {
++mod globals {
+     use crate::ffi::c_void;
+     use crate::sync::atomic::{Atomic, AtomicBool, AtomicPtr};

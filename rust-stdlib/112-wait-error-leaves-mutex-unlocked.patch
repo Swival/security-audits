@@ -1,0 +1,17 @@
+diff --git a/library/std/src/sys/sync/condvar/xous.rs b/library/std/src/sys/sync/condvar/xous.rs
+index 5d1b14443c6..05099d1c499 100644
+--- a/library/std/src/sys/sync/condvar/xous.rs
++++ b/library/std/src/sys/sync/condvar/xous.rs
+@@ -103,7 +103,11 @@ fn wait_ms(&self, mutex: &Mutex, ms: usize) -> bool {
+             ticktimer_server(),
+             TicktimerScalar::WaitForCondition(self.index(), ms).into(),
+         );
+-        let awoken = result.expect("Ticktimer: failure to send WaitForCondition command")[0] == 0;
++        let result = result.unwrap_or_else(|_| {
++            unsafe { mutex.lock() };
++            panic!("Ticktimer: failure to send WaitForCondition command");
++        });
++        let awoken = result[0] == 0;
+ 
+         // If we awoke due to a timeout, increment the `timed_out` counter so that the
+         // main loop of `notify` knows there's a timeout.

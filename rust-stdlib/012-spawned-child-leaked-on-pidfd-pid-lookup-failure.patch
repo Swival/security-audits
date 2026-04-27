@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/process/unix/unix.rs b/library/std/src/sys/process/unix/unix.rs
+index a68be2543bc..bfaaab16588 100644
+--- a/library/std/src/sys/process/unix/unix.rs
++++ b/library/std/src/sys/process/unix/unix.rs
+@@ -800,6 +800,8 @@ fn drop(&mut self) {
+                         // was verified earlier.
+                         // This is quite unlikely, but might happen if the ioctl is not supported,
+                         // glibc tries to use procfs and we're out of file descriptors.
++                        let _ = pidfd.kill();
++                        let _ = pidfd.wait();
+                         return Err(Error::new(
+                             e.kind(),
+                             "pidfd_spawnp succeeded but the child's PID could not be obtained",

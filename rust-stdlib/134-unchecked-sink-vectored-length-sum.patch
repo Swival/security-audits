@@ -1,0 +1,25 @@
+diff --git a/library/std/src/io/util.rs b/library/std/src/io/util.rs
+index a09c8bc0693..530bc8e8b33 100644
+--- a/library/std/src/io/util.rs
++++ b/library/std/src/io/util.rs
+@@ -378,7 +378,9 @@ fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+ 
+     #[inline]
+     fn write_vectored(&mut self, bufs: &[IoSlice<'_>]) -> io::Result<usize> {
+-        let total_len = bufs.iter().map(|b| b.len()).sum();
++        let total_len = bufs.iter().try_fold(0usize, |total, buf| {
++            total.checked_add(buf.len()).ok_or(io::ErrorKind::InvalidInput)
++        })?;
+         Ok(total_len)
+     }
+ 
+@@ -417,7 +419,9 @@ fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+ 
+     #[inline]
+     fn write_vectored(&mut self, bufs: &[IoSlice<'_>]) -> io::Result<usize> {
+-        let total_len = bufs.iter().map(|b| b.len()).sum();
++        let total_len = bufs.iter().try_fold(0usize, |total, buf| {
++            total.checked_add(buf.len()).ok_or(io::ErrorKind::InvalidInput)
++        })?;
+         Ok(total_len)
+     }

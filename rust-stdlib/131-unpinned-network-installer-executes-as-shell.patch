@@ -1,0 +1,13 @@
+diff --git a/library/portable-simd/.github/workflows/ci.yml b/library/portable-simd/.github/workflows/ci.yml
+index de7efa35528..c154cc79cf5 100644
+--- a/library/portable-simd/.github/workflows/ci.yml
++++ b/library/portable-simd/.github/workflows/ci.yml
+@@ -164,7 +164,7 @@ jobs:
+     steps:
+       - uses: actions/checkout@v4
+       - name: Install wasm-pack
+-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
++        run: cargo install wasm-pack --version 0.12.1 --locked
+       - name: Test (debug)
+         run: wasm-pack test --firefox --headless crates/core_simd
+         env:

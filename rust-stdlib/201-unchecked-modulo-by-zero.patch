@@ -1,0 +1,20 @@
+diff --git a/library/test/src/term/terminfo/parm.rs b/library/test/src/term/terminfo/parm.rs
+index 529ec0c36e4..4adfba1f4ad 100644
+--- a/library/test/src/term/terminfo/parm.rs
++++ b/library/test/src/term/terminfo/parm.rs
+@@ -189,11 +189,13 @@ pub(crate) fn expand(
+                                 '+' => x + y,
+                                 '-' => x - y,
+                                 '*' => x * y,
+-                                '/' => x / y,
++                                '/' if y != 0 => x / y,
++                                '/' => return Err("division by zero".to_string()),
+                                 '|' => x | y,
+                                 '&' => x & y,
+                                 '^' => x ^ y,
+-                                'm' => x % y,
++                                'm' if y != 0 => x % y,
++                                'm' => return Err("modulo by zero".to_string()),
+                                 _ => unreachable!("All cases handled"),
+                             })),
+                             _ => return Err("stack is empty".to_string()),

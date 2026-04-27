@@ -1,0 +1,25 @@
+diff --git a/library/std/src/sys/thread/xous.rs b/library/std/src/sys/thread/xous.rs
+index 208d43bb2c0..49b2752e59e 100644
+--- a/library/std/src/sys/thread/xous.rs
++++ b/library/std/src/sys/thread/xous.rs
+@@ -28,6 +28,11 @@ pub unsafe fn new(stack: usize, init: Box<ThreadInit>) -> io::Result<Thread> {
+             stack_size = (stack_size + 4095) & !4095;
+         }
+ 
++        let mapped_memory_length = GUARD_PAGE_SIZE
++            .checked_add(stack_size)
++            .and_then(|size| size.checked_add(GUARD_PAGE_SIZE))
++            .ok_or(io::const_error!(io::ErrorKind::InvalidInput, "invalid stack size"))?;
++
+         // Allocate the whole thing, then divide it up after the fact. This ensures that
+         // even if there's a context switch during this function, the whole stack plus
+         // guard pages will remain contiguous.
+@@ -35,7 +40,7 @@ pub unsafe fn new(stack: usize, init: Box<ThreadInit>) -> io::Result<Thread> {
+             map_memory(
+                 None,
+                 None,
+-                GUARD_PAGE_SIZE + stack_size + GUARD_PAGE_SIZE,
++                mapped_memory_length,
+                 MemoryFlags::R | MemoryFlags::W | MemoryFlags::X,
+             )
+         }
