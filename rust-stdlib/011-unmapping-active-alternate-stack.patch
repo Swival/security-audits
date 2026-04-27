@@ -1,0 +1,20 @@
+diff --git a/library/std/src/sys/pal/unix/stack_overflow.rs b/library/std/src/sys/pal/unix/stack_overflow.rs
+index 3b951899dfe..23082bd8308 100644
+--- a/library/std/src/sys/pal/unix/stack_overflow.rs
++++ b/library/std/src/sys/pal/unix/stack_overflow.rs
+@@ -295,10 +295,11 @@ pub unsafe fn drop_handler(data: *mut libc::c_void) {
+                 ss_size: sigstack_size,
+             };
+             // SAFETY: we warned the caller this disables the alternate signal stack!
+-            unsafe { sigaltstack(&disabling_stack, ptr::null_mut()) };
+-            // SAFETY: We know from `get_stackp` that the alternate stack we installed is part of
+-            // a mapping that started one page earlier, so walk back a page and unmap from there.
+-            unsafe { munmap(data.sub(page_size), sigstack_size + page_size) };
++            if unsafe { sigaltstack(&disabling_stack, ptr::null_mut()) } == 0 {
++                // SAFETY: We know from `get_stackp` that the alternate stack we installed is part of
++                // a mapping that started one page earlier, so walk back a page and unmap from there.
++                unsafe { munmap(data.sub(page_size), sigstack_size + page_size) };
++            }
+         }
+ 
+         delete_current_info();

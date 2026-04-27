@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/net/connection/sgx.rs b/library/std/src/sys/net/connection/sgx.rs
+index 5735a5db488..248f26ddf45 100644
+--- a/library/std/src/sys/net/connection/sgx.rs
++++ b/library/std/src/sys/net/connection/sgx.rs
+@@ -297,8 +297,7 @@ pub fn socket_addr(&self) -> io::Result<SocketAddr> {
+     pub fn accept(&self) -> io::Result<(TcpStream, SocketAddr)> {
+         let (fd, local_addr, peer_addr) = usercalls::accept_stream(self.inner.inner.raw())?;
+         let peer_addr = Some(peer_addr);
+-        let ret_peer =
+-            addr_to_sockaddr(peer_addr.as_deref()).unwrap_or_else(|_| ([0; 4], 0).into());
++        let ret_peer = addr_to_sockaddr(peer_addr.as_deref())?;
+         Ok((TcpStream { inner: Socket::new(fd, local_addr), peer_addr }, ret_peer))
+     }

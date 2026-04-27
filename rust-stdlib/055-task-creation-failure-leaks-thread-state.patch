@@ -1,0 +1,33 @@
+diff --git a/library/std/src/sys/thread/solid.rs b/library/std/src/sys/thread/solid.rs
+index 5953c0e7b61..286763be6c0 100644
+--- a/library/std/src/sys/thread/solid.rs
++++ b/library/std/src/sys/thread/solid.rs
+@@ -172,7 +172,7 @@ pub unsafe fn new(stack: usize, init: Box<ThreadInit>) -> io::Result<Thread> {
+         // Safety: `Box::into_raw` returns a non-null pointer
+         let p_inner = unsafe { NonNull::new_unchecked(Box::into_raw(inner)) };
+ 
+-        let new_task = ItronError::err_if_negative(unsafe {
++        let new_task = match ItronError::err_if_negative(unsafe {
+             abi::acre_tsk(&abi::T_CTSK {
+                 // Activate this task immediately
+                 tskatr: abi::TA_ACT,
+@@ -185,8 +185,17 @@ pub unsafe fn new(stack: usize, init: Box<ThreadInit>) -> io::Result<Thread> {
+                 // Let the kernel allocate the stack,
+                 stk: crate::ptr::null_mut(),
+             })
+-        })
+-        .map_err(|e| e.as_io_error())?;
++        }) {
++            Ok(task) => task,
++            Err(e) => {
++                let inner = unsafe { &mut *p_inner.as_ptr() };
++                // Safety: The task was not created, so `trampoline` cannot take `init`.
++                unsafe { ManuallyDrop::drop(&mut *inner.init.get()) };
++                // Safety: Reclaim the `ThreadInner` allocated above.
++                let _ = unsafe { Box::from_raw(p_inner.as_ptr()) };
++                return Err(e.as_io_error());
++            }
++        };
+ 
+         Ok(Self { p_inner, task: new_task })
+     }

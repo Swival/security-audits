@@ -1,0 +1,13 @@
+diff --git a/library/compiler-builtins/libm/src/math/support/hex_float.rs b/library/compiler-builtins/libm/src/math/support/hex_float.rs
+index e1100a4a119..c0af0c379a6 100644
+--- a/library/compiler-builtins/libm/src/math/support/hex_float.rs
++++ b/library/compiler-builtins/libm/src/math/support/hex_float.rs
+@@ -292,7 +292,7 @@ const fn parse_hex(mut b: &[u8]) -> Result<Parsed, HexFloatParseError> {
+         };
+         some_digits = true;
+         pexp = pexp.saturating_mul(10);
+-        pexp += digit as u32;
++        pexp = pexp.saturating_add(digit as u32);
+     }
+ 
+     if !some_digits {

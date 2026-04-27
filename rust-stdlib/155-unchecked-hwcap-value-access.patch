@@ -1,0 +1,22 @@
+diff --git a/library/std_detect/src/detect/os/linux/auxvec.rs b/library/std_detect/src/detect/os/linux/auxvec.rs
+index c0bbc7d4efa..802ec35414f 100644
+--- a/library/std_detect/src/detect/os/linux/auxvec.rs
++++ b/library/std_detect/src/detect/os/linux/auxvec.rs
+@@ -179,7 +179,7 @@ fn auxv_from_buf(buf: &[usize]) -> Result<AuxVec, alloc::string::String> {
+         target_arch = "loongarch64",
+     ))]
+     {
+-        for el in buf.chunks(2) {
++        for el in buf.chunks_exact(2) {
+             match el[0] {
+                 AT_NULL => break,
+                 AT_HWCAP => return Ok(AuxVec { hwcap: el[1] }),
+@@ -199,7 +199,7 @@ fn auxv_from_buf(buf: &[usize]) -> Result<AuxVec, alloc::string::String> {
+         let mut hwcap = None;
+         // For some platforms, AT_HWCAP2 was added recently, so let it default to zero.
+         let mut hwcap2 = 0;
+-        for el in buf.chunks(2) {
++        for el in buf.chunks_exact(2) {
+             match el[0] {
+                 AT_NULL => break,
+                 AT_HWCAP => hwcap = Some(el[1]),

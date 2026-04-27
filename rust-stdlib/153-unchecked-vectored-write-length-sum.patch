@@ -1,0 +1,17 @@
+diff --git a/library/std/src/sys/stdio/unsupported.rs b/library/std/src/sys/stdio/unsupported.rs
+index 177264f5c10..2262fe8153c 100644
+--- a/library/std/src/sys/stdio/unsupported.rs
++++ b/library/std/src/sys/stdio/unsupported.rs
+@@ -68,7 +68,12 @@ fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+ 
+     #[inline]
+     fn write_vectored(&mut self, bufs: &[IoSlice<'_>]) -> io::Result<usize> {
+-        let total_len = bufs.iter().map(|b| b.len()).sum();
++        let total_len = bufs.iter().try_fold(0usize, |total_len, buf| {
++            total_len.checked_add(buf.len()).ok_or(io::const_error!(
++                io::ErrorKind::InvalidInput,
++                "vectored write length overflow",
++            ))
++        })?;
+         Ok(total_len)
+     }

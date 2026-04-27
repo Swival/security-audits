@@ -1,0 +1,22 @@
+diff --git a/library/std/src/os/xous/ffi.rs b/library/std/src/os/xous/ffi.rs
+index 9394f0a0496..1e33e4cb1ed 100644
+--- a/library/std/src/os/xous/ffi.rs
++++ b/library/std/src/os/xous/ffi.rs
+@@ -617,7 +617,7 @@ pub(crate) fn thread_id() -> Result<ThreadId, Error> {
+ pub(crate) fn adjust_limit(knob: Limits, current: usize, new: usize) -> Result<usize, Error> {
+     let mut a0 = Syscall::AdjustProcessLimit as usize;
+     let mut a1 = knob as usize;
+-    let a2 = current;
++    let mut a2 = current;
+     let a3 = new;
+     let a4 = 0;
+     let a5 = 0;
+@@ -629,7 +629,7 @@ pub(crate) fn adjust_limit(knob: Limits, current: usize, new: usize) -> Result<u
+             "ecall",
+             inlateout("a0") a0,
+             inlateout("a1") a1,
+-            inlateout("a2") a2 => _,
++            inlateout("a2") a2,
+             inlateout("a3") a3 => _,
+             inlateout("a4") a4 => _,
+             inlateout("a5") a5 => _,

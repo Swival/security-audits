@@ -1,0 +1,33 @@
+diff --git a/library/stdarch/crates/intrinsic-test/src/common/gen_rust.rs b/library/stdarch/crates/intrinsic-test/src/common/gen_rust.rs
+index 82b97701bb1..3f39061c52f 100644
+--- a/library/stdarch/crates/intrinsic-test/src/common/gen_rust.rs
++++ b/library/stdarch/crates/intrinsic-test/src/common/gen_rust.rs
+@@ -16,6 +16,12 @@ macro_rules! concatln {
+     };
+ }
+ 
++fn is_rust_identifier(name: &str) -> bool {
++    let mut chars = name.chars();
++    matches!(chars.next(), Some('_' | 'a'..='z' | 'A'..='Z'))
++        && chars.all(|c| matches!(c, '_' | 'a'..='z' | 'A'..='Z' | '0'..='9'))
++}
++
+ fn write_cargo_toml_header(w: &mut impl std::io::Write, name: &str) -> std::io::Result<()> {
+     writeln!(
+         w,
+@@ -87,8 +93,15 @@ pub fn write_main_rs<'a>(
+     writeln!(w, "fn main() {{")?;
+ 
+     for binary in intrinsics {
++        if !is_rust_identifier(binary) {
++            return Err(std::io::Error::new(
++                std::io::ErrorKind::InvalidInput,
++                format!("invalid Rust identifier: {binary:?}"),
++            ));
++        }
++
+         writeln!(w, "    println!(\"{INTRINSIC_DELIMITER}\");")?;
+-        writeln!(w, "    println!(\"{binary}\");")?;
++        writeln!(w, "    println!({binary:?});")?;
+         writeln!(w, "    run_{binary}();\n")?;
+     }

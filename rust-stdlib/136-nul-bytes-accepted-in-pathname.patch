@@ -1,0 +1,14 @@
+diff --git a/library/std/src/os/windows/net/addr.rs b/library/std/src/os/windows/net/addr.rs
+index ef2263edcf6..c008c3852ae 100644
+--- a/library/std/src/os/windows/net/addr.rs
++++ b/library/std/src/os/windows/net/addr.rs
+@@ -21,6 +21,9 @@ pub fn sockaddr_un(path: &Path) -> io::Result<(SOCKADDR_UN, usize)> {
+     if bytes.len() >= addr.sun_path.len() {
+         return Err(io::const_error!(io::ErrorKind::InvalidInput, "path too long"));
+     }
++    if bytes.contains(&0) {
++        return Err(io::const_error!(io::ErrorKind::InvalidInput, "path contains null byte"));
++    }
+     // SAFETY: `bytes` and `addr.sun_path` are not overlapping and
+     // both point to valid memory.
+     // NOTE: We zeroed the memory above, so the path is already null

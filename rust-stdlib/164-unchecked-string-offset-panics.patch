@@ -1,0 +1,15 @@
+diff --git a/library/test/src/term/terminfo/parser/compiled.rs b/library/test/src/term/terminfo/parser/compiled.rs
+index d1dd0f10d86..071c24015ab 100644
+--- a/library/test/src/term/terminfo/parser/compiled.rs
++++ b/library/test/src/term/terminfo/parser/compiled.rs
+@@ -299,6 +299,10 @@ macro_rules! read_nonneg {
+                     return Ok((name.to_string(), Vec::new()));
+                 }
+ 
++                if offset > string_table.len() {
++                    return Err("invalid file: string offset out of bounds".to_string());
++                }
++
+                 // Find the offset of the NUL we want to go to
+                 let nulpos = string_table[offset..string_table_bytes].iter().position(|&b| b == 0);
+                 match nulpos {

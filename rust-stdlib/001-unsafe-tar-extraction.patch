@@ -1,0 +1,37 @@
+diff --git a/library/compiler-builtins/ci/ci-util.py b/library/compiler-builtins/ci/ci-util.py
+index f359c597974..86bc9027beb 100755
+--- a/library/compiler-builtins/ci/ci-util.py
++++ b/library/compiler-builtins/ci/ci-util.py
+@@ -11,12 +11,13 @@ import pprint
+ import re
+ import subprocess as sp
+ import sys
++import tarfile
+ from dataclasses import dataclass, field
+ from functools import cache
+ from glob import glob
+ from inspect import cleandoc
+ from os import getenv
+-from pathlib import Path
++from pathlib import Path, PurePosixPath
+ from typing import TypedDict, Self
+ 
+ USAGE = cleandoc("""
+@@ -464,6 +465,17 @@ def locate_baseline(flags: list[str]) -> None:
+     eprint(f"extracting {baseline_archive}")
+ 
+     all_paths = sp.check_output(["tar", "tJf", baseline_archive], encoding="utf8")
++    with tarfile.open(baseline_archive, "r:xz") as archive:
++        for member in archive:
++            path = PurePosixPath(member.name)
++            if path.is_absolute() or ".." in path.parts:
++                raise ValueError(f"refusing to extract unsafe path: {member.name}")
++            if member.islnk() or member.issym():
++                link = PurePosixPath(member.linkname)
++                if link.is_absolute() or ".." in link.parts:
++                    raise ValueError(
++                        f"refusing to extract unsafe link target: {member.linkname}"
++                    )
+     sp.run(["tar", "xJf", baseline_archive], check=True)
+ 
+     # Print a short summary of paths, we don't use `tar v` since the list is huge

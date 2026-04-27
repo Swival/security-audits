@@ -1,0 +1,32 @@
+diff --git a/library/std/src/io/buffered/linewritershim.rs b/library/std/src/io/buffered/linewritershim.rs
+index 967e24812b9..c01d0e4e288 100644
+--- a/library/std/src/io/buffered/linewritershim.rs
++++ b/library/std/src/io/buffered/linewritershim.rs
+@@ -242,12 +242,21 @@ fn write_vectored(&mut self, bufs: &[IoSlice<'_>]) -> io::Result<usize> {
+ 
+         // Now that the write has succeeded, buffer the rest (or as much of the
+         // rest as possible)
+-        let buffered: usize = tail
+-            .iter()
+-            .filter(|buf| !buf.is_empty())
+-            .map(|buf| self.buffer.write_to_buf(buf))
+-            .take_while(|&n| n > 0)
+-            .sum();
++        let mut buffered: usize = 0;
++        for buf in tail {
++            if buf.is_empty() {
++                continue;
++            }
++            let spare = usize::MAX - flushed - buffered;
++            if spare == 0 {
++                break;
++            }
++            let n = self.buffer.write_to_buf(&buf[..buf.len().min(spare)]);
++            if n == 0 {
++                break;
++            }
++            buffered += n;
++        }
+ 
+         Ok(flushed + buffered)
+     }

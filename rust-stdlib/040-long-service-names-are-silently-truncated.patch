@@ -1,0 +1,15 @@
+diff --git a/library/std/src/os/xous/services.rs b/library/std/src/os/xous/services.rs
+index 0681485ea06..d01c65181fd 100644
+--- a/library/std/src/os/xous/services.rs
++++ b/library/std/src/os/xous/services.rs
+@@ -54,6 +54,10 @@ pub fn new(name: &str) -> Self {
+     }
+ 
+     pub fn connect_with_name_impl(name: &str, blocking: bool) -> Option<Connection> {
++        if name.len() > NAME_MAX_LENGTH {
++            return None;
++        }
++
+         let mut request = ConnectRequest::new(name);
+         let opcode = if blocking {
+             6 /* BlockingConnect */

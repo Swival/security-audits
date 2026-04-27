@@ -1,0 +1,19 @@
+diff --git a/library/std/src/sys/net/connection/xous/tcpstream.rs b/library/std/src/sys/net/connection/xous/tcpstream.rs
+index 4df75453d1f..3f574807236 100644
+--- a/library/std/src/sys/net/connection/xous/tcpstream.rs
++++ b/library/std/src/sys/net/connection/xous/tcpstream.rs
+@@ -277,12 +277,13 @@ pub fn write(&self, buf: &[u8]) -> io::Result<usize> {
+                 return Err(io::const_error!(io::ErrorKind::InvalidInput, "error when sending"));
+             }
+         }
+-        Ok(u32::from_le_bytes([
++        Ok((u32::from_le_bytes([
+             send_request.raw[4],
+             send_request.raw[5],
+             send_request.raw[6],
+             send_request.raw[7],
+         ]) as usize)
++            .min(buf_len))
+     }
+ 
+     pub fn write_vectored(&self, bufs: &[IoSlice<'_>]) -> io::Result<usize> {

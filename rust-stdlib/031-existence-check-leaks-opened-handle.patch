@@ -1,0 +1,14 @@
+diff --git a/library/std/src/sys/fs/uefi.rs b/library/std/src/sys/fs/uefi.rs
+index ef523a9807f..80cd4872da9 100644
+--- a/library/std/src/sys/fs/uefi.rs
++++ b/library/std/src/sys/fs/uefi.rs
+@@ -864,7 +864,8 @@ pub(crate) fn mkdir(path: &Path) -> io::Result<()> {
+ 
+         // Check if file exists
+         match File::open(vol, &mut path_remaining, file::MODE_READ, 0) {
+-            Ok(_) => {
++            Ok(protocol) => {
++                drop(File { protocol, path: absolute });
+                 return Err(io::Error::new(io::ErrorKind::AlreadyExists, "Path already exists"));
+             }
+             Err(e) if e.kind() == io::ErrorKind::NotFound => {}

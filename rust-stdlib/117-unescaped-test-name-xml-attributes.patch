@@ -1,0 +1,36 @@
+diff --git a/library/test/src/formatters/junit.rs b/library/test/src/formatters/junit.rs
+index 2772222a05c..66575df9a23 100644
+--- a/library/test/src/formatters/junit.rs
++++ b/library/test/src/formatters/junit.rs
+@@ -37,6 +37,10 @@ fn str_to_cdata(s: &str) -> String {
+     format!("<![CDATA[{}]]>", escaped_output)
+ }
+ 
++fn str_to_xml_attr(s: &str) -> String {
++    s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;")
++}
++
+ impl<T: Write> OutputFormatter for JunitFormatter<T> {
+     fn write_discovery_start(&mut self) -> io::Result<()> {
+         Err(io::const_error!(io::ErrorKind::NotFound, "not yet implemented!"))
+@@ -98,6 +102,8 @@ fn write_run_finish(&mut self, state: &ConsoleTestState) -> io::Result<bool> {
+         ))?;
+         for (desc, result, duration, stdout) in std::mem::take(&mut self.results) {
+             let (class_name, test_name) = parse_class_name(&desc);
++            let class_name = str_to_xml_attr(&class_name);
++            let test_name = str_to_xml_attr(&test_name);
+             match result {
+                 TestResult::TrIgnored => { /* no-op */ }
+                 TestResult::TrFailed => {
+@@ -125,7 +131,10 @@ fn write_run_finish(&mut self, state: &ConsoleTestState) -> io::Result<bool> {
+                         test_name,
+                         duration.as_secs_f64()
+                     ))?;
+-                    self.write_message(&format!("<failure message=\"{m}\" type=\"assert\"/>"))?;
++                    self.write_message(&format!(
++                        "<failure message=\"{}\" type=\"assert\"/>",
++                        str_to_xml_attr(m)
++                    ))?;
+                     if !stdout.is_empty() {
+                         self.write_message("<system-out>")?;
+                         self.write_message(&str_to_cdata(&String::from_utf8_lossy(&stdout)))?;

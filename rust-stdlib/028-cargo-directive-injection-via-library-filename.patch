@@ -1,0 +1,15 @@
+diff --git a/library/profiler_builtins/build.rs b/library/profiler_builtins/build.rs
+index fc1a9ecc1ec..a01d614fac2 100644
+--- a/library/profiler_builtins/build.rs
++++ b/library/profiler_builtins/build.rs
+@@ -14,7 +14,9 @@ fn main() {
+             if let Some(dir) = rt.parent() {
+                 println!("cargo::rustc-link-search=native={}", dir.display());
+             }
+-            println!("cargo::rustc-link-lib=static:+verbatim={}", lib.to_str().unwrap());
++            let lib = lib.to_str().unwrap();
++            assert!(!lib.contains('\n') && !lib.contains('\r'), "library filename must not contain newlines");
++            println!("cargo::rustc-link-lib=static:+verbatim={lib}");
+             return;
+         }
+     }

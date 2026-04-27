@@ -1,0 +1,15 @@
+diff --git a/library/test/src/term/terminfo/parm.rs b/library/test/src/term/terminfo/parm.rs
+index 529ec0c36e4..581744a98da 100644
+--- a/library/test/src/term/terminfo/parm.rs
++++ b/library/test/src/term/terminfo/parm.rs
+@@ -275,8 +275,8 @@ pub(crate) fn expand(
+                 // params are 1-indexed
+                 stack.push(
+                     mparams[match cur.to_digit(10) {
+-                        Some(d) => d as usize - 1,
+-                        None => return Err("bad param number".to_string()),
++                        Some(d @ 1..=9) => d as usize - 1,
++                        _ => return Err("bad param number".to_string()),
+                     }]
+                     .clone(),
+                 );

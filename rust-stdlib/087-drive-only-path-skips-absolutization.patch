@@ -1,0 +1,14 @@
+diff --git a/library/std/src/sys/path/windows.rs b/library/std/src/sys/path/windows.rs
+index 1c7bf50d190..d6d3500ff2e 100644
+--- a/library/std/src/sys/path/windows.rs
++++ b/library/std/src/sys/path/windows.rs
+@@ -124,8 +124,7 @@ pub(crate) fn get_long_path(mut path: Vec<u16>, prefer_verbatim: bool) -> io::Re
+         match path.as_slice() {
+             // Starts with `D:`, `D:\`, `D:/`, etc.
+             // Does not match if the path starts with a `\` or `/`.
+-            [drive, COLON, 0] | [drive, COLON, SEP | ALT_SEP, ..]
+-                if *drive != SEP && *drive != ALT_SEP =>
++            [drive, COLON, SEP | ALT_SEP, ..] if *drive != SEP && *drive != ALT_SEP =>
+             {
+                 return Ok(path);
+             }

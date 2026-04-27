@@ -1,0 +1,50 @@
+diff --git a/library/std/src/sys/fs/hermit.rs b/library/std/src/sys/fs/hermit.rs
+index 5992766b5a4..29a2a66ef87 100644
+--- a/library/std/src/sys/fs/hermit.rs
++++ b/library/std/src/sys/fs/hermit.rs
+@@ -1,4 +1,4 @@
+-use crate::ffi::{CStr, OsStr, OsString, c_char};
++use crate::ffi::{CStr, OsStr, OsString};
+ use crate::fs::TryLockError;
+ use crate::io::{self, BorrowedCursor, Error, ErrorKind, IoSlice, IoSliceMut, SeekFrom};
+ use crate::os::hermit::ffi::OsStringExt;
+@@ -200,12 +200,33 @@ fn next(&mut self) -> Option<io::Result<DirEntry>> {
+             if counter == self.pos {
+                 self.pos += 1;
+ 
+-                // After dirent64, the file name is stored. d_reclen represents the length of the dirent64
+-                // plus the length of the file name. Consequently, file name has a size of d_reclen minus
+-                // the size of dirent64. The file name is always a C string and terminated by `\0`.
+-                // Consequently, we are able to ignore the last byte.
+-                let name_bytes =
+-                    unsafe { CStr::from_ptr(&dir.d_name as *const _ as *const c_char).to_bytes() };
++                let name_offset = mem::offset_of!(dirent64, d_name);
++                let reclen = usize::from(dir.d_reclen);
++                let Some(record_end) = offset.checked_add(reclen) else {
++                    return Some(Err(io::const_error!(
++                        ErrorKind::InvalidData,
++                        "directory entry record is invalid",
++                    )));
++                };
++                if reclen < name_offset || record_end > self.inner.dir.len() {
++                    return Some(Err(io::const_error!(
++                        ErrorKind::InvalidData,
++                        "directory entry record is invalid",
++                    )));
++                }
++
++                let name = match CStr::from_bytes_until_nul(
++                    &self.inner.dir[offset + name_offset..record_end],
++                ) {
++                    Ok(name) => name,
++                    Err(_) => {
++                        return Some(Err(io::const_error!(
++                            ErrorKind::InvalidData,
++                            "directory entry name is not NUL-terminated",
++                        )));
++                    }
++                };
++                let name_bytes = name.to_bytes();
+                 let entry = DirEntry {
+                     root: self.inner.root.clone(),
+                     ino: dir.d_ino,

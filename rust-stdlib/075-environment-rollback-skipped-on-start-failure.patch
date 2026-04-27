@@ -1,0 +1,20 @@
+diff --git a/library/std/src/sys/process/uefi.rs b/library/std/src/sys/process/uefi.rs
+index 88dd4c899b3..d9f0f2f3759 100644
+--- a/library/std/src/sys/process/uefi.rs
++++ b/library/std/src/sys/process/uefi.rs
+@@ -185,7 +185,7 @@ pub fn output(command: &mut Command) -> io::Result<(ExitStatus, Vec<u8>, Vec<u8>
+         }
+     }
+ 
+-    let stat = cmd.start_image()?;
++    let stat = cmd.start_image();
+ 
+     // Rollback any env changes
+     if let Some(e) = env {
+@@ -197,6 +197,7 @@ pub fn output(command: &mut Command) -> io::Result<(ExitStatus, Vec<u8>, Vec<u8>
+         }
+     }
+ 
++    let stat = stat?;
+     let stdout = cmd.stdout()?;
+     let stderr = cmd.stderr()?;

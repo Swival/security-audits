@@ -1,0 +1,76 @@
+diff --git a/library/std/src/sys/sync/condvar/xous.rs b/library/std/src/sys/sync/condvar/xous.rs
+index 5d1b14443c6..64e18dc5d1c 100644
+--- a/library/std/src/sys/sync/condvar/xous.rs
++++ b/library/std/src/sys/sync/condvar/xous.rs
+@@ -28,27 +28,21 @@ fn notify_some(&self, to_notify: usize) {
+         // Assumption: The Mutex protecting this condvar is locked throughout the
+         // entirety of this call, preventing calls to `wait` and `wait_timeout`.
+ 
+-        // Logic check: Ensure that there aren't any missing waiters. Remove any that
+-        // timed-out, ensuring the counter doesn't underflow.
+-        assert!(self.timed_out.load(Ordering::Relaxed) <= self.counter.load(Ordering::Relaxed));
+-        self.counter.fetch_sub(self.timed_out.swap(0, Ordering::Relaxed), Ordering::Relaxed);
++        // Remove timed-out waiters, ensuring the counter doesn't underflow if a timeout
++        // races with notification accounting.
++        let timed_out = self.timed_out.swap(0, Ordering::Relaxed);
++        let _ = self.counter.try_update(Ordering::Relaxed, Ordering::Relaxed, |counter| {
++            Some(counter.saturating_sub(timed_out))
++        });
+ 
+         // Figure out how many threads to notify. Note that it is impossible for `counter`
+-        // to increase during this operation because Mutex is locked. However, it is
+-        // possible for `counter` to decrease due to a condvar timing out, in which
+-        // case the corresponding `timed_out` will increase accordingly.
+-        let Ok(waiter_count) =
+-            self.counter.try_update(Ordering::Relaxed, Ordering::Relaxed, |counter| {
+-                if counter == 0 {
+-                    return None;
+-                } else {
+-                    Some(counter - counter.min(to_notify))
+-                }
+-            })
+-        else {
++        // to increase during this operation because Mutex is locked. Timeouts are
++        // reconciled below after each notification attempt.
++        let waiter_count = self.counter.load(Ordering::Relaxed);
++        if waiter_count == 0 {
+             // No threads are waiting on this condvar
+             return;
+-        };
++        }
+ 
+         let mut remaining_to_wake = waiter_count.min(to_notify);
+         if remaining_to_wake == 0 {
+@@ -62,13 +56,20 @@ fn notify_some(&self, to_notify: usize) {
+             .expect("failure to send NotifyCondition command");
+ 
+             // Remove the list of waiters that were notified
+-            remaining_to_wake -= result[0];
++            let notified = result[0];
++            let _ = self.counter.try_update(Ordering::Relaxed, Ordering::Relaxed, |counter| {
++                Some(counter.saturating_sub(notified))
++            });
++            remaining_to_wake -= notified;
+ 
+             // Also remove the number of waiters that timed out. Clamp it to 0 in order to
+             // ensure we don't wait forever in case the waiter woke up between the time
+             // we counted the remaining waiters and now.
+-            remaining_to_wake =
+-                remaining_to_wake.saturating_sub(self.timed_out.swap(0, Ordering::Relaxed));
++            let timed_out = self.timed_out.swap(0, Ordering::Relaxed);
++            let _ = self.counter.try_update(Ordering::Relaxed, Ordering::Relaxed, |counter| {
++                Some(counter.saturating_sub(timed_out))
++            });
++            remaining_to_wake = remaining_to_wake.saturating_sub(timed_out);
+             if remaining_to_wake == 0 {
+                 return;
+             }
+@@ -138,7 +139,7 @@ fn drop(&mut self) {
+         let remaining_count = self.counter.load(Ordering::Relaxed);
+         let timed_out = self.timed_out.load(Ordering::Relaxed);
+         assert!(
+-            remaining_count - timed_out == 0,
++            remaining_count == timed_out,
+             "counter was {} and timed_out was {} not 0",
+             remaining_count,
+             timed_out

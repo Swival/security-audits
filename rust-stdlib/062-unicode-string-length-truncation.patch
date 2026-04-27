@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/pal/windows/api.rs b/library/std/src/sys/pal/windows/api.rs
+index 25a6c2d7d8e..1ae5f0e55c3 100644
+--- a/library/std/src/sys/pal/windows/api.rs
++++ b/library/std/src/sys/pal/windows/api.rs
+@@ -316,6 +316,8 @@ const fn new(slice: &[u16], is_null_terminated: bool) -> Self {
+             let len = slice.len() - (is_null_terminated as usize);
+             (len * 2, size_of_val(slice), slice.as_ptr().cast_mut())
+         };
++        assert!(len <= u16::MAX as usize);
++        assert!(max_len <= u16::MAX as usize);
+         Self {
+             s: c::UNICODE_STRING { Length: len as _, MaximumLength: max_len as _, Buffer: ptr },
+             lifetime: PhantomData,

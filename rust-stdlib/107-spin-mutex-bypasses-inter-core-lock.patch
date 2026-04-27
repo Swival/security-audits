@@ -1,0 +1,43 @@
+diff --git a/library/std/src/sys/pal/itron/spin.rs b/library/std/src/sys/pal/itron/spin.rs
+index bc4f83260bb..4bc1f7f954a 100644
+--- a/library/std/src/sys/pal/itron/spin.rs
++++ b/library/std/src/sys/pal/itron/spin.rs
+@@ -19,27 +19,29 @@ pub const fn new(x: T) -> Self {
+     /// Acquire a lock.
+     #[inline]
+     pub fn with_locked<R>(&self, f: impl FnOnce(&mut T) -> R) -> R {
+-        struct SpinMutexGuard<'a>(&'a Atomic<bool>);
++        struct SpinMutexGuard<'a>(&'a Atomic<bool>, bool);
+ 
+         impl Drop for SpinMutexGuard<'_> {
+             #[inline]
+             fn drop(&mut self) {
+                 self.0.store(false, Ordering::Release);
+-                unsafe { abi::ena_dsp() };
++                if self.1 {
++                    unsafe { abi::ena_dsp() };
++                }
+             }
+         }
+ 
+-        let _guard;
+-        if unsafe { abi::sns_dsp() } == 0 {
++        let dsp_enabled = unsafe { abi::sns_dsp() } == 0;
++        if dsp_enabled {
+             let er = unsafe { abi::dis_dsp() };
+             debug_assert!(er >= 0);
+-
+-            // Wait until the current processor acquires a lock.
+-            while self.locked.swap(true, Ordering::Acquire) {}
+-
+-            _guard = SpinMutexGuard(&self.locked);
+         }
+ 
++        // Wait until the current processor acquires a lock.
++        while self.locked.swap(true, Ordering::Acquire) {}
++
++        let _guard = SpinMutexGuard(&self.locked, dsp_enabled);
++
+         f(unsafe { &mut *self.data.get() })
+     }
+ }

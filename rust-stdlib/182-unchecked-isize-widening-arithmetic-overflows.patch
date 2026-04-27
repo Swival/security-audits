@@ -1,0 +1,26 @@
+diff --git a/library/core/src/intrinsics/fallback.rs b/library/core/src/intrinsics/fallback.rs
+index aa9033ee3d2..b8a0556920b 100644
+--- a/library/core/src/intrinsics/fallback.rs
++++ b/library/core/src/intrinsics/fallback.rs
+@@ -41,7 +41,7 @@ fn carrying_mul_add(self, a: Self, b: Self, c: Self) -> ($u, $t) {
+     i16 u16 i32,
+     i32 u32 i64,
+     i64 u64 i128,
+-    isize usize UDoubleSize,
++    isize usize SDoubleSize,
+ }
+ 
+ #[cfg(target_pointer_width = "16")]
+@@ -50,6 +50,12 @@ fn carrying_mul_add(self, a: Self, b: Self, c: Self) -> ($u, $t) {
+ type UDoubleSize = u64;
+ #[cfg(target_pointer_width = "64")]
+ type UDoubleSize = u128;
++#[cfg(target_pointer_width = "16")]
++type SDoubleSize = i32;
++#[cfg(target_pointer_width = "32")]
++type SDoubleSize = i64;
++#[cfg(target_pointer_width = "64")]
++type SDoubleSize = i128;
+ 
+ #[inline]
+ const fn wide_mul_u128(a: u128, b: u128) -> (u128, u128) {

@@ -1,0 +1,12 @@
+diff --git a/library/std/src/sys/net/connection/xous/tcpstream.rs b/library/std/src/sys/net/connection/xous/tcpstream.rs
+index 4df75453d1f..20492e73dd9 100644
+--- a/library/std/src/sys/net/connection/xous/tcpstream.rs
++++ b/library/std/src/sys/net/connection/xous/tcpstream.rs
+@@ -206,6 +206,7 @@ fn read_or_peek(&self, buf: &mut [u8], op: ReadOrPeek) -> io::Result<usize> {
+         };
+ 
+         if offset != 0 {
++            let length = length.min(data_to_read);
+             for (dest, src) in buf.iter_mut().zip(receive_request.raw[..length].iter()) {
+                 *dest = *src;
+             }

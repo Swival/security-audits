@@ -1,0 +1,19 @@
+diff --git a/library/compiler-builtins/compiler-builtins/src/probestack.rs b/library/compiler-builtins/compiler-builtins/src/probestack.rs
+index c4a2eeb0e01..2f93efd33e3 100644
+--- a/library/compiler-builtins/compiler-builtins/src/probestack.rs
++++ b/library/compiler-builtins/compiler-builtins/src/probestack.rs
+@@ -205,11 +205,13 @@
+             sub    esp, ecx
+             test   dword ptr [esp + 8], esp
+             mov    edx, dword ptr [ebp + 4]
++            mov    ecx, dword ptr [ebp]
+             mov    dword ptr [esp + 12], edx
+             add    esp, eax
+             pop    edx
++            mov    ebp, ecx
+             pop    ecx
+-            leave
++            add    esp, 4
+ 
+             sub   esp, eax
+             .cfi_def_cfa_register esp

@@ -1,0 +1,17 @@
+diff --git a/library/std/src/sys/net/connection/motor.rs b/library/std/src/sys/net/connection/motor.rs
+index 79a52879210..9976b53b878 100644
+--- a/library/std/src/sys/net/connection/motor.rs
++++ b/library/std/src/sys/net/connection/motor.rs
+@@ -238,7 +238,11 @@ pub fn into_socket(self) -> Socket {
+     }
+ 
+     pub fn bind<A: ToSocketAddrs>(addr: A) -> io::Result<UdpSocket> {
+-        let addr = into_netc(&addr.to_socket_addrs()?.next().unwrap());
++        let addr = addr
++            .to_socket_addrs()?
++            .next()
++            .ok_or(io::const_error!(io::ErrorKind::InvalidInput, "could not resolve to any addresses"))?;
++        let addr = into_netc(&addr);
+         moto_rt::net::bind(moto_rt::net::PROTO_UDP, &addr)
+             .map(|fd| Self { inner: unsafe { Socket::from_raw_fd(fd) } })
+             .map_err(map_motor_error)

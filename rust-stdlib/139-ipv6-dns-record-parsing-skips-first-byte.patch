@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/net/connection/xous/dns.rs b/library/std/src/sys/net/connection/xous/dns.rs
+index b139376f597..3163bc57aae 100644
+--- a/library/std/src/sys/net/connection/xous/dns.rs
++++ b/library/std/src/sys/net/connection/xous/dns.rs
+@@ -43,7 +43,7 @@ fn next(&mut self) -> Option<SocketAddr> {
+                     return None;
+                 }
+                 let mut new_addr = [0u8; 16];
+-                for (src, octet) in self.data.0[(self.offset + 1)..(self.offset + 16 + 1)]
++                for (src, octet) in self.data.0[self.offset..(self.offset + 16)]
+                     .iter()
+                     .zip(new_addr.iter_mut())
+                 {

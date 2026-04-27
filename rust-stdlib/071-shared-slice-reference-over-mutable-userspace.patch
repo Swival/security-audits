@@ -1,0 +1,48 @@
+diff --git a/library/std/src/sys/pal/sgx/abi/usercalls/alloc.rs b/library/std/src/sys/pal/sgx/abi/usercalls/alloc.rs
+index c2694316249..70d62a1cc4f 100644
+--- a/library/std/src/sys/pal/sgx/abi/usercalls/alloc.rs
++++ b/library/std/src/sys/pal/sgx/abi/usercalls/alloc.rs
+@@ -6,6 +6,7 @@
+ use crate::arch::asm;
+ use crate::cell::UnsafeCell;
+ use crate::convert::TryInto;
++use crate::marker::PhantomData;
+ use crate::mem::{self, ManuallyDrop, MaybeUninit};
+ use crate::ops::{CoerceUnsized, Deref, DerefMut, Index, IndexMut};
+ use crate::ptr::{self, NonNull};
+@@ -690,7 +691,7 @@ pub fn iter(&self) -> Iter<'_, T>
+     where
+         T: UserSafe, // FIXME: should be implied by [T]: UserSafe?
+     {
+-        unsafe { Iter((&*self.as_raw_ptr()).iter()) }
++        Iter { ptr: self.as_ptr(), len: self.len(), _marker: PhantomData }
+     }
+ 
+     /// Returns an iterator that allows modifying each value.
+@@ -706,7 +707,11 @@ pub fn iter_mut(&mut self) -> IterMut<'_, T>
+ ///
+ /// This struct is created by the `iter` method on `UserRef<[T]>`.
+ #[unstable(feature = "sgx_platform", issue = "56975")]
+-pub struct Iter<'a, T: 'a + UserSafe>(slice::Iter<'a, T>);
++pub struct Iter<'a, T: 'a + UserSafe> {
++    ptr: *const T,
++    len: usize,
++    _marker: PhantomData<&'a UserRef<T>>,
++}
+ 
+ #[unstable(feature = "sgx_platform", issue = "56975")]
+ impl<'a, T: UserSafe> Iterator for Iter<'a, T> {
+@@ -714,7 +719,13 @@ impl<'a, T: UserSafe> Iterator for Iter<'a, T> {
+ 
+     #[inline]
+     fn next(&mut self) -> Option<Self::Item> {
+-        unsafe { self.0.next().map(|e| UserRef::from_ptr(e)) }
++        if self.len == 0 {
++            return None;
++        }
++        let ptr = self.ptr;
++        self.ptr = self.ptr.wrapping_add(1);
++        self.len -= 1;
++        unsafe { Some(&*(ptr as *const UserRef<T>)) }
+     }
+ }

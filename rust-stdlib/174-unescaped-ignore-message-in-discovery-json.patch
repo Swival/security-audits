@@ -1,0 +1,12 @@
+diff --git a/library/test/src/formatters/json.rs b/library/test/src/formatters/json.rs
+index 4a101f00d74..12ad3bb160b 100644
+--- a/library/test/src/formatters/json.rs
++++ b/library/test/src/formatters/json.rs
+@@ -75,7 +75,7 @@ fn write_test_discovered(&mut self, desc: &TestDesc, test_type: &str) -> io::Res
+         } = desc;
+ 
+         let name = EscapedString(name.as_slice());
+-        let ignore_message = ignore_message.unwrap_or("");
++        let ignore_message = EscapedString(ignore_message.unwrap_or(""));
+         let source_path = EscapedString(source_file);
+         let newline = "\n";

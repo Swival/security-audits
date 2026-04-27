@@ -1,0 +1,22 @@
+diff --git a/library/std/src/sys/env/sgx.rs b/library/std/src/sys/env/sgx.rs
+index 09090ec7cf0..d080883ebca 100644
+--- a/library/std/src/sys/env/sgx.rs
++++ b/library/std/src/sys/env/sgx.rs
+@@ -18,14 +18,14 @@
+ type EnvStore = Mutex<HashMap<OsString, OsString>>;
+ 
+ fn get_env_store() -> Option<&'static EnvStore> {
+-    unsafe { (ENV.load(Ordering::Relaxed) as *const EnvStore).as_ref() }
++    unsafe { (ENV.load(Ordering::Acquire) as *const EnvStore).as_ref() }
+ }
+ 
+ fn create_env_store() -> &'static EnvStore {
+     ENV_INIT.call_once(|| {
+-        ENV.store(Box::into_raw(Box::new(EnvStore::default())) as _, Ordering::Relaxed)
++        ENV.store(Box::into_raw(Box::new(EnvStore::default())) as _, Ordering::Release)
+     });
+-    unsafe { &*(ENV.load(Ordering::Relaxed) as *const EnvStore) }
++    unsafe { &*(ENV.load(Ordering::Acquire) as *const EnvStore) }
+ }
+ 
+ pub fn env() -> Env {

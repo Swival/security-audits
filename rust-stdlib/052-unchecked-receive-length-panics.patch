@@ -1,0 +1,14 @@
+diff --git a/library/std/src/sys/net/connection/xous/udp.rs b/library/std/src/sys/net/connection/xous/udp.rs
+index ce54ea3b79e..9a442365bb8 100644
+--- a/library/std/src/sys/net/connection/xous/udp.rs
++++ b/library/std/src/sys/net/connection/xous/udp.rs
+@@ -158,6 +158,9 @@ fn recv_inner(&self, buf: &mut [u8], do_peek: bool) -> io::Result<(usize, Socket
+             } else {
+                 let rr = &receive_request.raw;
+                 let rxlen = u16::from_le_bytes(rr[1..3].try_into().unwrap());
++                if rxlen as usize > rr.len() - 22 {
++                    return Err(io::const_error!(io::ErrorKind::Other, "library error"));
++                }
+                 let port = u16::from_le_bytes(rr[20..22].try_into().unwrap());
+                 let addr = if rr[3] == 4 {
+                     SocketAddr::new(IpAddr::V4(Ipv4Addr::new(rr[4], rr[5], rr[6], rr[7])), port)

@@ -1,0 +1,24 @@
+diff --git a/library/std/src/sys/thread/xous.rs b/library/std/src/sys/thread/xous.rs
+index 208d43bb2c0..962684139f7 100644
+--- a/library/std/src/sys/thread/xous.rs
++++ b/library/std/src/sys/thread/xous.rs
+@@ -21,13 +21,17 @@ pub struct Thread {
+ impl Thread {
+     // unsafe: see thread::Builder::spawn_unchecked for safety requirements
+     pub unsafe fn new(stack: usize, init: Box<ThreadInit>) -> io::Result<Thread> {
+-        let data = Box::into_raw(init);
+         let mut stack_size = crate::cmp::max(stack, MIN_STACK_SIZE);
+ 
+         if (stack_size & 4095) != 0 {
+-            stack_size = (stack_size + 4095) & !4095;
++            stack_size = stack_size
++                .checked_add(4095)
++                .ok_or(io::const_error!(io::ErrorKind::InvalidInput, "invalid stack size"))?
++                & !4095;
+         }
+ 
++        let data = Box::into_raw(init);
++
+         // Allocate the whole thing, then divide it up after the fact. This ensures that
+         // even if there's a context switch during this function, the whole stack plus
+         // guard pages will remain contiguous.

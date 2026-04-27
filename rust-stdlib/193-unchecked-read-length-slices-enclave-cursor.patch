@@ -1,0 +1,14 @@
+diff --git a/library/std/src/sys/pal/sgx/abi/usercalls/mod.rs b/library/std/src/sys/pal/sgx/abi/usercalls/mod.rs
+index e413bae6ab4..43ae09b3077 100644
+--- a/library/std/src/sys/pal/sgx/abi/usercalls/mod.rs
++++ b/library/std/src/sys/pal/sgx/abi/usercalls/mod.rs
+@@ -43,6 +43,9 @@ pub fn read_buf(fd: Fd, mut buf: BorrowedCursor<'_>) -> io::Result<()> {
+     unsafe {
+         let mut userbuf = alloc::User::<[u8]>::uninitialized(buf.capacity());
+         let len = raw::read(fd, userbuf.as_mut_ptr().cast(), userbuf.len()).from_sgx_result()?;
++        if len > userbuf.len() {
++            rtabort!("Usercall read: returned invalid length {len}");
++        }
+         userbuf[..len].copy_to_enclave(&mut buf.as_mut()[..len]);
+         buf.advance(len);
+         Ok(())

@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/alloc/solid.rs b/library/std/src/sys/alloc/solid.rs
+index 47cfa2eb116..3c803798706 100644
+--- a/library/std/src/sys/alloc/solid.rs
++++ b/library/std/src/sys/alloc/solid.rs
+@@ -20,7 +20,7 @@ unsafe fn dealloc(&self, ptr: *mut u8, _layout: Layout) {
+     #[inline]
+     unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
+         unsafe {
+-            if layout.align() <= MIN_ALIGN && layout.align() <= new_size {
++            if layout.align() <= MIN_ALIGN && layout.align() <= layout.size() && layout.align() <= new_size {
+                 libc::realloc(ptr as *mut libc::c_void, new_size) as *mut u8
+             } else {
+                 realloc_fallback(self, ptr, layout, new_size)

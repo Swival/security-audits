@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/pal/uefi/helpers.rs b/library/std/src/sys/pal/uefi/helpers.rs
+index 9db72db6067..021f24528a7 100644
+--- a/library/std/src/sys/pal/uefi/helpers.rs
++++ b/library/std/src/sys/pal/uefi/helpers.rs
+@@ -830,7 +830,7 @@ fn set_size(&mut self, s: u64) {
+ 
+     // Length of string (including NULL), not number of bytes.
+     fn file_name_len(&self) -> usize {
+-        (self.size() as usize - size_of::<file::Info<0>>()) / size_of::<u16>()
++        (self.size() as usize).saturating_sub(size_of::<file::Info<0>>()) / size_of::<u16>()
+     }
+ 
+     pub(crate) fn file_name(&self) -> &[u16] {

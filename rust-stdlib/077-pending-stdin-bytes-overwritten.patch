@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/stdio/windows.rs b/library/std/src/sys/stdio/windows.rs
+index 62ec115d7b0..a7e55da0e3b 100644
+--- a/library/std/src/sys/stdio/windows.rs
++++ b/library/std/src/sys/stdio/windows.rs
+@@ -304,7 +304,7 @@ fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+             // Safety `read_u16s_fixup_surrogates` returns the number of items
+             // initialized.
+             let utf16s = unsafe { utf16_buf[..read].assume_init_ref() };
+-            match utf16_to_utf8(utf16s, buf) {
++            match utf16_to_utf8(utf16s, &mut buf[bytes_copied..]) {
+                 Ok(value) => return Ok(bytes_copied + value),
+                 Err(e) => return Err(e),
+             }

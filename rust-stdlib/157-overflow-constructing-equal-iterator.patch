@@ -1,0 +1,13 @@
+diff --git a/library/stdarch/crates/intrinsic-test/src/common/constraint.rs b/library/stdarch/crates/intrinsic-test/src/common/constraint.rs
+index 5984e0fcc22..d6920b6531e 100644
+--- a/library/stdarch/crates/intrinsic-test/src/common/constraint.rs
++++ b/library/stdarch/crates/intrinsic-test/src/common/constraint.rs
+@@ -16,7 +16,7 @@ impl Constraint {
+     /// Iterate over the values of this constraint.
+     pub fn iter<'a>(&'a self) -> impl Iterator<Item = i64> + 'a {
+         match self {
+-            Constraint::Equal(i) => std::slice::Iter::default().copied().chain(*i..*i + 1),
++            Constraint::Equal(i) => std::slice::from_ref(i).iter().copied().chain(std::ops::Range::default()),
+             Constraint::Range(range) => std::slice::Iter::default().copied().chain(range.clone()),
+             Constraint::Set(items) => items.iter().copied().chain(std::ops::Range::default()),
+         }

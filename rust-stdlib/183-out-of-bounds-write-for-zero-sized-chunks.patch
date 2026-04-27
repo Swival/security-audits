@@ -1,0 +1,15 @@
+diff --git a/library/core/src/iter/adapters/filter.rs b/library/core/src/iter/adapters/filter.rs
+index cf21536784a..ff504d5eb86 100644
+--- a/library/core/src/iter/adapters/filter.rs
++++ b/library/core/src/iter/adapters/filter.rs
+@@ -39,6 +39,10 @@ fn next_chunk_dropless<const N: usize>(
+         &mut self,
+     ) -> Result<[I::Item; N], array::IntoIter<I::Item, N>> {
+         let mut array: [MaybeUninit<I::Item>; N] = [const { MaybeUninit::uninit() }; N];
++        if N == 0 {
++            // SAFETY: An empty array has no elements that need initialization.
++            return Ok(unsafe { MaybeUninit::array_assume_init(array) });
++        }
+         let mut initialized = 0;
+ 
+         let result = self.iter.try_for_each(|element| {

@@ -1,0 +1,22 @@
+diff --git a/library/core/src/ptr/mut_ptr.rs b/library/core/src/ptr/mut_ptr.rs
+index 98b70a77fad..c88f4b72db0 100644
+--- a/library/core/src/ptr/mut_ptr.rs
++++ b/library/core/src/ptr/mut_ptr.rs
+@@ -1860,11 +1860,17 @@ pub unsafe fn split_at_mut_unchecked(self, mid: usize) -> (*mut [T], *mut [T]) {
+         let len = self.len();
+         let ptr = self.as_mut_ptr();
+ 
++        ub_checks::assert_unsafe_precondition!(
++            check_library_ub,
++            "ptr::split_at_mut_unchecked requires the index to be within the slice",
++            (mid: usize = mid, len: usize = len) => mid <= len,
++        );
++
+         // SAFETY: Caller must pass a valid pointer and an index that is in-bounds.
+         let tail = unsafe { ptr.add(mid) };
+         (
+             crate::ptr::slice_from_raw_parts_mut(ptr, mid),
+-            crate::ptr::slice_from_raw_parts_mut(tail, len - mid),
++            crate::ptr::slice_from_raw_parts_mut(tail, unsafe { intrinsics::unchecked_sub(len, mid) }),
+         )
+     }

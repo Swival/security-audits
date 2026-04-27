@@ -1,0 +1,26 @@
+diff --git a/library/std/src/sys/fs/uefi.rs b/library/std/src/sys/fs/uefi.rs
+index ef523a9807f..f9dc910eed4 100644
+--- a/library/std/src/sys/fs/uefi.rs
++++ b/library/std/src/sys/fs/uefi.rs
+@@ -871,12 +871,15 @@ pub(crate) fn mkdir(path: &Path) -> io::Result<()> {
+             Err(e) => return Err(e),
+         }
+ 
+-        let _ = File::open(
+-            vol,
+-            &mut path_remaining,
+-            file::MODE_READ | file::MODE_WRITE | file::MODE_CREATE,
+-            file::DIRECTORY,
+-        )?;
++        let _created = File {
++            protocol: File::open(
++                vol,
++                &mut path_remaining,
++                file::MODE_READ | file::MODE_WRITE | file::MODE_CREATE,
++                file::DIRECTORY,
++            )?,
++            path: absolute,
++        };
+ 
+         Ok(())
+     }

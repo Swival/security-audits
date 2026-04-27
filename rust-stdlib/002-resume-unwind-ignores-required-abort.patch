@@ -1,0 +1,57 @@
+diff --git a/library/std/src/panicking.rs b/library/std/src/panicking.rs
+index a4a974d0447..b212be0412a 100644
+--- a/library/std/src/panicking.rs
++++ b/library/std/src/panicking.rs
+@@ -854,8 +854,6 @@ fn panic_with_hook(
+ /// It just forwards the payload to the panic runtime.
+ #[cfg_attr(panic = "immediate-abort", inline)]
+ pub fn resume_unwind(payload: Box<dyn Any + Send>) -> ! {
+-    panic_count::increase(false);
+-
+     struct RewrapBox(Box<dyn Any + Send>);
+ 
+     unsafe impl PanicPayload for RewrapBox {
+@@ -866,6 +864,16 @@ fn take_box(&mut self) -> *mut (dyn Any + Send) {
+         fn get(&mut self) -> &(dyn Any + Send) {
+             &*self.0
+         }
++
++        fn as_str(&mut self) -> Option<&str> {
++            if let Some(&s) = self.0.downcast_ref::<&'static str>() {
++                Some(s)
++            } else if let Some(s) = self.0.downcast_ref::<String>() {
++                Some(s.as_str())
++            } else {
++                None
++            }
++        }
+     }
+ 
+     impl fmt::Display for RewrapBox {
+@@ -874,7 +882,25 @@ fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+         }
+     }
+ 
+-    rust_panic(&mut RewrapBox(payload))
++    let mut payload = RewrapBox(payload);
++    let must_abort = panic_count::increase(false);
++
++    if let Some(must_abort) = must_abort {
++        match must_abort {
++            panic_count::MustAbort::PanicInHook => {
++                let message: &str = payload.as_str().unwrap_or_default();
++                rtprintpanic!(
++                    "panicked at {message}\nthread panicked while processing panic. aborting.\n"
++                );
++            }
++            panic_count::MustAbort::AlwaysAbort => {
++                rtprintpanic!("aborting due to resumed panic:\n{payload}\n");
++            }
++        }
++        crate::process::abort();
++    }
++
++    rust_panic(&mut payload)
+ }
+ 
+ /// A function with a fixed suffix (through `rustc_std_internal_symbol`)

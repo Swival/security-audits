@@ -1,0 +1,12 @@
+diff --git a/library/std/src/sys/sync/mutex/xous.rs b/library/std/src/sys/sync/mutex/xous.rs
+index d16faa5aea3..daa6ac34487 100644
+--- a/library/std/src/sys/sync/mutex/xous.rs
++++ b/library/std/src/sys/sync/mutex/xous.rs
+@@ -64,6 +64,7 @@ pub unsafe fn lock(&self) {
+             crate::os::xous::services::TicktimerScalar::LockMutex(self.index()).into(),
+         )
+         .expect("failure to send LockMutex command");
++        let _ = self.locked.load(Acquire);
+     }
+ 
+     #[inline]

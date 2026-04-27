@@ -1,0 +1,14 @@
+diff --git a/library/std/src/sys/paths/windows.rs b/library/std/src/sys/paths/windows.rs
+index cfdc93847a9..c5160aecb69 100644
+--- a/library/std/src/sys/paths/windows.rs
++++ b/library/std/src/sys/paths/windows.rs
+@@ -106,6 +106,9 @@ pub fn getcwd() -> io::Result<PathBuf> {
+ pub fn chdir(p: &path::Path) -> io::Result<()> {
+     let p: &OsStr = p.as_ref();
+     let mut p = p.encode_wide().collect::<Vec<_>>();
++    if p.contains(&0) {
++        return Err(io::const_error!(io::ErrorKind::InvalidInput, "nul byte found in provided data"));
++    }
+     p.push(0);
+ 
+     cvt(unsafe { c::SetCurrentDirectoryW(p.as_ptr()) }).map(drop)

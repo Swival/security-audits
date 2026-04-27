@@ -1,0 +1,13 @@
+diff --git a/library/std_detect/src/detect/os/x86.rs b/library/std_detect/src/detect/os/x86.rs
+index b24ef6a37ef..d603d9d0173 100644
+--- a/library/std_detect/src/detect/os/x86.rs
++++ b/library/std_detect/src/detect/os/x86.rs
+@@ -80,7 +80,7 @@ pub(crate) fn detect_features() -> cache::Initializer {
+ 
+     // EAX = 0x8000_0001, ECX=0: Queries "Extended Processor Info and Feature
+     // Bits"
+-    let extended_proc_info_ecx = if extended_max_basic_leaf >= 1 {
++    let extended_proc_info_ecx = if extended_max_basic_leaf >= 0x8000_0001 {
+         let CpuidResult { ecx, .. } = __cpuid(0x8000_0001_u32);
+         ecx
+     } else {

@@ -1,0 +1,14 @@
+diff --git a/library/test/src/term/terminfo/parm.rs b/library/test/src/term/terminfo/parm.rs
+index 529ec0c36e4..df7b5c64a64 100644
+--- a/library/test/src/term/terminfo/parm.rs
++++ b/library/test/src/term/terminfo/parm.rs
+@@ -185,6 +185,9 @@ pub(crate) fn expand(
+                     },
+                     '+' | '-' | '/' | '*' | '^' | '&' | '|' | 'm' => {
+                         match (stack.pop(), stack.pop()) {
++                            (Some(Number(0)), Some(Number(_))) if cur == '/' || cur == 'm' => {
++                                return Err("division by zero".to_string());
++                            }
+                             (Some(Number(y)), Some(Number(x))) => stack.push(Number(match cur {
+                                 '+' => x + y,
+                                 '-' => x - y,

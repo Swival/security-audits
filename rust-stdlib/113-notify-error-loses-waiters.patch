@@ -1,0 +1,24 @@
+diff --git a/library/std/src/sys/sync/condvar/xous.rs b/library/std/src/sys/sync/condvar/xous.rs
+index 5d1b14443c6..ecdbb92097f 100644
+--- a/library/std/src/sys/sync/condvar/xous.rs
++++ b/library/std/src/sys/sync/condvar/xous.rs
+@@ -55,11 +55,16 @@ fn notify_some(&self, to_notify: usize) {
+             return;
+         }
+         for _wake_tries in 0..NOTIFY_TRIES {
+-            let result = blocking_scalar(
++            let result = match blocking_scalar(
+                 ticktimer_server(),
+                 TicktimerScalar::NotifyCondition(self.index(), remaining_to_wake).into(),
+-            )
+-            .expect("failure to send NotifyCondition command");
++            ) {
++                Ok(result) => result,
++                Err(err) => {
++                    self.counter.fetch_add(remaining_to_wake, Ordering::Relaxed);
++                    panic!("failure to send NotifyCondition command: {err:?}");
++                }
++            };
+ 
+             // Remove the list of waiters that were notified
+             remaining_to_wake -= result[0];

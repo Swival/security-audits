@@ -1,0 +1,65 @@
+diff --git a/library/std/src/sys/thread_local/no_threads.rs b/library/std/src/sys/thread_local/no_threads.rs
+index 27a589a4a76..4c063a3979c 100644
+--- a/library/std/src/sys/thread_local/no_threads.rs
++++ b/library/std/src/sys/thread_local/no_threads.rs
+@@ -2,7 +2,7 @@
+ //! thread locals and we can instead just use plain statics!
+ 
+ use crate::cell::{Cell, UnsafeCell};
+-use crate::mem::MaybeUninit;
++use crate::mem::{self, MaybeUninit};
+ use crate::ptr;
+ 
+ #[doc(hidden)]
+@@ -54,7 +54,7 @@ unsafe impl<T> Sync for EagerStorage<T> {}
+ enum State {
+     Initial,
+     Alive,
+-    Destroying,
++    Initializing,
+ }
+ 
+ #[allow(missing_debug_implementations)]
+@@ -89,28 +89,29 @@ pub fn get(&'static self, i: Option<&mut Option<T>>, f: impl FnOnce() -> T) -> *
+ 
+     #[cold]
+     fn initialize(&'static self, i: Option<&mut Option<T>>, f: impl FnOnce() -> T) -> *const T {
+-        let value = i.and_then(Option::take).unwrap_or_else(f);
++        // Guard against recursive initialization.
++        match self.state.get() {
++            State::Initial => {}
++            State::Alive => unreachable!(),
++            State::Initializing => panic!("Attempted to recursively initialize thread-local"),
++        }
+ 
+-        // Destroy the old value if it is initialized
+-        // FIXME(#110897): maybe panic on recursive initialization.
+-        if self.state.get() == State::Alive {
+-            self.state.set(State::Destroying);
+-            // Safety: we check for no initialization during drop below
+-            unsafe {
+-                ptr::drop_in_place(self.value.get() as *mut T);
++        struct Guard<'a>(&'a Cell<State>);
++        impl<'a> Drop for Guard<'a> {
++            fn drop(&mut self) {
++                self.0.set(State::Initial);
+             }
+-            self.state.set(State::Initial);
+         }
+ 
+-        // Guard against initialization during drop
+-        if self.state.get() == State::Destroying {
+-            panic!("Attempted to initialize thread-local while it is being dropped");
+-        }
++        self.state.set(State::Initializing);
++        let guard = Guard(&self.state);
++        let value = i.and_then(Option::take).unwrap_or_else(f);
+ 
+         unsafe {
+             self.value.get().write(MaybeUninit::new(value));
+         }
+         self.state.set(State::Alive);
++        mem::forget(guard);
+ 
+         self.value.get() as *const T
+     }

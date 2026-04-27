@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/env/zkvm.rs b/library/std/src/sys/env/zkvm.rs
+index b672a03bf0b..e5c2898ee49 100644
+--- a/library/std/src/sys/env/zkvm.rs
++++ b/library/std/src/sys/env/zkvm.rs
+@@ -15,7 +15,7 @@ pub fn getenv(varname: &OsStr) -> Option<OsString> {
+         return None;
+     }
+ 
+-    let nwords = (nbytes + WORD_SIZE - 1) / WORD_SIZE;
++    let nwords = nbytes.checked_add(WORD_SIZE - 1)? / WORD_SIZE;
+     let words = unsafe { abi::sys_alloc_words(nwords) };
+ 
+     let nbytes2 = unsafe { abi::sys_getenv(words, nwords, varname.as_ptr(), varname.len()) };

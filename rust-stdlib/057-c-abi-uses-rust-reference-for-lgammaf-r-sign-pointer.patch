@@ -1,0 +1,28 @@
+diff --git a/library/compiler-builtins/compiler-builtins/src/math/mod.rs b/library/compiler-builtins/compiler-builtins/src/math/mod.rs
+index 3dfa3863bb7..6af406b4ab5 100644
+--- a/library/compiler-builtins/compiler-builtins/src/math/mod.rs
++++ b/library/compiler-builtins/compiler-builtins/src/math/mod.rs
+@@ -196,15 +196,19 @@ pub mod partial_availability {
+ 
+     // allow for windows (and other targets)
+     intrinsics! {
+-        pub extern "C" fn lgamma_r(x: f64, s: &mut i32) -> f64 {
++        pub extern "C" fn lgamma_r(x: f64, s: *mut i32) -> f64 {
+             let r = super::libm_math::lgamma_r(x);
+-            *s = r.1;
++            if !s.is_null() {
++                unsafe { *s = r.1 };
++            }
+             r.0
+         }
+ 
+-        pub extern "C" fn lgammaf_r(x: f32, s: &mut i32) -> f32 {
++        pub extern "C" fn lgammaf_r(x: f32, s: *mut i32) -> f32 {
+             let r = super::libm_math::lgammaf_r(x);
+-            *s = r.1;
++            if !s.is_null() {
++                unsafe { *s = r.1 };
++            }
+             r.0
+         }
+     }

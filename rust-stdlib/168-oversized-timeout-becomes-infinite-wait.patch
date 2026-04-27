@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/pal/wasm/atomics/futex.rs b/library/std/src/sys/pal/wasm/atomics/futex.rs
+index 6676aa7e8e3..c0d4eb49f5f 100644
+--- a/library/std/src/sys/pal/wasm/atomics/futex.rs
++++ b/library/std/src/sys/pal/wasm/atomics/futex.rs
+@@ -22,7 +22,7 @@
+ ///
+ /// Returns false on timeout, and true in all other cases.
+ pub fn futex_wait(futex: &Atomic<u32>, expected: u32, timeout: Option<Duration>) -> bool {
+-    let timeout = timeout.and_then(|t| t.as_nanos().try_into().ok()).unwrap_or(-1);
++    let timeout = timeout.map(|t| t.as_nanos().try_into().unwrap_or(i64::MAX)).unwrap_or(-1);
+     unsafe {
+         wasm::memory_atomic_wait32(
+             futex as *const Atomic<u32> as *mut i32,

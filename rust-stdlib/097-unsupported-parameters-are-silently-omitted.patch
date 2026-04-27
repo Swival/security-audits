@@ -1,0 +1,13 @@
+diff --git a/library/stdarch/crates/stdarch-gen-hexagon/src/main.rs b/library/stdarch/crates/stdarch-gen-hexagon/src/main.rs
+index 79837e2224e..d899313ff96 100644
+--- a/library/stdarch/crates/stdarch-gen-hexagon/src/main.rs
++++ b/library/stdarch/crates/stdarch-gen-hexagon/src/main.rs
+@@ -346,6 +346,8 @@ fn parse_prototype(prototype: &str) -> Option<(RustType, Vec<(String, RustType)>
+                     } else {
+                         return None; // Unknown type
+                     }
++                } else {
++                    return None; // Unsupported parameter syntax
+                 }
+             }
+         }

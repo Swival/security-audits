@@ -1,0 +1,18 @@
+diff --git a/library/core/src/iter/adapters/map_windows.rs b/library/core/src/iter/adapters/map_windows.rs
+index 097a0745c61..e4235af474f 100644
+--- a/library/core/src/iter/adapters/map_windows.rs
++++ b/library/core/src/iter/adapters/map_windows.rs
+@@ -194,11 +194,12 @@ fn push(&mut self, next: T) {
+ 
+ impl<T: Clone, const N: usize> Clone for Buffer<T, N> {
+     fn clone(&self) -> Self {
++        let cloned = self.as_array_ref().clone();
+         let mut buffer = Buffer {
+             buffer: [[const { MaybeUninit::uninit() }; N], [const { MaybeUninit::uninit() }; N]],
+             start: self.start,
+         };
+-        buffer.as_uninit_array_mut().write(self.as_array_ref().clone());
++        buffer.as_uninit_array_mut().write(cloned);
+         buffer
+     }
+ }

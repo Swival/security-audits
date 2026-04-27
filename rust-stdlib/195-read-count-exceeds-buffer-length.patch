@@ -1,0 +1,13 @@
+diff --git a/library/std/src/sys/stdio/uefi.rs b/library/std/src/sys/stdio/uefi.rs
+index ccd6bf658b0..6cf821eff8f 100644
+--- a/library/std/src/sys/stdio/uefi.rs
++++ b/library/std/src/sys/stdio/uefi.rs
+@@ -92,7 +92,7 @@ fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+                     self.incomplete_utf8.len =
+                         x.encode_utf8(&mut self.incomplete_utf8.bytes).len() as u8;
+                     // write partial character to buffer.
+-                    bytes_copied += self.incomplete_utf8.read(buf);
++                    bytes_copied += self.incomplete_utf8.read(&mut buf[bytes_copied..]);
+                 }
+             }
+         }

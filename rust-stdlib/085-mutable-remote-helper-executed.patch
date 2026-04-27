@@ -1,0 +1,15 @@
+diff --git a/library/portable-simd/subtree-sync.sh b/library/portable-simd/subtree-sync.sh
+index 18360077623..856258f574d 100755
+--- a/library/portable-simd/subtree-sync.sh
++++ b/library/portable-simd/subtree-sync.sh
+@@ -18,8 +18,8 @@ if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/master)" ]; then
+ fi
+ 
+ if [ ! -f library/portable-simd/git-subtree.sh ]; then
+-    curl -sS https://raw.githubusercontent.com/bjorn3/git/tqc-subtree-portable/contrib/subtree/git-subtree.sh -o library/portable-simd/git-subtree.sh
+-    chmod +x library/portable-simd/git-subtree.sh
++    echo "library/portable-simd/git-subtree.sh is missing; install the vendored helper before running this script" >&2
++    exit 1
+ fi
+ 
+ today=$(date +%Y-%m-%d)

@@ -1,0 +1,13 @@
+diff --git a/library/unwind/src/unwinding.rs b/library/unwind/src/unwinding.rs
+index 36120bc868e..0301c438c41 100644
+--- a/library/unwind/src/unwinding.rs
++++ b/library/unwind/src/unwinding.rs
+@@ -81,7 +81,7 @@ pub unsafe fn _Unwind_GetIPInfo(
+ ) -> _Unwind_Word {
+     let ctx = unsafe { &mut *(ctx as *mut UnwindContext<'_>) };
+     let ip_before_insn = unsafe { &mut *(ip_before_insn as *mut c_int) };
+-    unsafe { &*(unwinding::abi::_Unwind_GetIPInfo(ctx, ip_before_insn) as _Unwind_Word) }
++    unwinding::abi::_Unwind_GetIPInfo(ctx, ip_before_insn) as _Unwind_Word
+ }
+ 
+ pub unsafe fn _Unwind_GetLanguageSpecificData(ctx: *mut _Unwind_Context) -> *mut c_void {

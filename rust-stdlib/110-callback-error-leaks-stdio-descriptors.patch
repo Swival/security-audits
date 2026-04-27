@@ -1,0 +1,23 @@
+diff --git a/library/std/src/sys/process/unix/fuchsia.rs b/library/std/src/sys/process/unix/fuchsia.rs
+index 3fae5ec1468..9ba8d1cab34 100644
+--- a/library/std/src/sys/process/unix/fuchsia.rs
++++ b/library/std/src/sys/process/unix/fuchsia.rs
+@@ -102,14 +102,14 @@ unsafe fn do_exec(
+         let action3 = make_action(&stdio.stderr, 2)?;
+         let actions = [action1, action2, action3];
+ 
+-        // We don't want FileDesc::drop to be called on any stdio. fdio_spawn_etc
+-        // always consumes transferred file descriptors.
+-        mem::forget(stdio);
+-
+         for callback in self.get_closures().iter_mut() {
+             callback()?;
+         }
+ 
++        // We don't want FileDesc::drop to be called on any stdio. fdio_spawn_etc
++        // always consumes transferred file descriptors.
++        mem::forget(stdio);
++
+         let mut process_handle: zx_handle_t = 0;
+         zx_cvt(fdio_spawn_etc(
+             ZX_HANDLE_INVALID,

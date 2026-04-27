@@ -1,0 +1,44 @@
+diff --git a/library/std_detect/src/detect/os/linux/mod.rs b/library/std_detect/src/detect/os/linux/mod.rs
+index aec94f963f5..403790e9be8 100644
+--- a/library/std_detect/src/detect/os/linux/mod.rs
++++ b/library/std_detect/src/detect/os/linux/mod.rs
+@@ -10,19 +10,29 @@ fn read_file(orig_path: &str) -> Result<Vec<u8>, alloc::string::String> {
+     let mut path = Vec::from(orig_path.as_bytes());
+     path.push(0);
+ 
++    struct FileDesc(libc::c_int);
++
++    impl Drop for FileDesc {
++        fn drop(&mut self) {
++            unsafe {
++                libc::close(self.0);
++            }
++        }
++    }
++
+     unsafe {
+         let file = libc::open(path.as_ptr() as *const libc::c_char, libc::O_RDONLY);
+         if file == -1 {
+             return Err(format!("Cannot open file at {orig_path}"));
+         }
++        let file = FileDesc(file);
+ 
+         let mut data = Vec::new();
+         loop {
+             data.reserve(4096);
+             let spare = data.spare_capacity_mut();
+-            match libc::read(file, spare.as_mut_ptr() as *mut _, spare.len()) {
++            match libc::read(file.0, spare.as_mut_ptr() as *mut _, spare.len()) {
+                 -1 => {
+-                    libc::close(file);
+                     return Err(format!("Error while reading from file at {orig_path}"));
+                 }
+                 0 => break,
+@@ -30,7 +40,6 @@ fn read_file(orig_path: &str) -> Result<Vec<u8>, alloc::string::String> {
+             }
+         }
+ 
+-        libc::close(file);
+         Ok(data)
+     }
+ }

@@ -1,0 +1,22 @@
+diff --git a/library/core/src/index.rs b/library/core/src/index.rs
+index 70372163c6e..ff6a816aee6 100644
+--- a/library/core/src/index.rs
++++ b/library/core/src/index.rs
+@@ -350,7 +350,7 @@ unsafe impl<T> SliceIndex<[T]> for Clamp<range::RangeToInclusive<usize>> {
+     type Output = [T];
+ 
+     fn get(self, slice: &[T]) -> Option<&Self::Output> {
+-        (..=cmp::min(self.0.last, slice.len() - 1)).get(slice)
++        (..cmp::min(self.0.last.saturating_add(1), slice.len())).get(slice)
+     }
+ 
+     fn get_mut(self, slice: &mut [T]) -> Option<&mut Self::Output> {
+@@ -381,7 +381,7 @@ unsafe impl<T> SliceIndex<[T]> for Clamp<ops::RangeToInclusive<usize>> {
+     type Output = [T];
+ 
+     fn get(self, slice: &[T]) -> Option<&Self::Output> {
+-        (..=cmp::min(self.0.end, slice.len() - 1)).get(slice)
++        (..cmp::min(self.0.end.saturating_add(1), slice.len())).get(slice)
+     }
+ 
+     fn get_mut(self, slice: &mut [T]) -> Option<&mut Self::Output> {

@@ -1,0 +1,12 @@
+diff --git a/library/std_detect/src/detect/os/x86.rs b/library/std_detect/src/detect/os/x86.rs
+index b24ef6a37ef..e736dcb1f43 100644
+--- a/library/std_detect/src/detect/os/x86.rs
++++ b/library/std_detect/src/detect/os/x86.rs
+@@ -294,7 +294,7 @@ pub(crate) fn detect_features() -> cache::Initializer {
+                         enable(extended_features_eax_leaf_1, 5, Feature::avx512bf16);
+ 
+                         let avx10_1 = enable(extended_features_edx_leaf_1, 19, Feature::avx10_1);
+-                        if avx10_1 {
++                        if avx10_1 && max_basic_leaf >= 0x24 {
+                             let CpuidResult { ebx, .. } = __cpuid(0x24);
+                             let avx10_version = ebx & 0xff;

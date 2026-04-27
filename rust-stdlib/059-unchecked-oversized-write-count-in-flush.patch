@@ -1,0 +1,17 @@
+diff --git a/library/std/src/io/buffered/bufwriter.rs b/library/std/src/io/buffered/bufwriter.rs
+index 1b34724e6cc..5166fc77904 100644
+--- a/library/std/src/io/buffered/bufwriter.rs
++++ b/library/std/src/io/buffered/bufwriter.rs
+@@ -243,6 +243,12 @@ fn drop(&mut self) {
+                         "failed to write the buffered data",
+                     ));
+                 }
++                Ok(n) if n > guard.remaining().len() => {
++                    return Err(io::const_error!(
++                        ErrorKind::InvalidData,
++                        "write returned more bytes than provided",
++                    ));
++                }
+                 Ok(n) => guard.consume(n),
+                 Err(ref e) if e.is_interrupted() => {}
+                 Err(e) => return Err(e),
