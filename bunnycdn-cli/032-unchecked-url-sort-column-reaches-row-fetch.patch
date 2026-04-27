@@ -1,0 +1,73 @@
+diff --git a/packages/database-studio/client/src/components/TableView.tsx b/packages/database-studio/client/src/components/TableView.tsx
+index 34b9d8c..895f641 100644
+--- a/packages/database-studio/client/src/components/TableView.tsx
++++ b/packages/database-studio/client/src/components/TableView.tsx
+@@ -29,6 +29,20 @@ interface TableViewProps {
+   onSelectTable: (name: string) => void;
+ }
+ 
++function getValidSort(
++  s: TableSchema | null,
++  sortParam: string | null,
++  orderParam: string | null,
++) {
++  if (!sortParam || !s?.columns.some((column) => column.name === sortParam)) {
++    return undefined;
++  }
++  return {
++    column: sortParam,
++    order: (orderParam === "desc" ? "desc" : "asc") as "asc" | "desc",
++  };
++}
++
+ export function TableView({ tableName, onSelectTable }: TableViewProps) {
+   const [schema, setSchema] = useState<TableSchema | null>(null);
+   const [data, setData] = useState<RowsResponse | null>(null);
+@@ -59,13 +73,10 @@ export function TableView({ tableName, onSelectTable }: TableViewProps) {
+     return [{ id: sortParam, desc: orderParam === "desc" }];
+   }, [sortParam, orderParam]);
+ 
+-  const sort = useMemo(() => {
+-    if (!sortParam) return undefined;
+-    return {
+-      column: sortParam,
+-      order: (orderParam === "desc" ? "desc" : "asc") as "asc" | "desc",
+-    };
+-  }, [sortParam, orderParam]);
++  const sort = useMemo(
++    () => getValidSort(schema, sortParam, orderParam),
++    [schema, sortParam, orderParam],
++  );
+ 
+   const appliedFilters: FilterCondition[] = useMemo(() => {
+     if (!filtersParam) return [];
+@@ -91,17 +102,24 @@ export function TableView({ tableName, onSelectTable }: TableViewProps) {
+     setError(null);
+     setSchema(null);
+     setData(null);
+-    Promise.all([
+-      fetchTableSchema(tableName),
+-      fetchTableRows(tableName, 1, limit, [], sort, filterMode),
+-    ])
++    fetchTableSchema(tableName)
++      .then((s) =>
++        fetchTableRows(
++          tableName,
++          1,
++          limit,
++          [],
++          getValidSort(s, sortParam, orderParam),
++          filterMode,
++        ).then((d) => [s, d] as const),
++      )
+       .then(([s, d]) => {
+         setSchema(s);
+         setData(d);
+       })
+       .catch((e) => setError(e instanceof Error ? e.message : String(e)))
+       .finally(() => setLoading(false));
+-  }, [tableName, limit, filterMode, sort]);
++  }, [tableName, limit, filterMode, sortParam, orderParam]);
+ 
+   useEffect(() => {
+     setLoading(true);

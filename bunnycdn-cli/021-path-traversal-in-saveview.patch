@@ -1,0 +1,12 @@
+diff --git a/packages/database-shell/src/views.ts b/packages/database-shell/src/views.ts
+index 314a56d..8fb7afe 100644
+--- a/packages/database-shell/src/views.ts
++++ b/packages/database-shell/src/views.ts
+@@ -30,6 +30,7 @@ function ensureDir(viewsDir: string): void {
+ 
+ /** Save a SQL query as a named view. */
+ export function saveView(viewsDir: string, name: string, sql: string): void {
++  if (!isValidViewName(name)) throw new Error("Invalid view name");
+   ensureDir(viewsDir);
+   writeFileSync(join(viewsDir, name + VIEW_EXT), sql, "utf-8");
+ }

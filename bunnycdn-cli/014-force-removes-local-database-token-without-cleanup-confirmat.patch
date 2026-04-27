@@ -1,0 +1,12 @@
+diff --git a/packages/cli/src/commands/db/delete.ts b/packages/cli/src/commands/db/delete.ts
+index e895a80..19714a7 100644
+--- a/packages/cli/src/commands/db/delete.ts
++++ b/packages/cli/src/commands/db/delete.ts
+@@ -163,7 +163,6 @@ export const dbDeleteCommand = defineCommand<DeleteArgs>({
+     if (envUrl && db.url && envUrl.value === db.url) {
+       const shouldClean = await confirm(
+         `Remove ${ENV_DATABASE_URL} from ${envUrl.envPath}?`,
+-        { force },
+       );
+ 
+       if (shouldClean) {

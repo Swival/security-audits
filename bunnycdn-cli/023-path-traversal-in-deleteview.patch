@@ -1,0 +1,12 @@
+diff --git a/packages/database-shell/src/views.ts b/packages/database-shell/src/views.ts
+index 314a56d..8102bf1 100644
+--- a/packages/database-shell/src/views.ts
++++ b/packages/database-shell/src/views.ts
+@@ -43,6 +43,7 @@ export function loadView(viewsDir: string, name: string): string | null {
+ 
+ /** Delete a named view. Returns true if deleted, false if not found. */
+ export function deleteView(viewsDir: string, name: string): boolean {
++  if (!isValidViewName(name)) return false;
+   const path = join(viewsDir, name + VIEW_EXT);
+   if (!existsSync(path)) return false;
+   unlinkSync(path);

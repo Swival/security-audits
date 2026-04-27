@@ -1,0 +1,16 @@
+diff --git a/packages/cli/src/commands/db/shell.ts b/packages/cli/src/commands/db/shell.ts
+index de65da2..beccc77 100644
+--- a/packages/cli/src/commands/db/shell.ts
++++ b/packages/cli/src/commands/db/shell.ts
+@@ -87,7 +87,10 @@ async function resolveCredentials(
+     fetches.push(
+       apiClient.PUT("/v2/databases/{db_id}/auth/generate", {
+         params: { path: { db_id: databaseId } },
+-        body: { authorization: "full-access", expires_at: null },
++        body: {
++          authorization: "full-access",
++          expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
++        },
+       }),
+     );
+   }

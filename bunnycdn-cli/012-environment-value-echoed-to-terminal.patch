@@ -1,0 +1,13 @@
+diff --git a/packages/cli/src/commands/scripts/env/set.ts b/packages/cli/src/commands/scripts/env/set.ts
+index 07b58c0..6bb4d66 100644
+--- a/packages/cli/src/commands/scripts/env/set.ts
++++ b/packages/cli/src/commands/scripts/env/set.ts
+@@ -199,7 +199,7 @@ export const scriptsEnvSetCommand = defineCommand<SetArgs>({
+     logger.success(
+       isSecret
+         ? `Secret "${name}" set successfully.`
+-        : `Variable "${name}" set to "${value}".`,
++        : `Variable "${name}" set successfully.`,
+     );
+   },
+ });

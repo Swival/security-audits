@@ -1,0 +1,53 @@
+diff --git a/packages/database-studio/client/src/components/TableView.tsx b/packages/database-studio/client/src/components/TableView.tsx
+index 34b9d8c..1de15d1 100644
+--- a/packages/database-studio/client/src/components/TableView.tsx
++++ b/packages/database-studio/client/src/components/TableView.tsx
+@@ -29,6 +29,19 @@ interface TableViewProps {
+   onSelectTable: (name: string) => void;
+ }
+ 
++const FILTER_OPERATORS = new Set([
++  "=",
++  "!=",
++  ">",
++  "<",
++  ">=",
++  "<=",
++  "LIKE",
++  "NOT LIKE",
++  "IS NULL",
++  "IS NOT NULL",
++]);
++
+ export function TableView({ tableName, onSelectTable }: TableViewProps) {
+   const [schema, setSchema] = useState<TableSchema | null>(null);
+   const [data, setData] = useState<RowsResponse | null>(null);
+@@ -68,14 +81,25 @@ export function TableView({ tableName, onSelectTable }: TableViewProps) {
+   }, [sortParam, orderParam]);
+ 
+   const appliedFilters: FilterCondition[] = useMemo(() => {
+-    if (!filtersParam) return [];
++    if (!filtersParam || !schema) return [];
++    const columns = new Set(schema.columns.map((column) => column.name));
+     try {
+       const parsed = JSON.parse(filtersParam);
+-      return Array.isArray(parsed) ? parsed : [];
++      if (!Array.isArray(parsed)) return [];
++      return parsed.filter(
++        (filter): filter is FilterCondition =>
++          typeof filter === "object" &&
++          filter !== null &&
++          typeof filter.column === "string" &&
++          columns.has(filter.column) &&
++          typeof filter.operator === "string" &&
++          FILTER_OPERATORS.has(filter.operator) &&
++          typeof filter.value === "string",
++      );
+     } catch {
+       return [];
+     }
+-  }, [filtersParam]);
++  }, [filtersParam, schema]);
+ 
+   // Sync filter row count from URL on table change
+   useEffect(() => {

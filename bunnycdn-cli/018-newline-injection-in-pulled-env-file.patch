@@ -1,0 +1,17 @@
+diff --git a/packages/cli/src/commands/apps/env/pull.ts b/packages/cli/src/commands/apps/env/pull.ts
+index 9077652..ccb88f2 100644
+--- a/packages/cli/src/commands/apps/env/pull.ts
++++ b/packages/cli/src/commands/apps/env/pull.ts
+@@ -73,6 +73,12 @@ export const appsEnvPullCommand = defineCommand<PullArgs>({
+       return;
+     }
+ 
++    for (const v of vars) {
++      if (/\r|\n/.test(v.name) || /\r|\n/.test(v.value ?? "")) {
++        throw new UserError("Environment variable names and values must not contain line breaks.");
++      }
++    }
++
+     const envContent = `${vars.map((v) => `${v.name}=${v.value ?? ""}`).join("\n")}\n`;
+ 
+     const envPath = join(process.cwd(), ".env");

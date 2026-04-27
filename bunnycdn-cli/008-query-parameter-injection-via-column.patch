@@ -1,0 +1,13 @@
+diff --git a/packages/database-studio/client/src/api.ts b/packages/database-studio/client/src/api.ts
+index f4bb684..bd21ecd 100644
+--- a/packages/database-studio/client/src/api.ts
++++ b/packages/database-studio/client/src/api.ts
+@@ -140,7 +140,7 @@ export const fetchRowLookup = async (
+   value: string,
+ ): Promise<RowLookupResponse> => {
+   const res = await fetch(
+-    `${BASE}/api/${encodeURIComponent(table)}?${column}=eq.${encodeURIComponent(value)}&limit=1`,
++    `${BASE}/api/${encodeURIComponent(table)}?${encodeURIComponent(column)}=eq.${encodeURIComponent(value)}&limit=1`,
+   );
+   if (!res.ok) throw new Error(`Lookup failed: ${res.status}`);
+   const body = await res.json();

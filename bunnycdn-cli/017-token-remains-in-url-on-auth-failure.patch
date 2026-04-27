@@ -1,0 +1,13 @@
+diff --git a/packages/database-studio/client/src/main.tsx b/packages/database-studio/client/src/main.tsx
+index e16533f..537e97a 100644
+--- a/packages/database-studio/client/src/main.tsx
++++ b/packages/database-studio/client/src/main.tsx
+@@ -16,7 +16,7 @@ function exchangeToken(): Promise<void> {
+     headers: { "Content-Type": "application/json" },
+     body: JSON.stringify({ token }),
+     credentials: "same-origin",
+-  }).then(() => {
++  }).finally(() => {
+     params.delete("token");
+     const qs = params.toString();
+     const newUrl =

@@ -1,0 +1,16 @@
+diff --git a/packages/cli/src/commands/db/quickstart.ts b/packages/cli/src/commands/db/quickstart.ts
+index 5442ed8..6bdb4d0 100644
+--- a/packages/cli/src/commands/db/quickstart.ts
++++ b/packages/cli/src/commands/db/quickstart.ts
+@@ -244,7 +244,10 @@ export const dbQuickstartCommand = defineCommand<{
+         fetches.push(
+           client.PUT("/v2/databases/{db_id}/auth/generate", {
+             params: { path: { db_id: databaseId } },
+-            body: { authorization: "full-access", expires_at: null },
++            body: {
++              authorization: "read-only",
++              expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
++            },
+           }),
+         );
+       }

@@ -1,0 +1,16 @@
+diff --git a/packages/api/src/middleware.ts b/packages/api/src/middleware.ts
+index 35e60b4..f834e47 100644
+--- a/packages/api/src/middleware.ts
++++ b/packages/api/src/middleware.ts
+@@ -72,11 +72,7 @@ export function authMiddleware(options: ClientOptions): Middleware {
+       if (debug) {
+         debug(`→ ${request.method} ${request.url}`);
+         if (request.body) {
+-          const cloned = request.clone();
+-          try {
+-            const body = await cloned.json();
+-            debug(`→ Body: ${JSON.stringify(body, null, 2)}`);
+-          } catch {}
++          debug("→ Body: [redacted]");
+         }
+       }
