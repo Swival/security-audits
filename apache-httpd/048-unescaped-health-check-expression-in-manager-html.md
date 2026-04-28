@@ -2,9 +2,7 @@
 
 ## Classification
 
-Medium severity stored HTML injection / stored cross-site scripting risk.
-
-Confidence: certain.
+Stored HTML injection / stored cross-site scripting risk; severity medium; confidence certain
 
 ## Affected Locations
 

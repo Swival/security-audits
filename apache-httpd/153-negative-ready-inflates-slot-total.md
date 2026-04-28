@@ -2,7 +2,7 @@
 
 ## Classification
 
-Data integrity bug; severity medium; confidence certain.
+Data integrity bug; severity medium; confidence certain
 
 ## Affected Locations
 

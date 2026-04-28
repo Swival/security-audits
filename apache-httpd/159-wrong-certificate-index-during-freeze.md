@@ -2,7 +2,7 @@
 
 ## Classification
 
-Logic error, medium severity, confirmed with reproduction.
+Logic error; confirmed; severity low; confidence certain
 
 ## Affected Locations
 

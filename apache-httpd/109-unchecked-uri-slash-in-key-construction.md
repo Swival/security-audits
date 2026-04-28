@@ -2,7 +2,7 @@
 
 ## Classification
 
-Memory safety; high severity; denial of service via undefined pointer arithmetic.
+Memory safety; denial of service via undefined pointer arithmetic; severity medium; confidence certain
 
 ## Affected Locations
 

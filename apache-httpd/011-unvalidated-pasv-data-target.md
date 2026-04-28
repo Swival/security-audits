@@ -2,9 +2,7 @@
 
 ## Classification
 
-High severity trust-boundary violation.
-
-Confidence: certain.
+Trust-boundary violation; severity high; confidence certain
 
 ## Affected Locations
 

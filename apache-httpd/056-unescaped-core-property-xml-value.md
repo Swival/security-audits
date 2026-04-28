@@ -2,7 +2,7 @@
 
 ## Classification
 
-Medium severity vulnerability.
+Vulnerability; severity medium; confidence certain
 
 ## Affected Locations
 

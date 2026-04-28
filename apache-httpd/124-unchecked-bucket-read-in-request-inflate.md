@@ -2,7 +2,7 @@
 
 ## Classification
 
-Error-handling bug, medium severity.
+Error-handling bug; severity medium; confidence certain
 
 ## Affected Locations
 

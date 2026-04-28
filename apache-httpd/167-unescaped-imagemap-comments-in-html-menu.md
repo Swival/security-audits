@@ -2,9 +2,7 @@
 
 ## Classification
 
-Medium severity vulnerability: stored/scriptable HTML injection in generated imagemap menu responses.
-
-Confidence: certain.
+Vulnerability: stored/scriptable HTML injection in generated imagemap menu responses; severity medium; confidence certain
 
 ## Affected Locations
 

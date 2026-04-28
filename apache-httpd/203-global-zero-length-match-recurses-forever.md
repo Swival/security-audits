@@ -2,9 +2,7 @@
 
 ## Classification
 
-Logic error; denial of service via unbounded recursion.
-
-Confidence: certain.
+Logic error; denial of service via unbounded recursion; severity medium; confidence certain
 
 ## Affected Locations
 

@@ -2,7 +2,7 @@
 
 ## Classification
 
-Memory safety, undefined behavior. Severity: medium. Confidence: certain.
+Memory safety, undefined behavior; severity low; confidence certain
 
 ## Affected Locations
 

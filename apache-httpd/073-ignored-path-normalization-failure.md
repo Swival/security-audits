@@ -2,7 +2,7 @@
 
 ## Classification
 
-High severity validation gap.
+Validation gap; severity high; confidence certain
 
 ## Affected Locations
 

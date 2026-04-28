@@ -2,8 +2,7 @@
 
 ## Classification
 
-Medium severity vulnerability: stored HTML/script injection through type-map
-metadata that surfaces in generated `text/html` error responses.
+Vulnerability: stored HTML/script injection through type-map metadata that surfaces in generated `text/html` error responses; severity medium; confidence certain
 
 ## Affected Locations
 

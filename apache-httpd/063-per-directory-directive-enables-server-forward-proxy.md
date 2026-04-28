@@ -2,7 +2,7 @@
 
 ## Classification
 
-Authorization flaw, medium severity.
+Authorization flaw; severity medium; confidence certain
 
 ## Affected Locations
 

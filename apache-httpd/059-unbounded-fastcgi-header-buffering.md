@@ -2,7 +2,7 @@
 
 ## Classification
 
-Resource lifecycle bug, severity medium, confidence certain.
+Resource lifecycle bug; severity medium; confidence certain
 
 ## Affected Locations
 

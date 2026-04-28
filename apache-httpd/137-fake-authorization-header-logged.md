@@ -2,7 +2,7 @@
 
 ## Classification
 
-Medium severity vulnerability: sensitive credential disclosure through logs.
+Vulnerability: sensitive credential disclosure through logs; severity medium; confidence certain
 
 ## Affected Locations
 
