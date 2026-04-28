@@ -1,0 +1,17 @@
+diff --git a/modules/dav/fs/repos.c b/modules/dav/fs/repos.c
+index 64bc894..8f59d8b 100644
+--- a/modules/dav/fs/repos.c
++++ b/modules/dav/fs/repos.c
+@@ -936,8 +936,10 @@ static dav_error * dav_fs_open_stream(const dav_resource *resource,
+         ds->temppath = apr_pstrcat(p, ap_make_dirstr_parent(p, ds->pathname),
+                                    DAV_FS_TMP_PREFIX "XXXXXX", NULL);
+         rv = dav_fs_mktemp(&ds->f, ds->temppath, ds->p);
+-        apr_pool_cleanup_register(p, ds, tmpfile_cleanup,
+-                                  apr_pool_cleanup_null);
++        if (rv == APR_SUCCESS) {
++            apr_pool_cleanup_register(p, ds, tmpfile_cleanup,
++                                      apr_pool_cleanup_null);
++        }
+     }
+     else if (mode == DAV_MODE_WRITE_SEEKABLE) {
+         rv = apr_file_open(&ds->f, ds->pathname, flags | APR_FOPEN_EXCL,

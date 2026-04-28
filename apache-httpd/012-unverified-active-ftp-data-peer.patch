@@ -1,0 +1,30 @@
+diff --git a/modules/proxy/mod_proxy_ftp.c b/modules/proxy/mod_proxy_ftp.c
+index 0e9c9b2..5bf5419 100644
+--- a/modules/proxy/mod_proxy_ftp.c
++++ b/modules/proxy/mod_proxy_ftp.c
+@@ -1923,6 +1923,8 @@ static int proxy_ftp_handler(request_rec *r, proxy_worker *worker,
+ 
+     /* wait for connection */
+     if (use_port) {
++        apr_sockaddr_t *data_addr, *ctrl_addr;
++
+         for (;;) {
+             rv = apr_socket_accept(&data_sock, local_sock, r->pool);
+             if (APR_STATUS_IS_EINTR(rv)) {
+@@ -1938,6 +1940,16 @@ static int proxy_ftp_handler(request_rec *r, proxy_worker *worker,
+                 return HTTP_BAD_GATEWAY;
+             }
+         }
++        if (apr_socket_addr_get(&data_addr, APR_REMOTE, data_sock) != APR_SUCCESS
++                || apr_socket_addr_get(&ctrl_addr, APR_REMOTE, sock) != APR_SUCCESS
++                || !apr_sockaddr_equal(data_addr, ctrl_addr)) {
++            ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(10240)
++                          "data connection peer does not match control connection peer");
++            apr_socket_close(data_sock);
++            data_sock = NULL;
++            proxy_ftp_cleanup(r, backend);
++            return HTTP_BAD_GATEWAY;
++        }
+     }
+ 
+     /* the transfer socket is now open, create a new connection */

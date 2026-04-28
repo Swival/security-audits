@@ -1,0 +1,14 @@
+diff --git a/support/htcacheclean.c b/support/htcacheclean.c
+index 57c5c5b..5876ef7 100644
+--- a/support/htcacheclean.c
++++ b/support/htcacheclean.c
+@@ -457,6 +457,10 @@ static int list_urls(char *path, apr_pool_t *pool, apr_off_t round)
+                             if (apr_file_read_full(fd, &disk_info, len, &len)
+                                     == APR_SUCCESS) {
+                                 len = disk_info.name_len;
++                                if (len > APR_SIZE_MAX - 1) {
++                                    apr_file_close(fd);
++                                    continue;
++                                }
+                                 url = apr_palloc(p, len + 1);
+                                 url[len] = 0;

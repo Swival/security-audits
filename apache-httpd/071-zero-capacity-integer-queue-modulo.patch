@@ -1,0 +1,13 @@
+diff --git a/modules/http2/h2_util.c b/modules/http2/h2_util.c
+index b377ff7..0bc4a69 100644
+--- a/modules/http2/h2_util.c
++++ b/modules/http2/h2_util.c
+@@ -335,7 +335,7 @@ h2_iqueue *h2_iq_create(apr_pool_t *pool, int capacity)
+ {
+     h2_iqueue *q = apr_pcalloc(pool, sizeof(h2_iqueue));
+     q->pool = pool;
+-    iq_grow(q, capacity);
++    iq_grow(q, capacity > 0? capacity : 1);
+     q->nelts = 0;
+     return q;
+ }

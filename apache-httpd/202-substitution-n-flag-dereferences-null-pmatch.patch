@@ -1,0 +1,14 @@
+diff --git a/server/util_regex.c b/server/util_regex.c
+index 5405f8d..de99f0f 100644
+--- a/server/util_regex.c
++++ b/server/util_regex.c
+@@ -107,6 +107,9 @@ AP_DECLARE(ap_rxplus_t*) ap_rxplus_compile(apr_pool_t *pool,
+         default: break; /* we should probably be stricter here */
+         }
+     }
++    if (ret->subs && (ret->flags & AP_REG_NOMEM)) {
++        return NULL;
++    }
+     if (ap_regcomp(&ret->rx, rxstr, AP_REG_NO_DEFAULT | ret->flags) == 0) {
+         apr_pool_cleanup_register(pool, &ret->rx, rxplus_cleanup,
+                                   apr_pool_cleanup_null);

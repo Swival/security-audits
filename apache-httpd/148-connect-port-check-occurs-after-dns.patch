@@ -1,0 +1,30 @@
+diff --git a/modules/proxy/mod_proxy_connect.c b/modules/proxy/mod_proxy_connect.c
+index 5a68135..a316152 100644
+--- a/modules/proxy/mod_proxy_connect.c
++++ b/modules/proxy/mod_proxy_connect.c
+@@ -196,6 +196,12 @@ static int proxy_connect_handler(request_rec *r, proxy_worker *worker,
+     ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, APLOGNO(01019)
+                   "connecting %s to %s:%d", url, uri.hostname, uri.port);
+ 
++    /* Check if it is an allowed port */
++    if (!allowed_port(c_conf, uri.port)) {
++        return ap_proxyerror(r, HTTP_FORBIDDEN,
++                             "Connect to remote machine blocked");
++    }
++
+     /* Determine host/port of next hop; from request URI or of a proxy. */
+     connectname = proxyname ? proxyname : uri.hostname;
+     connectport = proxyname ? proxyport : uri.port;
+@@ -222,12 +228,6 @@ static int proxy_connect_handler(request_rec *r, proxy_worker *worker,
+                   "connecting to remote proxy %s on port %d",
+                   connectname, connectport);
+ 
+-    /* Check if it is an allowed port */
+-    if (!allowed_port(c_conf, uri.port)) {
+-        return ap_proxyerror(r, HTTP_FORBIDDEN,
+-                             "Connect to remote machine blocked");
+-    }
+-
+     /*
+      * Step Two: Make the Connection
+      *

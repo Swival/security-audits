@@ -1,0 +1,13 @@
+diff --git a/modules/filters/regexp.c b/modules/filters/regexp.c
+index 4acccca..df43dff 100644
+--- a/modules/filters/regexp.c
++++ b/modules/filters/regexp.c
+@@ -535,6 +535,8 @@ static int _advance(char *lp, char *ep, step_vars_storage *vars)
+             bbeg = vars->braslist[epint];
+             ct = vars->braelist[epint] - bbeg;
+             ep++;
++            if (ct == 0)
++                continue;
+             curlp = lp;
+             while (ecmp(bbeg, lp, ct))
+                 lp += ct;

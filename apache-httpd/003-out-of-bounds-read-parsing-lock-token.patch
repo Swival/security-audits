@@ -1,0 +1,14 @@
+diff --git a/modules/dav/main/mod_dav.c b/modules/dav/main/mod_dav.c
+index 2625f90..b43067e 100644
+--- a/modules/dav/main/mod_dav.c
++++ b/modules/dav/main/mod_dav.c
+@@ -3392,7 +3392,8 @@ static int dav_method_unlock(request_rec *r)
+     }
+     locktoken_txt++;
+ 
+-    if (locktoken_txt[strlen(locktoken_txt) - 1] != '>') {
++    if (locktoken_txt[0] == '\0'
++        || locktoken_txt[strlen(locktoken_txt) - 1] != '>') {
+         /* ### should provide more specifics... */
+         return HTTP_BAD_REQUEST;
+     }

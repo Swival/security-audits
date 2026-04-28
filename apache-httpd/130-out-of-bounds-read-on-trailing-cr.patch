@@ -1,0 +1,14 @@
+diff --git a/server/core_filters.c b/server/core_filters.c
+index c4ab603..42f96f7 100644
+--- a/server/core_filters.c
++++ b/server/core_filters.c
+@@ -182,7 +182,8 @@ apr_status_t ap_core_input_filter(ap_filter_t *f, apr_bucket_brigade *b,
+             while (c < str + len) {
+                 if (*c == APR_ASCII_LF)
+                     c++;
+-                else if (*c == APR_ASCII_CR && *(c + 1) == APR_ASCII_LF)
++                else if (*c == APR_ASCII_CR && c + 1 < str + len
++                         && *(c + 1) == APR_ASCII_LF)
+                     c += 2;
+                 else
+                     return APR_SUCCESS;

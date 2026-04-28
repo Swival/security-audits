@@ -1,0 +1,15 @@
+diff --git a/modules/generators/mod_info.c b/modules/generators/mod_info.c
+index a94e4e4..c29c635 100644
+--- a/modules/generators/mod_info.c
++++ b/modules/generators/mod_info.c
+@@ -653,7 +653,9 @@ static int dump_a_hook(request_rec * r, hook_get_t hook_get)
+     for (i = 0; i < hooks->nelts; i++) {
+         ap_rprintf(r,
+                    "&nbsp;&nbsp; %02d <a href=\"%c%s\">%s</a> <br/>",
+-                   elts[i].nOrder, qs, elts[i].szName, elts[i].szName);
++                   elts[i].nOrder, qs,
++                   ap_escape_html(r->pool, elts[i].szName),
++                   ap_escape_html(r->pool, elts[i].szName));
+     }
+     return 0;
+ }

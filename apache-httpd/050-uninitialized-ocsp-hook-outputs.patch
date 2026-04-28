@@ -1,0 +1,20 @@
+diff --git a/modules/ssl/ssl_util_stapling.c b/modules/ssl/ssl_util_stapling.c
+index 563de55..8c2add7 100644
+--- a/modules/ssl/ssl_util_stapling.c
++++ b/modules/ssl/ssl_util_stapling.c
+@@ -808,13 +808,13 @@ static int stapling_cb(SSL *ssl, void *arg)
+     SSLSrvConfigRec *sc = mySrvConfig(s);
+     modssl_ctx_t *mctx  = myConnCtxConfig(conn, sc);
+     UCHAR idx[SHA_DIGEST_LENGTH];
+-    ocsp_resp resp;
++    ocsp_resp resp = { NULL, 0 };
+     certinfo *cinf = NULL;
+     OCSP_RESPONSE *rsp = NULL;
+     int rv;
+     BOOL ok = TRUE;
+     X509 *x;
+-    int rspderlen, provided = 0;
++    int rspderlen = 0, provided = 0;
+ 
+     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, s, APLOGNO(01951)
+                  "stapling_cb: OCSP Stapling callback called");

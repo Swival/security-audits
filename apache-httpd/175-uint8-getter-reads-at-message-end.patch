@@ -1,0 +1,12 @@
+diff --git a/modules/proxy/ajp_msg.c b/modules/proxy/ajp_msg.c
+index 3367b5d..c8ba8da 100644
+--- a/modules/proxy/ajp_msg.c
++++ b/modules/proxy/ajp_msg.c
+@@ -482,7 +482,7 @@ apr_status_t ajp_msg_peek_uint8(ajp_msg_t *msg, apr_byte_t *rvalue)
+ apr_status_t ajp_msg_get_uint8(ajp_msg_t *msg, apr_byte_t *rvalue)
+ {
+ 
+-    if (msg->pos > msg->len) {
++    if (msg->pos >= msg->len) {
+         return ajp_log_overflow(msg, "ajp_msg_get_uint8");
+     }

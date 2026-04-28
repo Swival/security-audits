@@ -1,0 +1,17 @@
+diff --git a/modules/lua/lua_dbd.c b/modules/lua/lua_dbd.c
+index 1b8d5b7..79461e5 100644
+--- a/modules/lua/lua_dbd.c
++++ b/modules/lua/lua_dbd.c
+@@ -404,6 +404,12 @@ int lua_db_prepared_select(lua_State *L)
+                 st->variables, have);
+         return 2;
+     }
++    if (!st->db || !st->db->alive || !st->db->pool) {
++        lua_pushboolean(L, 0);
++        lua_pushliteral(L, 
++                "Database connection seems to be closed, please reacquire it.");
++        return (2);
++    }
+     vars = apr_pcalloc(st->db->pool, have*sizeof(char *));
+     for (x = 0; x < have; x++) {
+         vars[x] = lua_tostring(L, x + 2);

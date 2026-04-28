@@ -1,0 +1,14 @@
+diff --git a/modules/dav/main/util.c b/modules/dav/main/util.c
+index 50af183..5836ea4 100644
+--- a/modules/dav/main/util.c
++++ b/modules/dav/main/util.c
+@@ -862,7 +862,8 @@ static int dav_find_submitted_locktoken(const dav_if_header *if_header,
+              state_list != NULL;
+              state_list = state_list->next) {
+ 
+-            if (state_list->type == dav_if_opaquelock) {
++            if (state_list->condition == DAV_IF_COND_NORMAL
++                && state_list->type == dav_if_opaquelock) {
+                 const dav_lock *lock;
+ 
+                 /* given state_list->locktoken, match it */

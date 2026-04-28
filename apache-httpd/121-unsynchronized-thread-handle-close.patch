@@ -1,0 +1,23 @@
+diff --git a/server/mpm/winnt/nt_eventlog.c b/server/mpm/winnt/nt_eventlog.c
+index cd49ee6..5b9ce70 100644
+--- a/server/mpm/winnt/nt_eventlog.c
++++ b/server/mpm/winnt/nt_eventlog.c
+@@ -109,8 +109,6 @@ static DWORD WINAPI service_stderr_thread(LPVOID hPipe)
+ 
+     CloseHandle(hPipeRead);
+     DeregisterEventSource(hEventSource);
+-    CloseHandle(stderr_thread);
+-    stderr_thread = NULL;
+     apr_pool_destroy(p);
+     return 0;
+ }
+@@ -118,7 +116,8 @@ static DWORD WINAPI service_stderr_thread(LPVOID hPipe)
+ 
+ void mpm_nt_eventlog_stderr_flush(void)
+ {
+-    HANDLE cleanup_thread = stderr_thread;
++    HANDLE cleanup_thread = InterlockedExchangePointer((PVOID volatile *)&stderr_thread,
++                                                       NULL);
+ 
+     if (cleanup_thread) {
+         HANDLE hErr = GetStdHandle(STD_ERROR_HANDLE);

@@ -1,0 +1,13 @@
+diff --git a/modules/proxy/balancers/mod_lbmethod_heartbeat.c b/modules/proxy/balancers/mod_lbmethod_heartbeat.c
+index 0534e5b..58f5fc0 100644
+--- a/modules/proxy/balancers/mod_lbmethod_heartbeat.c
++++ b/modules/proxy/balancers/mod_lbmethod_heartbeat.c
+@@ -311,7 +311,7 @@ static proxy_worker *find_best_hb(proxy_balancer *balancer,
+ 
+         if (PROXY_WORKER_IS_USABLE(*worker)) {
+             server->worker = *worker;
+-            if (server->seen < LBM_HEARTBEAT_MAX_LASTSEEN) {
++            if (server->seen < LBM_HEARTBEAT_MAX_LASTSEEN && server->ready >= 0) {
+                 openslots += server->ready;
+                 APR_ARRAY_PUSH(up_servers, hb_server_t *) = server;
+             }

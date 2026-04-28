@@ -1,0 +1,56 @@
+diff --git a/modules/filters/mod_include.c b/modules/filters/mod_include.c
+index 2c0cc67..bbec90b 100644
+--- a/modules/filters/mod_include.c
++++ b/modules/filters/mod_include.c
+@@ -1814,6 +1814,7 @@ static apr_status_t handle_include(include_ctx_t *ctx, ap_filter_t *f,
+         char *parsed_string;
+         apr_status_t rv = APR_SUCCESS;
+         int status = 0;
++        int break_after_error = 0;
+ 
+         ap_ssi_get_tag_and_value(ctx, &tag, &tag_val, SSI_VALUE_DECODED);
+         if (!tag || !tag_val) {
+@@ -1888,7 +1889,7 @@ static apr_status_t handle_include(include_ctx_t *ctx, ap_filter_t *f,
+                     r->filename, status ? status : rr ? rr->status : 0);
+             if (last_error) {
+                 /* onerror threw an error, give up completely */
+-                break;
++                break_after_error = 1;
+             }
+             last_error = error_fmt;
+         }
+@@ -1896,10 +1897,31 @@ static apr_status_t handle_include(include_ctx_t *ctx, ap_filter_t *f,
+             last_error = NULL;
+         }
+ 
+-        /* Do *not* destroy the subrequest here; it may have allocated
+-         * variables in this r->subprocess_env in the subrequest's
+-         * r->pool, so that pool must survive as long as this request.
+-         * Yes, this is a memory leak. */
++        if (rr) {
++            const apr_array_header_t *arr = apr_table_elts(r->subprocess_env);
++            apr_table_entry_t *elts = (apr_table_entry_t *)arr->elts;
++            request_rec *sub = r->main;
++            apr_pool_t *p = r->pool;
++            int i;
++
++            while (sub) {
++                p = sub->pool;
++                sub = sub->main;
++            }
++
++            for (i = 0; i < arr->nelts; ++i) {
++                elts[i].key = apr_pstrdup(p, elts[i].key);
++                if (elts[i].val && elts[i].val != LAZY_VALUE) {
++                    elts[i].val = apr_pstrdup(p, elts[i].val);
++                }
++            }
++
++            ap_destroy_sub_req(rr);
++        }
++
++        if (break_after_error) {
++            break;
++        }
+ 
+     }

@@ -1,0 +1,13 @@
+diff --git a/modules/http2/h2_session.c b/modules/http2/h2_session.c
+index 21ede5c..53607a2 100644
+--- a/modules/http2/h2_session.c
++++ b/modules/http2/h2_session.c
+@@ -1026,7 +1026,7 @@ apr_status_t h2_session_create(h2_session **psession, conn_rec *c, request_rec *
+                       APLOGNO(02928) "nghttp2_option_new: %s", 
+                       nghttp2_strerror(rv));
+         apr_pool_destroy(pool);
+-        return status;
++        return APR_EGENERAL;
+     }
+     nghttp2_option_set_peer_max_concurrent_streams(options, (uint32_t)session->max_stream_count);
+     /* We need to handle window updates ourself, otherwise we

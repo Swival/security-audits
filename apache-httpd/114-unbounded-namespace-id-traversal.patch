@@ -1,0 +1,16 @@
+diff --git a/modules/dav/fs/dbm.c b/modules/dav/fs/dbm.c
+index 39ab4ad..01de22c 100644
+--- a/modules/dav/fs/dbm.c
++++ b/modules/dav/fs/dbm.c
+@@ -696,6 +696,11 @@ static void dav_set_name(dav_db *db, dav_prop_name *pname)
+     else {
+         int id = atoi(s);
+ 
++        if (id < 0 || id >= db->ns_count) {
++            pname->ns = pname->name = NULL;
++            return;
++        }
++
+         pname->ns = dav_get_ns_table_uri(db, id);
+         if (s[1] == ':') {
+             pname->name = s + 2;

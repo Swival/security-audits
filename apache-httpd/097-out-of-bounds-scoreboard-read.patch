@@ -1,0 +1,13 @@
+diff --git a/server/mpm/mpmt_os2/mpmt_os2.c b/server/mpm/mpmt_os2/mpmt_os2.c
+index b3adb03..8862474 100644
+--- a/server/mpm/mpmt_os2/mpmt_os2.c
++++ b/server/mpm/mpmt_os2/mpmt_os2.c
+@@ -293,7 +293,7 @@ static int master_main()
+ 
+         if (rc == 0) {
+             /* A child has terminated, remove its scoreboard entry & terminate if necessary */
+-            for (slot=0; ap_scoreboard_image->parent[slot].pid != child_pid && slot < HARD_SERVER_LIMIT; slot++);
++            for (slot=0; slot < HARD_SERVER_LIMIT && ap_scoreboard_image->parent[slot].pid != child_pid; slot++);
+ 
+             if (slot < HARD_SERVER_LIMIT) {
+                 ap_scoreboard_image->parent[slot].pid = 0;

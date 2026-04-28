@@ -1,0 +1,15 @@
+diff --git a/modules/http2/h2_stream.c b/modules/http2/h2_stream.c
+index f0e671c..08e77d7 100644
+--- a/modules/http2/h2_stream.c
++++ b/modules/http2/h2_stream.c
+@@ -1332,7 +1332,10 @@ apr_status_t h2_stream_in_consumed(h2_stream *stream, apr_off_t amount)
+         
+         while (consumed > 0) {
+             int len = (consumed > INT_MAX)? INT_MAX : (int)consumed;
+-            nghttp2_session_consume(session->ngh2, stream->id, len);
++            int rv = nghttp2_session_consume(session->ngh2, stream->id, len);
++            if (rv != 0) {
++                return APR_EGENERAL;
++            }
+             consumed -= len;
+         }

@@ -1,0 +1,13 @@
+diff --git a/modules/aaa/mod_auth_form.c b/modules/aaa/mod_auth_form.c
+index d443092..3e35f39 100644
+--- a/modules/aaa/mod_auth_form.c
++++ b/modules/aaa/mod_auth_form.c
+@@ -1072,7 +1072,7 @@ static int authenticate_form_authn(request_rec * r)
+     }
+ 
+     /* did the user ask to be redirected on login success? */
+-    if (sent_loc) {
++    if (OK == rv && sent_loc) {
+         apr_table_set(r->headers_out, "Location", sent_loc);
+         rv = HTTP_MOVED_TEMPORARILY;
+     }

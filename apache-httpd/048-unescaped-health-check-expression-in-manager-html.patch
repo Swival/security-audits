@@ -1,0 +1,12 @@
+diff --git a/modules/proxy/mod_proxy_balancer.c b/modules/proxy/mod_proxy_balancer.c
+index f5b228f..49e2d99 100644
+--- a/modules/proxy/mod_proxy_balancer.c
++++ b/modules/proxy/mod_proxy_balancer.c
+@@ -1748,7 +1748,7 @@ static void balancer_display_page(request_rec *r, proxy_server_conf *conf,
+                     ap_rprintf(r, "<td>%d (%d)</td>", worker->s->passes,worker->s->pcount);
+                     ap_rprintf(r, "<td>%d (%d)</td>", worker->s->fails, worker->s->fcount);
+                     ap_rprintf(r, "<td>%s</td>", ap_escape_html(r->pool, worker->s->hcuri));
+-                    ap_rprintf(r, "<td>%s", worker->s->hcexpr);
++                    ap_rprintf(r, "<td>%s", ap_escape_html(r->pool, worker->s->hcexpr));
+                 }
+                 ap_rputs("</td></tr>\n", r);

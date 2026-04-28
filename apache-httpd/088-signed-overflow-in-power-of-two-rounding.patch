@@ -1,0 +1,23 @@
+diff --git a/modules/http2/h2_push.c b/modules/http2/h2_push.c
+index e6a10c5..e9f5128 100644
+--- a/modules/http2/h2_push.c
++++ b/modules/http2/h2_push.c
+@@ -551,7 +551,7 @@ static h2_push_diary *diary_create(apr_pool_t *p, h2_push_digest_type dtype,
+ {
+     h2_push_diary *diary = NULL;
+     
+-    if (N > 0) {
++    if (N > 0 && N <= (1 << 30)) {
+         diary = apr_pcalloc(p, sizeof(*diary));
+         
+         diary->NMax        = ceil_power_of_2(N);
+@@ -821,6 +821,9 @@ apr_status_t h2_push_diary_digest_get(h2_push_diary *diary, apr_pool_t *pool,
+      * log2p + log2n == mask_bits. We can use a lower log2p
+      * and have a shorter set encoding...
+      */
++    if (maxP > (1 << 30)) {
++        return APR_EINVAL;
++    }
+     log2pmax = h2_log2(ceil_power_of_2(maxP));
+     
+     memset(&encoder, 0, sizeof(encoder));

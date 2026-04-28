@@ -1,0 +1,14 @@
+diff --git a/modules/http/byterange_filter.c b/modules/http/byterange_filter.c
+index a1ffdd3..6c605e1 100644
+--- a/modules/http/byterange_filter.c
++++ b/modules/http/byterange_filter.c
+@@ -436,6 +436,10 @@ AP_CORE_DECLARE_NONSTD(apr_status_t) ap_byterange_filter(ap_filter_t *f,
+          (e != APR_BRIGADE_SENTINEL(bb) && !APR_BUCKET_IS_EOS(e)
+           && e->length != (apr_size_t)-1);
+          e = APR_BUCKET_NEXT(e)) {
++        if (e->length > APR_OFF_MAX
++            || clength > APR_OFF_MAX - (apr_off_t)e->length) {
++            break;
++        }
+         clength += e->length;
+     }

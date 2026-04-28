@@ -1,0 +1,36 @@
+diff --git a/modules/generators/mod_info.c b/modules/generators/mod_info.c
+index a94e4e4..f24d2b1 100644
+--- a/modules/generators/mod_info.c
++++ b/modules/generators/mod_info.c
+@@ -817,8 +817,9 @@ static int display_info(request_rec * r)
+             modules = get_sorted_modules(r->pool);
+             for (i = 0; i < modules->nelts; i++) {
+                 modp = APR_ARRAY_IDX(modules, i, module *);
+-                ap_rprintf(r, "<a href=\"#%s\">%s</a>", modp->name,
+-                           modp->name);
++                ap_rprintf(r, "<a href=\"#%s\">%s</a>",
++                           ap_escape_html(r->pool, modp->name),
++                           ap_escape_html(r->pool, modp->name));
+                 if (i < modules->nelts) {
+                     ap_rputs(", ", r);
+                 }
+@@ -853,7 +854,9 @@ static int display_info(request_rec * r)
+                     ap_rprintf(r,
+                                "<dl><dt><a name=\"%s\"><strong>Module Name:</strong></a> "
+                                "<font size=\"+1\"><tt><a href=\"?%s\">%s</a></tt></font></dt>\n",
+-                               modp->name, modp->name, modp->name);
++                               ap_escape_html(r->pool, modp->name),
++                               ap_escape_html(r->pool, modp->name),
++                               ap_escape_html(r->pool, modp->name));
+                     ap_rputs("<dt><strong>Content handlers:</strong> ", r);
+ 
+                     if (module_find_hook(modp, ap_hook_get_handler)) {
+@@ -958,7 +961,7 @@ static int display_info(request_rec * r)
+         for (i = 0; i < modules->nelts; i++) {
+             modp = APR_ARRAY_IDX(modules, i, module *);
+             ap_rputs("<dd>", r);
+-            ap_rputs(modp->name, r);
++            ap_rputs(ap_escape_html(r->pool, modp->name), r);
+             ap_rputs("</dd>", r);
+         }
+         ap_rputs("</dl><hr />", r);

@@ -1,0 +1,36 @@
+diff --git a/modules/proxy/mod_proxy_ajp.c b/modules/proxy/mod_proxy_ajp.c
+index 356894a..93f87e1 100644
+--- a/modules/proxy/mod_proxy_ajp.c
++++ b/modules/proxy/mod_proxy_ajp.c
+@@ -230,6 +230,11 @@ static int ap_proxy_ajp_request(apr_pool_t *p, request_rec *r,
+     if (*conn->worker->s->secret)
+         secret = conn->worker->s->secret;
+ 
++    content_length = get_content_length(r);
++    if (content_length < 0) {
++        return HTTP_BAD_REQUEST;
++    }
++
+     /*
+      * Send the AJP request to the remote server
+      */
+@@ -287,16 +292,9 @@ static int ap_proxy_ajp_request(apr_pool_t *p, request_rec *r,
+             return HTTP_INTERNAL_SERVER_ERROR;
+         }
+     } else {
+-        /* Get client provided Content-Length header */
+-        content_length = get_content_length(r);
+-        if (content_length < 0) {
+-            status = APR_EINVAL;
+-        }
+-        else {
+-            status = ap_get_brigade(r->input_filters, input_brigade,
+-                                    AP_MODE_READBYTES, APR_BLOCK_READ,
+-                                    maxsize - AJP_HEADER_SZ);
+-        }
++        status = ap_get_brigade(r->input_filters, input_brigade,
++                                AP_MODE_READBYTES, APR_BLOCK_READ,
++                                maxsize - AJP_HEADER_SZ);
+         if (status != APR_SUCCESS) {
+             /* We had a failure: Close connection to backend */
+             conn->close = 1;

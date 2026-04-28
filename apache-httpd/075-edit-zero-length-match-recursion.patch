@@ -1,0 +1,24 @@
+diff --git a/modules/metadata/mod_headers.c b/modules/metadata/mod_headers.c
+index f514b4b..085eefc 100644
+--- a/modules/metadata/mod_headers.c
++++ b/modules/metadata/mod_headers.c
+@@ -649,10 +649,15 @@ static const char *process_regexp(header_entry *hdr, const char *value,
+         remainder = value + pmatch[0].rm_eo;
+     }
+     else { /* recurse to edit multiple matches if applicable */
+-        remainder = process_regexp(hdr, value + pmatch[0].rm_eo, r);
+-        if (remainder == NULL)
+-            return NULL;
+-        diffsz += strlen(remainder) - strlen(value + pmatch[0].rm_eo);
++        if (pmatch[0].rm_eo == pmatch[0].rm_so) {
++            remainder = value + pmatch[0].rm_eo;
++        }
++        else {
++            remainder = process_regexp(hdr, value + pmatch[0].rm_eo, r);
++            if (remainder == NULL)
++                return NULL;
++            diffsz += strlen(remainder) - strlen(value + pmatch[0].rm_eo);
++        }
+     }
+     ret = apr_palloc(r->pool, strlen(value) + 1 + diffsz);
+     memcpy(ret, value, pmatch[0].rm_so);

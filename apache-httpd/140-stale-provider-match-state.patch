@@ -1,0 +1,12 @@
+diff --git a/modules/filters/mod_filter.c b/modules/filters/mod_filter.c
+index 5b5ecf6..a18dffb 100644
+--- a/modules/filters/mod_filter.c
++++ b/modules/filters/mod_filter.c
+@@ -148,6 +148,7 @@ static int filter_lookup(ap_filter_t *f, ap_filter_rec_t *filter)
+ 
+     /* Check registered providers in order */
+     for (provider = filter->providers; provider; provider = provider->next) {
++        match = 0;
+         if (provider->expr) {
+             match = ap_expr_exec(r, provider->expr, &err);
+             if (err) {

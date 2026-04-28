@@ -1,0 +1,18 @@
+diff --git a/modules/cache/mod_cache_disk.c b/modules/cache/mod_cache_disk.c
+index 8d17a19..9fd12b3 100644
+--- a/modules/cache/mod_cache_disk.c
++++ b/modules/cache/mod_cache_disk.c
+@@ -560,9 +560,11 @@ static int open_entity(cache_handle_t *h, request_rec *r, const char *key)
+ 
+         rc = apr_file_info_get(&finfo, APR_FINFO_SIZE | APR_FINFO_IDENT,
+                 dobj->data.fd);
+-        if (rc == APR_SUCCESS) {
+-            dobj->file_size = finfo.size;
++        if (rc != APR_SUCCESS) {
++            apr_file_close(dobj->hdrs.fd);
++            return DECLINED;
+         }
++        dobj->file_size = finfo.size;
+ 
+         /* Atomic check - does the body file belong to the header file? */
+         if (dobj->disk_info.inode == finfo.inode &&

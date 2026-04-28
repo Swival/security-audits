@@ -1,0 +1,16 @@
+diff --git a/modules/cache/mod_cache_socache.c b/modules/cache/mod_cache_socache.c
+index 38f1bfb..6567e1e 100644
+--- a/modules/cache/mod_cache_socache.c
++++ b/modules/cache/mod_cache_socache.c
+@@ -530,6 +530,12 @@ static int open_entity(cache_handle_t *h, request_rec *r, const char *key)
+         apr_array_header_t* varray;
+         apr_time_t expire;
+ 
++        if (buffer_len - slider < sizeof(expire)) {
++            ap_log_rerror(APLOG_MARK, APLOG_ERR, rc, r, APLOGNO(10426)
++                    "Cache vary entry for key '%s' too short, removing", key);
++            nkey = key;
++            goto fail;
++        }
+         memcpy(&expire, sobj->buffer + slider, sizeof(expire));
+         slider += sizeof(expire);
