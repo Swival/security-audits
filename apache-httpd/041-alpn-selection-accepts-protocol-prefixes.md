@@ -2,7 +2,7 @@
 
 ## Classification
 
-Validation gap; medium severity; confidence certain.
+Validation gap; severity medium; confidence certain
 
 ## Affected Locations
 

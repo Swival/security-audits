@@ -2,7 +2,7 @@
 
 ## Classification
 
-Validation gap, low severity. Confidence: certain.
+Validation gap; severity low; confidence certain
 
 ## Affected Locations
 

@@ -2,7 +2,7 @@
 
 ## Classification
 
-Memory safety, medium severity.
+Memory safety; severity low; confidence certain
 
 ## Affected Locations
 

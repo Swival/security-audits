@@ -2,7 +2,7 @@
 
 ## Classification
 
-High severity authorization flaw.
+Authorization flaw; severity high; confidence certain
 
 ## Affected Locations
 

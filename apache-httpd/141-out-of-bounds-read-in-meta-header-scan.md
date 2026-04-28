@@ -2,11 +2,7 @@
 
 ## Classification
 
-Memory safety: out-of-bounds read.
-
-Severity: high.
-
-Confidence: certain.
+Memory safety: out-of-bounds read; severity high; confidence certain
 
 ## Affected Locations
 

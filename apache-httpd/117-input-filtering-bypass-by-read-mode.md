@@ -2,7 +2,7 @@
 
 ## Classification
 
-Logic error, medium severity.
+Logic error; severity medium; confidence certain
 
 ## Affected Locations
 

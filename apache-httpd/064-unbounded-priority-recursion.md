@@ -2,7 +2,7 @@
 
 ## Classification
 
-Vulnerability, medium severity. Confidence: certain.
+Vulnerability; severity medium; confidence certain
 
 ## Affected Locations
 

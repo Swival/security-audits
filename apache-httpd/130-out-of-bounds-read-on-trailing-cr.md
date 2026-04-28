@@ -2,7 +2,7 @@
 
 ## Classification
 
-Memory safety; medium severity; CWE-125 out-of-bounds read.
+Memory safety; CWE-125 out-of-bounds read; severity medium; confidence certain
 
 ## Affected Locations
 

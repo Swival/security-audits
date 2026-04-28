@@ -2,7 +2,7 @@
 
 ## Classification
 
-Memory safety, high severity, confirmed.
+Memory safety; confirmed; severity high; confidence certain
 
 ## Affected Locations
 

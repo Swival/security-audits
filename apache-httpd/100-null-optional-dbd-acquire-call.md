@@ -2,7 +2,7 @@
 
 ## Classification
 
-Memory safety, denial of service. Severity: medium. Confidence: certain.
+Memory safety, denial of service; severity medium; confidence certain
 
 ## Affected Locations
 

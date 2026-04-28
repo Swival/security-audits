@@ -2,7 +2,7 @@
 
 ## Classification
 
-Memory safety, medium severity. Confidence: certain.
+Memory safety; severity medium; confidence certain
 
 ## Affected Locations
 

@@ -2,7 +2,7 @@
 
 ## Classification
 
-Memory safety; high severity; request-triggerable out-of-bounds read.
+Memory safety; request-triggerable out-of-bounds read; severity high; confidence certain
 
 ## Affected Locations
 

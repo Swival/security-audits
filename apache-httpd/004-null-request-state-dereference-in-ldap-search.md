@@ -2,9 +2,7 @@
 
 ## Classification
 
-Memory safety, high severity, worker crash / denial of service.
-
-Confidence: certain.
+Memory safety; worker crash / denial of service; severity medium; confidence certain
 
 ## Affected Locations
 

@@ -2,7 +2,7 @@
 
 ## Classification
 
-Logic error, medium severity. Confidence: certain.
+Logic error; severity medium; confidence certain
 
 ## Affected Locations
 

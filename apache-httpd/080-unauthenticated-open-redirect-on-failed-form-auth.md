@@ -2,9 +2,7 @@
 
 ## Classification
 
-Medium severity vulnerability: unauthenticated open redirect.
-
-Confidence: certain.
+Vulnerability: unauthenticated open redirect; severity medium; confidence certain
 
 ## Affected Locations
 

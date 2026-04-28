@@ -2,7 +2,7 @@
 
 ## Classification
 
-Race condition, medium severity. Confidence: certain.
+Race condition; severity medium; confidence certain
 
 ## Affected Locations
 

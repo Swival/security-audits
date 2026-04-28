@@ -2,7 +2,7 @@
 
 ## Classification
 
-Invariant violation, medium severity. Confidence: certain.
+Invariant violation; severity medium; confidence certain
 
 ## Affected Locations
 

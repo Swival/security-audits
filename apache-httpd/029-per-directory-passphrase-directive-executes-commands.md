@@ -2,7 +2,7 @@
 
 ## Classification
 
-Trust-boundary violation. Severity: medium. Confidence: certain.
+Trust-boundary violation; severity medium; confidence certain
 
 ## Affected Locations
 

@@ -2,7 +2,7 @@
 
 ## Classification
 
-error-handling bug, medium severity, confidence: certain
+Error-handling bug; severity medium; confidence certain
 
 ## Affected Locations
 
