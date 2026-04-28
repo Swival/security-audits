@@ -19,23 +19,23 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 
 | Project                                                       | Findings | Description                                    |
 | ------------------------------------------------------------- | -------: | ---------------------------------------------- |
-| [apache-httpd](apache-httpd/)                                 |      141 | Apache HTTP Server                             |
-| [boringssl](boringssl/)                                       |       15 | Google's fork of OpenSSL                       |
-| [bunnycdn-cli](bunnycdn-cli/)                                 |       31 | BunnyCDN command-line client                   |
-| [bunnycdn-tokenauthentication](bunnycdn-tokenauthentication/) |       10 | BunnyCDN token authentication library          |
-| [go/crypto](go/crypto/)                                       |       69 | Go standard library `crypto/*` packages        |
-| [h2o](h2o/)                                                   |       25 | HTTP/1, HTTP/2 and HTTP/3 server               |
-| [libinjection](libinjection/)                                 |       11 | SQL injection and XSS detection library        |
-| [nginx](nginx/)                                               |       19 | High-performance HTTP server and reverse proxy |
-| [pcre2](pcre2/)                                               |        5 | Perl-compatible regular expressions library    |
-| [picotls](picotls/)                                           |       14 | TLS 1.3 implementation in C                    |
+| [apache-httpd](apache-httpd/)                                 |       56 | Apache HTTP Server                             |
+| [boringssl](boringssl/)                                       |       12 | Google's fork of OpenSSL                       |
+| [bunnycdn-cli](bunnycdn-cli/)                                 |       25 | BunnyCDN command-line client                   |
+| [bunnycdn-tokenauthentication](bunnycdn-tokenauthentication/) |        8 | BunnyCDN token authentication library          |
+| [go/crypto](go/crypto/)                                       |       54 | Go standard library `crypto/*` packages        |
+| [h2o](h2o/)                                                   |       19 | HTTP/1, HTTP/2 and HTTP/3 server               |
+| [libinjection](libinjection/)                                 |        5 | SQL injection and XSS detection library        |
+| [nginx](nginx/)                                               |       12 | High-performance HTTP server and reverse proxy |
+| [pcre2](pcre2/)                                               |        4 | Perl-compatible regular expressions library    |
+| [picotls](picotls/)                                           |       11 | TLS 1.3 implementation in C                    |
 | [quicly](quicly/)                                             |        1 | QUIC protocol implementation in C              |
-| [rust-stdlib](rust-stdlib/)                                   |      189 | Rust standard library and supporting crates    |
-| [viceroy](viceroy/)                                           |       36 | Local development server for Fastly Compute    |
-| [wasmer-wasix](wasmer-wasix/)                                 |       60 | WASIX runtime in Wasmer                        |
-| [wasmtime-wasi](wasmtime-wasi/)                               |        8 | WASI implementation in Wasmtime                |
+| [rust-stdlib](rust-stdlib/)                                   |      151 | Rust standard library and supporting crates    |
+| [viceroy](viceroy/)                                           |       30 | Local development server for Fastly Compute    |
+| [wasmer-wasix](wasmer-wasix/)                                 |       44 | WASIX runtime in Wasmer                        |
+| [wasmtime-wasi](wasmtime-wasi/)                               |        5 | WASI implementation in Wasmtime                |
 | [wasmtools-wasmparser](wasmtools-wasmparser/)                 |        2 | WebAssembly binary parser from `wasm-tools`    |
-| [zlib](zlib/)                                                 |       30 | zlib compression library and ports             |
+| [zlib](zlib/)                                                 |       18 | zlib compression library and ports             |
 
 ## Reporting and disclosure
 
