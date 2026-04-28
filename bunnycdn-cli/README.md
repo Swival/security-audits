@@ -4,7 +4,7 @@ Security audit of the BunnyCDN command-line client. Each finding includes a deta
 
 ## Summary
 
-**Total findings: 31** -- High: 0, Medium: 30, Low: 1
+**Total findings: 25** -- High: 0, Medium: 25, Low: 0
 
 ## Findings
 
@@ -30,7 +30,6 @@ Security audit of the BunnyCDN command-line client. Each finding includes a deta
 
 | # | Finding | Severity |
 |---|---------|----------|
-| [006](006-spinner-not-stopped-on-credential-fetch-failure.md) | Spinner not stopped on credential fetch failure | Low |
 | [009](009-verbose-logging-exposes-request-bodies.md) | Verbose logging exposes request bodies | Medium |
 | [010](010-verbose-logging-exposes-response-bodies.md) | Verbose logging exposes response bodies | Medium |
 | [012](012-environment-value-echoed-to-terminal.md) | Environment value echoed to terminal | Medium |
@@ -48,12 +47,8 @@ Security audit of the BunnyCDN command-line client. Each finding includes a deta
 | # | Finding | Severity |
 |---|---------|----------|
 | [008](008-query-parameter-injection-via-column.md) | Query parameter injection via column | Medium |
-| [029](029-filterless-update-affects-whole-table.md) | Filterless update affects whole table | Medium |
-| [030](030-filterless-delete-affects-whole-table.md) | Filterless delete affects whole table | Medium |
 | [031](031-unchecked-url-filters-reach-row-fetch.md) | Unchecked URL filters reach row fetch | Medium |
 | [032](032-unchecked-url-sort-column-reaches-row-fetch.md) | Unchecked URL sort column reaches row fetch | Medium |
-| [033](033-nonnumeric-limit-becomes-nan.md) | Nonnumeric limit becomes NaN | Medium |
-| [034](034-nonnumeric-offset-becomes-nan.md) | Nonnumeric offset becomes NaN | Medium |
 
 ### Path traversal
 
@@ -64,12 +59,6 @@ Security audit of the BunnyCDN command-line client. Each finding includes a deta
 | [023](023-path-traversal-in-deleteview.md) | Path traversal in deleteView | Medium |
 | [027](027-path-traversal-in-manifest-write.md) | Path traversal in manifest write | Medium |
 | [028](028-path-traversal-in-rooted-manifest-write.md) | Path traversal in rooted manifest write | Medium |
-
-### Container deployment
-
-| # | Finding | Severity |
-|---|---------|----------|
-| [013](013-patch-maps-first-container-to-wrong-id.md) | Patch maps first container to wrong ID | Medium |
 
 ### Output encoding
 

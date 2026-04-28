@@ -4,7 +4,7 @@ Security audit of picotls, a TLS 1.3 protocol library in C. Each finding include
 
 ## Summary
 
-**Total findings: 14** -- High: 9, Medium: 5
+**Total findings: 11** -- High: 7, Medium: 4
 
 ## Findings
 
@@ -28,12 +28,10 @@ Security audit of picotls, a TLS 1.3 protocol library in C. Each finding include
 | [010](010-aead-constructor-failure-is-reported-as-success.md) | AEAD constructor failure is reported as success | High |
 | [012](012-decrypt-underflows-ciphertext-length-before-tag-split.md) | Decrypt length underflow before tag split | High |
 
-### Key import and signing
+### Signing
 
 | # | Finding | Severity |
 |---|---------|----------|
-| [004](004-ed25519-algorithm-mapping-rejects-imported-keys.md) | ED25519 algorithm mapping rejects imported keys | High |
-| [005](005-rsa-pkcs8-import-slices-wrong-der-object.md) | RSA PKCS8 import slices wrong DER object | High |
 | [009](009-signature-generation-failure-ignored.md) | Signature generation failure ignored | Medium |
 
 ### ECDH key exchange
@@ -48,12 +46,6 @@ Security audit of picotls, a TLS 1.3 protocol library in C. Each finding include
 | # | Finding | Severity |
 |---|---------|----------|
 | [006](006-rsa-key-bit-parser-reads-past-short-buffer.md) | RSA key-bit parser reads past short buffer | Medium |
-
-### Cipher identity
-
-| # | Finding | Severity |
-|---|---------|----------|
-| [011](011-aes-256-ctr-advertises-the-aes128-ctr-identifier.md) | AES-256-CTR misadvertises as AES128-CTR | Medium |
 
 ### QUICLB cipher
 

@@ -4,7 +4,7 @@ Security audit of the BunnyCDN token authentication libraries across all support
 
 ## Summary
 
-**Total findings: 10** -- High: 3, Medium: 6, Low: 1
+**Total findings: 8** -- High: 3, Medium: 5
 
 ## Findings
 
@@ -13,19 +13,12 @@ Security audit of the BunnyCDN token authentication libraries across all support
 | # | Finding | Severity |
 |---|---------|----------|
 | [001](001-signed-url-drops-explicit-port-and-userinfo.md) | Signed URL drops explicit port and userinfo | Medium |
-| [002](002-fragment-identifiers-are-silently-discarded.md) | Fragment identifiers are silently discarded | Low |
 
 ### C#
 
 | # | Finding | Severity |
 |---|---------|----------|
 | [003](003-duplicate-query-keys-crash-signing.md) | Duplicate query keys crash signing | Medium |
-
-### Go
-
-| # | Finding | Severity |
-|---|---------|----------|
-| [004](004-fragment-is-dropped-from-signed-url-output.md) | Fragment dropped from signed URL output | Medium |
 
 ### Java
 

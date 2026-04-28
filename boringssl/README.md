@@ -4,7 +4,7 @@ Security audit of BoringSSL, Google's fork of OpenSSL. Each finding includes a d
 
 ## Summary
 
-**Total findings: 15** -- High: 4, Medium: 11
+**Total findings: 12** -- High: 4, Medium: 8
 
 ## Findings
 
@@ -41,15 +41,12 @@ Security audit of BoringSSL, Google's fork of OpenSSL. Each finding includes a d
 | # | Finding | Severity |
 |---|---------|----------|
 | [010](010-pbkdf2-block-counter-can-wrap-for-oversized-keys.md) | PBKDF2 block counter can wrap for oversized keys | Medium |
-| [017](017-copycontext-leaks-allocated-dst-context-on-copy-failure.md) | CopyContext leaks allocated dst context on copy failure | Medium |
 | [025](025-raw-key-getters-dereference-missing-method-table.md) | Raw key getters dereference missing method table | Medium |
 
 ### X.509
 
 | # | Finding | Severity |
 |---|---------|----------|
-| [004](004-requested-extensions-leak-on-error-path.md) | Requested extensions leak on error path | Medium |
-| [028](028-revoked-entry-print-errors-are-ignored.md) | Revoked entry print errors are ignored | Medium |
 | [035](035-poison-state-can-be-cleared-by-copying-clean-params.md) | Poison state can be cleared by copying clean params | Medium |
 
 ### PEM

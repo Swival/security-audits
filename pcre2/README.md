@@ -4,7 +4,7 @@ Security audit of the PCRE2 library, covering serialization, the POSIX compatibi
 
 ## Summary
 
-**Total findings: 5** -- High: 2, Medium: 3
+**Total findings: 4** -- High: 2, Medium: 2
 
 ## Findings
 
@@ -12,7 +12,6 @@ Security audit of the PCRE2 library, covering serialization, the POSIX compatibi
 
 | # | Finding | Severity |
 |---|---------|----------|
-| [001](001-load-shifts-eof-into-serialized-size.md) | `#load` short-file EOF corrupts serialized size | Medium |
 | [004](004-serialized-code-count-query-overreads-short-buffers.md) | Serialized code count query overreads short buffers | Medium |
 
 ### POSIX API wrapper

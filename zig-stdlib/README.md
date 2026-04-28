@@ -4,7 +4,7 @@ Security audit of the Zig standard library. Each finding includes a detailed wri
 
 ## Summary
 
-**Total findings: 86** -- High: 50, Medium: 35, Low: 1
+**Total findings: 78** -- High: 47, Medium: 30, Low: 1
 
 ## Findings
 
@@ -15,11 +15,7 @@ Security audit of the Zig standard library. Each finding includes a detailed wri
 | [003](003-installed-header-directory-destination-accepts-unsanitized-r.md) | Installed header directory destination accepts unsanitized relative path | Medium |
 | [011](011-output-basename-can-escape-cache-root.md) | Output basename can escape cache root | High |
 | [012](012-captured-stdout-stderr-basename-can-escape-cache-root.md) | Captured stdout/stderr basename can escape cache root | High |
-| [013](013-dependency-cache-treats-identical-lazy-source-paths-as-diffe.md) | Dependency cache treats identical lazy source paths as different | Medium |
-| [014](014-dependency-cache-treats-identical-generated-lazy-paths-as-di.md) | Dependency cache treats identical generated lazy paths as different | Medium |
 | [015](015-double-free-of-step-names-trailing-during-teardown.md) | Double free of step names trailing during teardown | High |
-| [016](016-coverage-mappings-and-source-tables-leak-on-deinit.md) | Coverage mappings and source tables leak on deinit | Medium |
-| [017](017-websocket-update-reads-shared-mmap-while-fuzzer-mutates-it.md) | WebSocket update reads shared mmap while fuzzer mutates it | Medium |
 | [041](041-mach-o-header-read-occurs-before-size-validation.md) | Mach-O header read occurs before size validation | High |
 | [042](042-archive-symbol-table-offsets-underflow-into-out-of-bounds-sl.md) | Archive symbol table offsets underflow into out-of-bounds slice | High |
 | [043](043-wasm-section-length-slices-without-bounds-check.md) | Wasm section length slices without bounds check | High |
@@ -62,8 +58,6 @@ Security audit of the Zig standard library. Each finding includes a detailed wri
 | [070](070-malformed-keychain-signature-triggers-assertion-abort.md) | Malformed keychain signature triggers assertion abort | Medium |
 | [079](079-empty-oid-encoding-causes-out-of-bounds-read.md) | Empty OID encoding causes out-of-bounds read | High |
 | [080](080-truncated-base-128-arc-can-overrun-input.md) | Truncated base-128 arc can overrun input | High |
-| [087](087-blockvec-xorbytes-returns-fixed-32-byte-array.md) | BlockVec xorBytes returns fixed 32-byte array | Medium |
-| [088](088-blockvec-orblocks-reads-non-existent-repr-field.md) | BlockVec orBlocks reads non-existent repr field | High |
 
 ### std.debug
 
@@ -114,8 +108,6 @@ Security audit of the Zig standard library. Each finding includes a detailed wri
 |---|---------|----------|
 | [004](004-empty-batch-initialization-reads-before-slice.md) | Empty batch initialization reads before slice | Medium |
 | [005](005-sleep-cancellation-callback-casts-wrong-waiter-type.md) | Sleep cancellation callback casts wrong waiter type | High |
-| [006](006-batchcancel-never-advances-pending-index.md) | batchCancel never advances pending index | High |
-| [007](007-parent-progress-pipe-leaks-on-spawn-error-path.md) | Parent progress pipe leaks on spawn error path | Medium |
 | [018](018-await-can-double-free-an-already-consumed-future.md) | Await can double-free an already-consumed future | High |
 | [019](019-zero-length-read-buffer-triggers-invalid-iovec-access.md) | Zero-length read buffer triggers invalid iovec access | Medium |
 | [024](024-unchecked-search-directive-overflows-fixed-buffer.md) | Unchecked search directive overflows fixed buffer | High |
@@ -143,7 +135,6 @@ Security audit of the Zig standard library. Each finding includes a detailed wri
 | [046](046-node-deserialization-trusts-unbounded-extra-and-string-index.md) | Node deserialization trusts unbounded extra and string indexes | Medium |
 | [047](047-null-terminated-string-lookup-can-panic-on-malformed-offset.md) | Null-terminated string lookup can panic on malformed offset | Medium |
 | [048](048-compile-error-notes-slice-trusts-serialized-range.md) | Compile error notes slice trusts serialized range | Medium |
-| [052](052-test-metadata-sender-can-emit-truncated-panic-metadata.md) | Test metadata sender can emit truncated panic metadata | Medium |
 | [075](075-unchecked-extra-index-decoding-structured-data.md) | Unchecked extra index decoding structured data | High |
 | [076](076-caret-spacing-underflows-on-inconsistent-source-spans.md) | Caret spacing underflows on inconsistent source spans | Medium |
 | [095](095-record-name-allocation-underflows-on-empty-operands.md) | Record name allocation underflows on empty operands | High |

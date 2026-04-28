@@ -4,7 +4,7 @@ Security audit of Viceroy, Fastly's local development server for Compute@Edge. E
 
 ## Summary
 
-**Total findings: 35** -- High: 9, Medium: 25, Low: 1
+**Total findings: 30** -- High: 7, Medium: 23, Low: 0
 
 ## Findings
 
@@ -46,7 +46,6 @@ Security audit of Viceroy, Fastly's local development server for Compute@Edge. E
 | # | Finding | Severity |
 |---|---------|----------|
 | [004](004-get-body-leaks-a-spawned-body-stream-on-single-reader-reject.md) | get_body leaks a spawned body stream on single reader reject | Medium |
-| [005](005-gzip-decoder-emits-spurious-empty-terminal-chunk.md) | Gzip decoder emits spurious empty terminal chunk | Low |
 | [006](006-full-body-read-has-no-decompressed-size-limit.md) | Full body read has no decompressed size limit | Medium |
 | [024](024-known-size-tee-panics-on-body-read-error.md) | Known-size tee panics on body read error | Medium |
 
@@ -58,7 +57,6 @@ Security audit of Viceroy, Fastly's local development server for Compute@Edge. E
 | [028](028-multiple-keys-in-file-or-inline-key-input-are-silently-accep.md) | Multiple keys in file or inline key input are silently accepted | Medium |
 | [029](029-oversized-shielding-backend-persists-after-length-error.md) | Oversized shielding backend persists after length error | Medium |
 | [030](030-missing-env-secret-becomes-empty-bytes.md) | Missing env secret becomes empty bytes | Medium |
-| [032](032-shield-backend-config-is-ignored-after-validation.md) | Shield backend config is ignored after validation | Medium |
 
 ### Header handling
 
@@ -66,15 +64,6 @@ Security audit of Viceroy, Fastly's local development server for Compute@Edge. E
 |---|---------|----------|
 | [033](033-missing-trailing-nul-drops-last-header-value.md) | Missing trailing NUL drops last header value | Medium |
 | [034](034-empty-values-buffer-clears-headers-silently.md) | Empty values buffer clears headers silently | Medium |
-
-### Rate limiting
-
-| # | Finding | Severity |
-|---|---------|----------|
-| [035](035-rate-limit-checks-never-report-a-hit.md) | Rate limit checks never report a hit | High |
-| [036](036-counter-and-penalty-mutations-are-silently-discarded.md) | Counter and penalty mutations are silently discarded | Medium |
-| [038](038-penalty-box-membership-is-never-enforced.md) | Penalty box membership is never enforced | High |
-| [042](042-state-changing-erl-apis-are-no-ops.md) | State-changing ERL APIs are no-ops | Medium |
 
 ### WebAssembly module handling
 
