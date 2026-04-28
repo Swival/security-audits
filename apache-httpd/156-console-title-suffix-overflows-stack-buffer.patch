@@ -1,0 +1,13 @@
+diff --git a/support/win32/wintty.c b/support/win32/wintty.c
+index 684ce5b..f283a12 100644
+--- a/support/win32/wintty.c
++++ b/support/win32/wintty.c
+@@ -336,7 +336,7 @@ int main(int argc, char** argv)
+         printerr("SetConsoleTitle() failed (%d)\n", GetLastError());
+     }
+     else {
+-        strcat(str, " - [Finished]");
++        strncat(str, " - [Finished]", sizeof(str) - strlen(str) - 1);
+         if (!SetConsoleTitle(str)) {
+             printerr("SetConsoleTitle() failed (%d)\n", GetLastError());
+         }

@@ -1,0 +1,36 @@
+diff --git a/modules/aaa/mod_authn_dbd.c b/modules/aaa/mod_authn_dbd.c
+index 08e5993..5ab577c 100644
+--- a/modules/aaa/mod_authn_dbd.c
++++ b/modules/aaa/mod_authn_dbd.c
+@@ -101,10 +101,17 @@ static authn_status authn_dbd_password(request_rec *r, const char *user,
+     apr_dbd_results_t *res = NULL;
+     apr_dbd_row_t *row = NULL;
+     int ret;
++    ap_dbd_t *dbd;
+ 
+     authn_dbd_conf *conf = ap_get_module_config(r->per_dir_config,
+                                                 &authn_dbd_module);
+-    ap_dbd_t *dbd = authn_dbd_acquire_fn(r);
++    if (conf->user == NULL) {
++        ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(01654)
++                      "No AuthDBDUserPWQuery has been specified");
++        return AUTH_GENERAL_ERROR;
++    }
++
++    dbd = authn_dbd_acquire_fn ? authn_dbd_acquire_fn(r) : NULL;
+     if (dbd == NULL) {
+         ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(01653)
+                       "Failed to acquire database connection to look up "
+@@ -112,12 +119,6 @@ static authn_status authn_dbd_password(request_rec *r, const char *user,
+         return AUTH_GENERAL_ERROR;
+     }
+ 
+-    if (conf->user == NULL) {
+-        ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(01654)
+-                      "No AuthDBDUserPWQuery has been specified");
+-        return AUTH_GENERAL_ERROR;
+-    }
+-
+     statement = apr_hash_get(dbd->prepared, conf->user, APR_HASH_KEY_STRING);
+     if (statement == NULL) {
+         ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(01655)

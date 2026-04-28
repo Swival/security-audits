@@ -1,0 +1,14 @@
+diff --git a/modules/lua/lua_passwd.c b/modules/lua/lua_passwd.c
+index ad86536..571d10f 100644
+--- a/modules/lua/lua_passwd.c
++++ b/modules/lua/lua_passwd.c
+@@ -132,7 +132,8 @@ int mk_password_hash(passwd_ctx *ctx)
+         if (strlen(pw) > 8) {
+             char *truncpw = apr_pstrdup(ctx->pool, pw);
+             truncpw[8] = '\0';
+-            if (!strcmp(ctx->out, crypt(truncpw, salt))) {
++            cbuf = crypt(truncpw, salt);
++            if (cbuf != NULL && !strcmp(ctx->out, cbuf)) {
+                 ctx->errstr = apr_psprintf(ctx->pool,
+                                            "Warning: Password truncated to 8 "
+                                            "characters by CRYPT algorithm.");

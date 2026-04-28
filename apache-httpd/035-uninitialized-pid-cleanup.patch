@@ -1,0 +1,15 @@
+diff --git a/modules/generators/mod_cgid.c b/modules/generators/mod_cgid.c
+index a0ef2b5..e8e8a82 100644
+--- a/modules/generators/mod_cgid.c
++++ b/modules/generators/mod_cgid.c
+@@ -1764,10 +1764,6 @@ static int include_cmd(include_ctx_t *ctx, ap_filter_t *f,
+         ap_log_rerror(APLOG_MARK, APLOG_DEBUG, rv, r, "error determining cgi PID (for SSI)");
+     }
+ 
+-    apr_pool_cleanup_register(r->pool, info,
+-                              cleanup_script,
+-                              apr_pool_cleanup_null);
+-
+     /* We are putting the socket discriptor into an apr_file_t so that we can
+      * use a pipe bucket to send the data to the client.  APR will create
+      * a cleanup for the apr_file_t which will close the socket, so we'll

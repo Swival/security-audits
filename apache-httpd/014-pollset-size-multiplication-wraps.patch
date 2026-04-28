@@ -1,0 +1,18 @@
+diff --git a/server/mpm/event/event.c b/server/mpm/event/event.c
+index 050d823..7e493fd 100644
+--- a/server/mpm/event/event.c
++++ b/server/mpm/event/event.c
+@@ -4116,9 +4116,12 @@ static const char *set_worker_factor(cmd_parms * cmd, void *dummy,
+     if (*endptr)
+         return "error parsing value";
+ 
+-    if (val <= 0)
++    if (!(val > 0))
+         return "AsyncRequestWorkerFactor argument must be a positive number";
+ 
++    if (val > (double)(APR_UINT32_MAX - INT_MAX - 1) / MAX_THREAD_LIMIT)
++        return "AsyncRequestWorkerFactor argument is too large";
++
+     worker_factor = val * WORKER_FACTOR_SCALE;
+     if (worker_factor < WORKER_FACTOR_SCALE) {
+         worker_factor = WORKER_FACTOR_SCALE;

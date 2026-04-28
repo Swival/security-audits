@@ -1,0 +1,13 @@
+diff --git a/modules/md/md_curl.c b/modules/md/md_curl.c
+index fac2ab8..29cf500 100644
+--- a/modules/md/md_curl.c
++++ b/modules/md/md_curl.c
+@@ -594,7 +594,7 @@ leave:
+                   "multi_perform[%d reqs]: leaving", requests->nelts);
+     for (i = 0; i < requests->nelts; ++i) {
+         req = APR_ARRAY_IDX(requests, i, md_http_request_t*);
+-        fire_status(req, APR_SUCCESS);
++        fire_status(req, rv);
+         sub_http = req->http;
+         APR_ARRAY_PUSH(http_spares, md_http_t*) = sub_http;
+         remove_from_curlm_and_destroy(req, curlm);

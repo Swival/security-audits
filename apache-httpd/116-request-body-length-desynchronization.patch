@@ -1,0 +1,12 @@
+diff --git a/modules/filters/mod_sed.c b/modules/filters/mod_sed.c
+index 12cb04a..151136c 100644
+--- a/modules/filters/mod_sed.c
++++ b/modules/filters/mod_sed.c
+@@ -411,6 +411,7 @@ static apr_status_t sed_request_filter(ap_filter_t *f,
+         if (status != APR_SUCCESS)
+              return status;
+         ctx = f->ctx;
++        apr_table_unset(f->r->headers_in, "Content-Length");
+         ctx->bb    = apr_brigade_create(f->r->pool, f->c->bucket_alloc);
+         ctx->bbinp = apr_brigade_create(f->r->pool, f->c->bucket_alloc);
+     }

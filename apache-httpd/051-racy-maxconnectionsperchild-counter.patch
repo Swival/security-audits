@@ -1,0 +1,23 @@
+diff --git a/server/mpm/winnt/child.c b/server/mpm/winnt/child.c
+index 05151a8..78977c5 100644
+--- a/server/mpm/winnt/child.c
++++ b/server/mpm/winnt/child.c
+@@ -786,7 +786,7 @@ static DWORD __stdcall worker_main(void *thread_num_val)
+ {
+     apr_thread_t *thd = NULL;
+     apr_os_thread_t osthd = NULL;
+-    static int requests_this_child = 0;
++    static apr_uint32_t requests_this_child = 0;
+     winnt_conn_ctx_t *context = NULL;
+     int thread_num = (int)thread_num_val;
+     ap_sb_handle_t *sbh;
+@@ -818,8 +818,7 @@ static DWORD __stdcall worker_main(void *thread_num_val)
+ 
+         /* Have we hit MaxConnectionsPerChild connections? */
+         if (ap_max_requests_per_child) {
+-            requests_this_child++;
+-            if (requests_this_child > ap_max_requests_per_child) {
++            if (apr_atomic_inc32(&requests_this_child) >= ap_max_requests_per_child) {
+                 SetEvent(max_requests_per_child_event);
+             }
+         }

@@ -1,0 +1,13 @@
+diff --git a/modules/md/md_status.c b/modules/md/md_status.c
+index 3572168..6f040dc 100644
+--- a/modules/md/md_status.c
++++ b/modules/md/md_status.c
+@@ -209,7 +209,7 @@ static apr_status_t get_staging_certs_json(md_json_t **pjson, const md_t *md,
+         spec = md_pkeys_spec_get(md->pks, i);
+         cert = NULL;
+         rv = md_pubcert_load(md_reg_store_get(reg), MD_SG_STAGING, md->name, spec, &chain, p);
+-        if (APR_SUCCESS == rv) {
++        if (APR_SUCCESS == rv && chain && chain->nelts > 0) {
+             cert = APR_ARRAY_IDX(chain, 0, const md_cert_t*);
+         }
+         APR_ARRAY_PUSH(certs, const md_cert_t*) = cert;

@@ -1,0 +1,12 @@
+diff --git a/server/mpm/worker/worker.c b/server/mpm/worker/worker.c
+index 315371d..38e5682 100644
+--- a/server/mpm/worker/worker.c
++++ b/server/mpm/worker/worker.c
+@@ -693,6 +693,7 @@ static void * APR_THREAD_FUNC listener_thread(apr_thread_t *thd, void * dummy)
+                      * socket to a worker
+                      */
+                     apr_socket_close(csd);
++                    ap_queue_info_push_pool(worker_queue_info, ptrans);
+                     ap_log_error(APLOG_MARK, APLOG_CRIT, rv, ap_server_conf, APLOGNO(03138)
+                                  "ap_queue_push_socket failed");
+                 }

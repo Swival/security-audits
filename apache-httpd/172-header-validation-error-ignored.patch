@@ -1,0 +1,20 @@
+diff --git a/modules/md/md_curl.c b/modules/md/md_curl.c
+index fac2ab8..c786f4b 100644
+--- a/modules/md/md_curl.c
++++ b/modules/md/md_curl.c
+@@ -336,10 +336,12 @@ static apr_status_t internals_setup(md_http_request_t *req)
+         ctx.hdrs = NULL;
+         ctx.rv = APR_SUCCESS;
+         apr_table_do(curlify_headers, &ctx, req->headers, NULL);
+-        internals->req_hdrs = ctx.hdrs;
+-        if (ctx.rv == APR_SUCCESS) {
+-            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, internals->req_hdrs);
++        if (ctx.rv != APR_SUCCESS) {
++            rv = ctx.rv;
++            goto leave;
+         }
++        internals->req_hdrs = ctx.hdrs;
++        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, internals->req_hdrs);
+     }
+     
+     md_log_perror(MD_LOG_MARK, MD_LOG_TRACE3, 0, req->pool,

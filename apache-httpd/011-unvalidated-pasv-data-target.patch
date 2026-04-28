@@ -1,0 +1,63 @@
+diff --git a/modules/proxy/mod_proxy_ftp.c b/modules/proxy/mod_proxy_ftp.c
+index 0e9c9b2..2c8a968 100644
+--- a/modules/proxy/mod_proxy_ftp.c
++++ b/modules/proxy/mod_proxy_ftp.c
+@@ -1491,14 +1491,29 @@ static int proxy_ftp_handler(request_rec *r, proxy_worker *worker,
+             if (pstr != NULL && (sscanf(pstr,
+                  "%d,%d,%d,%d,%d,%d", &h3, &h2, &h1, &h0, &p1, &p0) == 6)) {
+ 
+-                apr_sockaddr_t *pasv_addr;
++                apr_sockaddr_t *remote_addr, pasv_addr;
+                 apr_port_t pasvport = (p1 << 8) + p0;
+                 ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, APLOGNO(01044)
+-                              "PASV contacting host %d.%d.%d.%d:%d",
+-                              h3, h2, h1, h0, pasvport);
++                              "PASV contacting remote host on port %d",
++                              pasvport);
+ 
+-                if ((rv = apr_socket_create(&data_sock, backend->addr->family,
+-                                            SOCK_STREAM, 0, r->pool)) != APR_SUCCESS) {
++                rv = apr_socket_addr_get(&remote_addr, APR_REMOTE, sock);
++                if (rv == APR_SUCCESS) {
++                    pasv_addr = *remote_addr;
++                    pasv_addr.port = pasvport;
++#if APR_HAVE_IPV6
++                    if (pasv_addr.family == APR_INET6) {
++                        pasv_addr.sa.sin6.sin6_port = htons(pasvport);
++                    }
++                    else
++#endif
++                    {
++                        pasv_addr.sa.sin.sin_port = htons(pasvport);
++                    }
++                    rv = apr_socket_create(&data_sock, pasv_addr.family,
++                                           SOCK_STREAM, 0, r->pool);
++                }
++                if (rv != APR_SUCCESS) {
+                     ap_log_rerror(APLOG_MARK, APLOG_ERR, rv, r, APLOGNO(01045)
+                                   "error creating PASV socket");
+                     proxy_ftp_cleanup(r, backend);
+@@ -1520,20 +1535,12 @@ static int proxy_ftp_handler(request_rec *r, proxy_worker *worker,
+                 }
+ 
+                 /* make the connection */
+-                err = apr_sockaddr_info_get(&pasv_addr, apr_psprintf(p, "%d.%d.%d.%d",
+-                                                                     h3, h2, h1, h0),
+-                                            backend->addr->family, pasvport, 0, p);
+-                if (APR_SUCCESS != err) {
+-                    return ftp_proxyerror(r, backend, HTTP_BAD_GATEWAY,
+-                                          apr_pstrcat(p, "DNS lookup failure for: ",
+-                                                      connectname, NULL));
+-                }
+-                rv = apr_socket_connect(data_sock, pasv_addr);
++                rv = apr_socket_connect(data_sock, &pasv_addr);
+                 if (rv != APR_SUCCESS) {
+                     ap_log_rerror(APLOG_MARK, APLOG_ERR, rv, r, APLOGNO(01048)
+-                                  "PASV attempt to connect to %pI failed - Firewall/NAT?", pasv_addr);
++                                  "PASV attempt to connect to %pI failed - Firewall/NAT?", &pasv_addr);
+                     return ftp_proxyerror(r, backend, HTTP_BAD_GATEWAY, apr_psprintf(r->pool,
+-                                                                           "PASV attempt to connect to %pI failed - firewall/NAT?", pasv_addr));
++                                                                           "PASV attempt to connect to %pI failed - firewall/NAT?", &pasv_addr));
+                 }
+                 else {
+                     connect = 1;

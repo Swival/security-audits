@@ -1,0 +1,53 @@
+diff --git a/modules/http/mod_mime.c b/modules/http/mod_mime.c
+index 51095a0..b71f535 100644
+--- a/modules/http/mod_mime.c
++++ b/modules/http/mod_mime.c
+@@ -756,6 +756,7 @@ static int find_ct(request_rec *r)
+     apr_array_header_t *exception_list;
+     char *ext;
+     const char *fn, *fntmp, *type, *charset = NULL, *resource_name, *qm;
++    const char *path_info_start = NULL;
+     int found_metadata = 0;
+ 
+     if (r->finfo.filetype == APR_DIR) {
+@@ -774,6 +775,7 @@ static int find_ct(request_rec *r)
+     /* If use_path_info is explicitly set to on (value & 1 == 1), append. */
+     if (conf->use_path_info & 1) {
+         resource_name = apr_pstrcat(r->pool, r->filename, r->path_info, NULL);
++        path_info_start = resource_name + strlen(r->filename);
+     }
+     /*
+      * In the reverse proxy case r->filename might contain a query string if
+@@ -826,16 +828,22 @@ static int find_ct(request_rec *r)
+ 
+     /* Parse filename extensions which can be in any order
+      */
+-    while (*fn && (ext = ap_getword(r->pool, &fn, '.'))) {
++    while (*fn) {
++        const char *ext_start = fn;
+         const extension_info *exinfo = NULL;
+         int found;
++        int skip_handler;
+         char *extcase;
+ 
++        ext = ap_getword(r->pool, &fn, '.');
++
+         if (*ext == '\0') {  /* ignore empty extensions "bad..html" */
+             continue;
+         }
+ 
+         found = 0;
++        skip_handler = (path_info_start
++                        && ext_start + strlen(ext) > path_info_start);
+ 
+         /* Save the ext in extcase before converting it to lower case.
+          */
+@@ -898,7 +906,7 @@ static int find_ct(request_rec *r)
+              * make any contribution to metadata negotiation, so they must have
+              * been explicitly requested by name.
+              */
+-            if (exinfo->handler && r->proxyreq == PROXYREQ_NONE) {
++            if (exinfo->handler && !skip_handler && r->proxyreq == PROXYREQ_NONE) {
+                 r->handler = exinfo->handler;
+                 if (conf->multimatch & MULTIMATCH_HANDLERS) {
+                     found = 1;

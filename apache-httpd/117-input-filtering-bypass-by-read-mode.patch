@@ -1,0 +1,24 @@
+diff --git a/modules/filters/mod_sed.c b/modules/filters/mod_sed.c
+index 12cb04a..d7a5fab 100644
+--- a/modules/filters/mod_sed.c
++++ b/modules/filters/mod_sed.c
+@@ -392,15 +392,15 @@ static apr_status_t sed_request_filter(ap_filter_t *f,
+     apr_bucket_brigade *bbinp;
+     sed_expr_config *sed_cfg = &cfg->input;
+ 
+-    if (mode != AP_MODE_READBYTES) {
+-        return ap_get_brigade(f->next, bb, mode, block, readbytes);
+-    }
+-
+     if ((sed_cfg == NULL) || (sed_cfg->sed_cmds == NULL)) {
+         /* No sed expression */
+         return ap_get_brigade(f->next, bb, mode, block, readbytes);
+     }
+ 
++    if (mode != AP_MODE_READBYTES) {
++        return APR_ENOTIMPL;
++    }
++
+     if (!ctx) {
+         if (!ap_is_initial_req(f->r)) {
+             ap_remove_input_filter(f);

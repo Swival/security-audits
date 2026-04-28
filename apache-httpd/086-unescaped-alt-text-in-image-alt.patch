@@ -1,0 +1,26 @@
+diff --git a/modules/generators/mod_autoindex.c b/modules/generators/mod_autoindex.c
+index 715b49c..9eb1e8a 100644
+--- a/modules/generators/mod_autoindex.c
++++ b/modules/generators/mod_autoindex.c
+@@ -1713,7 +1713,9 @@ static void output_directories(struct ent **ar, int n,
+                               ap_escape_html(scratch,
+                                              ar[x]->icon ? ar[x]->icon
+                                                          : d->default_icon),
+-                              "\" alt=\"[", (ar[x]->alt ? ar[x]->alt : "   "),
++                              "\" alt=\"[", ap_escape_html(scratch,
++                                                     ar[x]->alt ? ar[x]->alt
++                                                                : "   "),
+                               "]\"", NULL);
+                     if (d->icon_width) {
+                         ap_rprintf(r, " width=\"%d\"", d->icon_width);
+@@ -1803,7 +1805,9 @@ static void output_directories(struct ent **ar, int n,
+                               ap_escape_html(scratch,
+                                              ar[x]->icon ? ar[x]->icon
+                                                          : d->default_icon),
+-                              "\" alt=\"[", (ar[x]->alt ? ar[x]->alt : "   "),
++                              "\" alt=\"[", ap_escape_html(scratch,
++                                                     ar[x]->alt ? ar[x]->alt
++                                                                : "   "),
+                               "]\"", NULL);
+                     if (d->icon_width) {
+                         ap_rprintf(r, " width=\"%d\"", d->icon_width);

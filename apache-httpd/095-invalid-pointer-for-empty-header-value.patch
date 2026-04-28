@@ -1,0 +1,16 @@
+diff --git a/modules/proxy/mod_proxy_hcheck.c b/modules/proxy/mod_proxy_hcheck.c
+index 70f1de8..b09a39c 100644
+--- a/modules/proxy/mod_proxy_hcheck.c
++++ b/modules/proxy/mod_proxy_hcheck.c
+@@ -779,8 +779,10 @@ static int hc_read_headers(request_rec *r)
+         ++value;
+         while (apr_isspace(*value))
+             ++value;            /* Skip to start of value   */
+-        for (end = &value[strlen(value)-1]; end > value && apr_isspace(*end); --end)
+-            *end = '\0';
++        if (*value) {
++            for (end = &value[strlen(value)-1]; end > value && apr_isspace(*end); --end)
++                *end = '\0';
++        }
+         apr_table_add(r->headers_out, buffer, value);
+     }

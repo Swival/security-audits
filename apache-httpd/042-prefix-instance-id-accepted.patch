@@ -1,0 +1,16 @@
+diff --git a/server/mpm/netware/mpm_netware.c b/server/mpm/netware/mpm_netware.c
+index e89fdef..7648723 100644
+--- a/server/mpm/netware/mpm_netware.c
++++ b/server/mpm/netware/mpm_netware.c
+@@ -1211,7 +1211,10 @@ static int CommandLineInterpreter(scr_t screenID, const char *commandLine)
+             while (*pID && (*pID == ' '))
+                 pID++;
+         }
+-        if (pID && ap_my_addrspace && strnicmp(pID, ap_my_addrspace, strlen(ap_my_addrspace)))
++        if (pID && ap_my_addrspace &&
++            (strnicmp(pID, ap_my_addrspace, strlen(ap_my_addrspace)) ||
++             (pID[strlen(ap_my_addrspace)] &&
++              !apr_isspace(pID[strlen(ap_my_addrspace)]))))
+             return NOTMYCOMMAND;
+ 
+         /* If we have determined that this command belongs to this

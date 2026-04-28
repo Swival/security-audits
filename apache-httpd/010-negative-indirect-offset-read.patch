@@ -1,0 +1,24 @@
+diff --git a/modules/metadata/mod_mime_magic.c b/modules/metadata/mod_mime_magic.c
+index 1c96db4..f56867f 100644
+--- a/modules/metadata/mod_mime_magic.c
++++ b/modules/metadata/mod_mime_magic.c
+@@ -1786,7 +1786,8 @@ static int mget(request_rec *r, union VALUETYPE *p, unsigned char *s,
+ {
+     long offset = m->offset;
+ 
+-    if (offset + sizeof(union VALUETYPE) > nbytes)
++    if (offset < 0 || nbytes < sizeof(union VALUETYPE) ||
++        (apr_size_t)offset > nbytes - sizeof(union VALUETYPE))
+                   return 0;
+ 
+     memcpy(p, s + offset, sizeof(union VALUETYPE));
+@@ -1808,7 +1809,8 @@ static int mget(request_rec *r, union VALUETYPE *p, unsigned char *s,
+             break;
+         }
+ 
+-        if (offset + sizeof(union VALUETYPE) > nbytes)
++        if (offset < 0 || nbytes < sizeof(union VALUETYPE) ||
++            (apr_size_t)offset > nbytes - sizeof(union VALUETYPE))
+                       return 0;
+ 
+         memcpy(p, s + offset, sizeof(union VALUETYPE));

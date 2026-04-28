@@ -1,0 +1,21 @@
+diff --git a/modules/slotmem/mod_slotmem_plain.c b/modules/slotmem/mod_slotmem_plain.c
+index 4c2b19b..3563d91 100644
+--- a/modules/slotmem/mod_slotmem_plain.c
++++ b/modules/slotmem/mod_slotmem_plain.c
+@@ -67,10 +67,15 @@ static apr_status_t slotmem_create(ap_slotmem_instance_t **new, const char *name
+ {
+     ap_slotmem_instance_t *res;
+     ap_slotmem_instance_t *next = globallistmem;
+-    apr_size_t basesize = (item_size * item_num);
++    apr_size_t basesize;
+ 
+     const char *fname;
+ 
++    if (item_num && item_size > APR_SIZE_MAX / item_num) {
++        return APR_EINVAL;
++    }
++    basesize = item_size * item_num;
++
+     if (name) {
+         if (name[0] == ':')
+             fname = name;

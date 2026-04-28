@@ -1,0 +1,15 @@
+diff --git a/modules/aaa/mod_authz_dbm.c b/modules/aaa/mod_authz_dbm.c
+index f11de68..2853813 100644
+--- a/modules/aaa/mod_authz_dbm.c
++++ b/modules/aaa/mod_authz_dbm.c
+@@ -276,6 +276,10 @@ static authz_status dbmfilegroup_check_authorization(request_rec *r,
+         return AUTHZ_DENIED;
+     }
+ 
++    if (!authz_owner_get_file_group) {
++        return AUTHZ_DENIED;
++    }
++
+     filegroup = authz_owner_get_file_group(r);
+ 
+     if (filegroup) {

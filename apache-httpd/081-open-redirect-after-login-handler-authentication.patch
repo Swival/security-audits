@@ -1,0 +1,13 @@
+diff --git a/modules/aaa/mod_auth_form.c b/modules/aaa/mod_auth_form.c
+index d443092..c7fed42 100644
+--- a/modules/aaa/mod_auth_form.c
++++ b/modules/aaa/mod_auth_form.c
+@@ -1138,7 +1138,7 @@ static int authenticate_form_login_handler(request_rec * r)
+         rv = check_authn(r, sent_user, sent_pw);
+         if (OK == rv) {
+             set_session_auth(r, sent_user, sent_pw, conf->site);
+-            if (sent_loc) {
++            if (sent_loc && !ap_is_url(sent_loc) && (sent_loc[0] != '/' || sent_loc[1] != '/')) {
+                 apr_table_set(r->headers_out, "Location", sent_loc);
+                 return HTTP_MOVED_TEMPORARILY;
+             }

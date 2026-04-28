@@ -1,0 +1,13 @@
+diff --git a/modules/metadata/mod_unique_id.c b/modules/metadata/mod_unique_id.c
+index 2555749..e1944ce 100644
+--- a/modules/metadata/mod_unique_id.c
++++ b/modules/metadata/mod_unique_id.c
+@@ -229,7 +229,7 @@ static const char *gen_unique_id(const request_rec *r)
+     /* The counter is two bytes for the uuencoded unique id, in network
+      * byte order.
+      */
+-    new_unique_id.counter = htons(counter % APR_UINT16_MAX);
++    new_unique_id.counter = htons(counter % (APR_UINT16_MAX + 1));
+ 
+     /* we'll use a temporal buffer to avoid uuencoding the possible internal
+      * paddings of the original structure */

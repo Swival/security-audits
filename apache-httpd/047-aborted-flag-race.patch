@@ -1,0 +1,42 @@
+diff --git a/modules/http2/h2_mplx.c b/modules/http2/h2_mplx.c
+index f9616ab..872df44 100644
+--- a/modules/http2/h2_mplx.c
++++ b/modules/http2/h2_mplx.c
+@@ -501,12 +501,12 @@ void h2_mplx_c1_destroy(h2_mplx *m)
+ 
+     ap_log_cerror(APLOG_MARK, APLOG_TRACE2, 0, m->c1,
+                   H2_MPLX_MSG(m, "start release"));
++    H2_MPLX_ENTER_ALWAYS(m);
++
+     /* How to shut down a h2 connection:
+      * 0. abort and tell the workers that no more work will come from us */
+     m->shutdown = m->aborted = 1;
+ 
+-    H2_MPLX_ENTER_ALWAYS(m);
+-
+     /* While really terminating any c2 connections, treat the master
+      * connection as aborted. It's not as if we could send any more data
+      * at this point. */
+@@ -1054,16 +1054,18 @@ static void workers_shutdown(void *baton, int graceful)
+ {
+     h2_mplx *m = baton;
+ 
+-    apr_thread_mutex_lock(m->poll_lock);
+-    /* time to wakeup and assess what to do */
+-    ap_log_cerror(APLOG_MARK, APLOG_TRACE2, 0, m->c1,
+-                  H2_MPLX_MSG(m, "workers shutdown, waking pollset"));
++    H2_MPLX_ENTER_ALWAYS(m);
+     m->shutdown = 1;
+     if (!graceful) {
+         m->aborted = 1;
+     }
++    apr_thread_mutex_lock(m->poll_lock);
++    /* time to wakeup and assess what to do */
++    ap_log_cerror(APLOG_MARK, APLOG_TRACE2, 0, m->c1,
++                  H2_MPLX_MSG(m, "workers shutdown, waking pollset"));
+     apr_pollset_wakeup(m->pollset);
+     apr_thread_mutex_unlock(m->poll_lock);
++    H2_MPLX_LEAVE(m);
+ }
+ 
+ /*******************************************************************************

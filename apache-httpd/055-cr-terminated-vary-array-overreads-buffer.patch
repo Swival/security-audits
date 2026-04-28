@@ -1,0 +1,13 @@
+diff --git a/modules/cache/mod_cache_socache.c b/modules/cache/mod_cache_socache.c
+index 38f1bfb..52d48d4 100644
+--- a/modules/cache/mod_cache_socache.c
++++ b/modules/cache/mod_cache_socache.c
+@@ -150,7 +150,7 @@ static apr_status_t read_array(request_rec *r, apr_array_header_t *arr,
+             *((const char **) apr_array_push(arr)) = apr_pstrndup(r->pool,
+                     (const char *) buffer + val, *slider - val);
+             (*slider)++;
+-            if (buffer[*slider] == '\n') {
++            if (*slider < buffer_len && buffer[*slider] == '\n') {
+                 (*slider)++;
+             }
+             val = *slider;

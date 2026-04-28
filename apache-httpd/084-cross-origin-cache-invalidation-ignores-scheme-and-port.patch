@@ -1,0 +1,56 @@
+diff --git a/modules/cache/cache_storage.c b/modules/cache/cache_storage.c
+index dfda34b..a644196 100644
+--- a/modules/cache/cache_storage.c
++++ b/modules/cache/cache_storage.c
+@@ -720,10 +720,22 @@ int cache_invalidate(cache_request_rec *cache, request_rec *r)
+                                           location_uri.path,
+                                           location_uri.query,
+                                           &location_uri, &location_key)
+-                || !(r->parsed_uri.hostname
++                || !(r->parsed_uri.scheme
++                     && location_uri.scheme
++                     && !ap_cstr_casecmp(r->parsed_uri.scheme,
++                                         location_uri.scheme)
++                     && r->parsed_uri.hostname
+                      && location_uri.hostname
+-                     && !strcmp(r->parsed_uri.hostname,
+-                                location_uri.hostname))) {
++                     && !ap_cstr_casecmp(r->parsed_uri.hostname,
++                                         location_uri.hostname)
++                     && (((r->parsed_uri.port_str
++                           && r->parsed_uri.port_str[0])
++                          ? r->parsed_uri.port
++                          : apr_uri_port_of_scheme(r->parsed_uri.scheme))
++                         == ((location_uri.port_str
++                              && location_uri.port_str[0])
++                             ? location_uri.port
++                             : apr_uri_port_of_scheme(location_uri.scheme))))) {
+             location_key = NULL;
+         }
+     }
+@@ -737,10 +749,22 @@ int cache_invalidate(cache_request_rec *cache, request_rec *r)
+                                           content_location_uri.query,
+                                           &content_location_uri,
+                                           &content_location_key)
+-                || !(r->parsed_uri.hostname
++                || !(r->parsed_uri.scheme
++                     && content_location_uri.scheme
++                     && !ap_cstr_casecmp(r->parsed_uri.scheme,
++                                         content_location_uri.scheme)
++                     && r->parsed_uri.hostname
+                      && content_location_uri.hostname
+-                     && !strcmp(r->parsed_uri.hostname,
+-                                content_location_uri.hostname))) {
++                     && !ap_cstr_casecmp(r->parsed_uri.hostname,
++                                         content_location_uri.hostname)
++                     && (((r->parsed_uri.port_str
++                           && r->parsed_uri.port_str[0])
++                          ? r->parsed_uri.port
++                          : apr_uri_port_of_scheme(r->parsed_uri.scheme))
++                         == ((content_location_uri.port_str
++                              && content_location_uri.port_str[0])
++                             ? content_location_uri.port
++                             : apr_uri_port_of_scheme(content_location_uri.scheme))))) {
+             content_location_key = NULL;
+         }
+     }

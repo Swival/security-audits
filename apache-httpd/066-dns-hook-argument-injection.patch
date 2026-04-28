@@ -1,0 +1,36 @@
+diff --git a/modules/md/md_acme_authz.c b/modules/md/md_acme_authz.c
+index 9d07052..55eefbe 100644
+--- a/modules/md/md_acme_authz.c
++++ b/modules/md/md_acme_authz.c
+@@ -423,8 +423,7 @@ static apr_status_t cha_dns_01_setup(md_acme_authz_cha_t *cha, md_acme_authz_t *
+                                      const char **psetup_token, apr_pool_t *p)
+ {
+     const char *token;
+-    const char * const *argv;
+-    const char *cmdline, *dns01_cmd;
++    const char *dns01_cmd;
+     apr_status_t rv;
+     int exit_code, notify_server;
+     authz_req_ctx ctx;
+@@ -457,12 +456,16 @@ static apr_status_t cha_dns_01_setup(md_acme_authz_cha_t *cha, md_acme_authz_t *
+         goto out;
+     }
+ 
+-    cmdline = apr_psprintf(p, "%s setup %s %s", dns01_cmd, authz->domain, token); 
+-    md_log_perror(MD_LOG_MARK, MD_LOG_DEBUG, 0, p, 
+-                  "%s: dns-01 setup command: %s", authz->domain, cmdline);
++    {
++        const char * const argv[] = { dns01_cmd, "setup", authz->domain, token, NULL };
+ 
+-    apr_tokenize_to_argv(cmdline, (char***)&argv, p);
+-    if (APR_SUCCESS != (rv = md_util_exec(p, argv[0], argv, &exit_code))) {
++        md_log_perror(MD_LOG_MARK, MD_LOG_DEBUG, 0, p, 
++                      "%s: dns-01 setup command: %s setup %s %s", authz->domain,
++                      dns01_cmd, authz->domain, token);
++
++        rv = md_util_exec(p, dns01_cmd, argv, &exit_code);
++    }
++    if (APR_SUCCESS != rv) {
+         md_log_perror(MD_LOG_MARK, MD_LOG_WARNING, rv, p, 
+                       "%s: dns-01 setup command failed to execute for %s", md->name, authz->domain);
+         goto out;

@@ -1,0 +1,13 @@
+diff --git a/server/util_pcre.c b/server/util_pcre.c
+index 0a9dc50..5849e7c 100644
+--- a/server/util_pcre.c
++++ b/server/util_pcre.c
+@@ -521,7 +521,7 @@ AP_DECLARE(int) ap_regname(const ap_regex_t *preg,
+ 
+     for (i = 0; i < namecount; i++) {
+         const char *offset = nametable + i * nameentrysize;
+-        int capture = ((offset[0] << 8) + offset[1]);
++        int capture = (((unsigned char)offset[0] << 8) + (unsigned char)offset[1]);
+         while (names->nelts <= capture) {
+             apr_array_push(names);
+         }

@@ -1,0 +1,19 @@
+diff --git a/modules/ssl/ssl_engine_init.c b/modules/ssl/ssl_engine_init.c
+index 0fecdcf..d496686 100644
+--- a/modules/ssl/ssl_engine_init.c
++++ b/modules/ssl/ssl_engine_init.c
+@@ -515,6 +515,14 @@ apr_status_t ssl_init_Module(apr_pool_t *p, apr_pool_t *plog,
+     }
+ 
+     if (pphrases->nelts > 0) {
++        char **elts = (char **)pphrases->elts;
++        int i;
++
++        for (i = 0; i < pphrases->nelts; i++) {
++            if (elts[i]) {
++                OPENSSL_cleanse(elts[i], strlen(elts[i]));
++            }
++        }
+         memset(pphrases->elts, 0, pphrases->elt_size * pphrases->nelts);
+         pphrases->nelts = 0;
+         ap_log_error(APLOG_MARK, APLOG_INFO, 0, s, APLOGNO(02560)

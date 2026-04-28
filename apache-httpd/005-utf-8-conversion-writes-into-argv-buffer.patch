@@ -1,0 +1,14 @@
+diff --git a/server/mpm/winnt/service.c b/server/mpm/winnt/service.c
+index 2e473cf..5e9f34c 100644
+--- a/server/mpm/winnt/service.c
++++ b/server/mpm/winnt/service.c
+@@ -430,7 +430,8 @@ static void __stdcall service_nt_main_fn_w(DWORD argc, LPWSTR *argv)
+             wslen = wcslen(argv[i]) + 1;
+             slen = wslen * 3 - 2;
+             service_name = malloc(slen);
+-            (void)apr_conv_ucs2_to_utf8(argv[i], &wslen, *(cmb++), &slen);
++            (void)apr_conv_ucs2_to_utf8(argv[i], &wslen, service_name, &slen);
++            *(cmb++) = service_name;
+         }
+ 
+         /* The replacement arg list is complete */

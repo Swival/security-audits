@@ -1,0 +1,27 @@
+diff --git a/modules/filters/mod_deflate.c b/modules/filters/mod_deflate.c
+index 5a541e7..ce7e0de 100644
+--- a/modules/filters/mod_deflate.c
++++ b/modules/filters/mod_deflate.c
+@@ -1740,14 +1740,20 @@ static apr_status_t inflate_out_filter(ap_filter_t *f,
+         }
+ 
+         /* read */
+-        apr_bucket_read(e, &data, &len, APR_BLOCK_READ);
++        rv = apr_bucket_read(e, &data, &len, APR_BLOCK_READ);
++        if (rv != APR_SUCCESS) {
++            return rv;
++        }
+         if (!len) {
+             apr_bucket_delete(e);
+             continue;
+         }
+         if (len > APR_INT32_MAX) {
+             apr_bucket_split(e, APR_INT32_MAX);
+-            apr_bucket_read(e, &data, &len, APR_BLOCK_READ);
++            rv = apr_bucket_read(e, &data, &len, APR_BLOCK_READ);
++            if (rv != APR_SUCCESS) {
++                return rv;
++            }
+         }
+ 
+         /* first bucket contains zlib header */

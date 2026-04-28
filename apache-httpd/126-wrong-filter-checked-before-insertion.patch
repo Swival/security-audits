@@ -1,0 +1,13 @@
+diff --git a/modules/filters/mod_request.c b/modules/filters/mod_request.c
+index 1768edc..fa255bb 100644
+--- a/modules/filters/mod_request.c
++++ b/modules/filters/mod_request.c
+@@ -302,7 +302,7 @@ static void ap_request_insert_filter(request_rec * r)
+         }
+     }
+     else if (conf->keep_body) {
+-        if (!request_is_filter_present(r, kept_body_input_filter_handle)) {
++        if (!request_is_filter_present(r, keep_body_input_filter_handle)) {
+             ap_add_input_filter_handle(keep_body_input_filter_handle,
+                                        NULL, r, r->connection);
+         }

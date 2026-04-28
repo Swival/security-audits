@@ -1,0 +1,30 @@
+diff --git a/modules/proxy/balancers/mod_lbmethod_heartbeat.c b/modules/proxy/balancers/mod_lbmethod_heartbeat.c
+index 0534e5b..c7eedb8 100644
+--- a/modules/proxy/balancers/mod_lbmethod_heartbeat.c
++++ b/modules/proxy/balancers/mod_lbmethod_heartbeat.c
+@@ -14,6 +14,9 @@
+  * limitations under the License.
+  */
+ 
++#include <errno.h>
++#include <limits.h>
++
+ #include "mod_proxy.h"
+ #include "scoreboard.h"
+ #include "ap_mpm.h"
+@@ -183,7 +186,14 @@ static apr_status_t readfile_heartbeats(const char *path, apr_hash_t *servers,
+             }
+ 
+             if ((val = apr_table_get(hbt, "ready"))) {
+-                server->ready = atoi(val);
++                char *endptr;
++                long ready;
++
++                errno = 0;
++                ready = strtol(val, &endptr, 10);
++                if (errno != ERANGE && ready >= INT_MIN && ready <= INT_MAX) {
++                    server->ready = (int)ready;
++                }
+             }
+ 
+             if ((val = apr_table_get(hbt, "lastseen"))) {

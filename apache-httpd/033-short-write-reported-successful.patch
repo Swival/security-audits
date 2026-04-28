@@ -1,0 +1,116 @@
+diff --git a/modules/generators/mod_cgid.c b/modules/generators/mod_cgid.c
+index a0ef2b5..5af27bf 100644
+--- a/modules/generators/mod_cgid.c
++++ b/modules/generators/mod_cgid.c
+@@ -430,13 +430,21 @@ static apr_status_t sock_read(int fd, void *vbuf, size_t buf_size)
+  */
+ static apr_status_t sock_write(int fd, const void *buf, size_t buf_size)
+ {
++    const char *pos = buf;
+     int rc;
+ 
+-    do {
+-        rc = write(fd, buf, buf_size);
+-    } while (rc < 0 && errno == EINTR);
+-    if (rc < 0) {
+-        return errno;
++    while (buf_size) {
++        do {
++            rc = write(fd, pos, buf_size);
++        } while (rc < 0 && errno == EINTR);
++        if (rc < 0) {
++            return errno;
++        }
++        if (rc == 0) {
++            return APR_INCOMPLETE;
++        }
++        pos += rc;
++        buf_size -= rc;
+     }
+ 
+     return APR_SUCCESS;
+@@ -457,41 +465,56 @@ static apr_status_t sock_writev(int fd, int auxfd, request_rec *r, int count, ..
+     }
+     va_end(ap);
+ 
++    while (count) {
+ #ifndef HAVE_CGID_FDPASSING
+-    do {
+-        rc = writev(fd, vec, count);
+-    } while (rc < 0 && errno == EINTR);
++        do {
++            rc = writev(fd, vec, count);
++        } while (rc < 0 && errno == EINTR);
+ #else
+-    {
+-        struct msghdr msg = { 0 };
+-        struct cmsghdr *cmsg;
+-        union { /* union for alignment */
+-            char buf[CMSG_SPACE(sizeof(int))];
+-            struct cmsghdr align;
+-        } u;
++        {
++            struct msghdr msg = { 0 };
++            struct cmsghdr *cmsg;
++            union { /* union for alignment */
++                char buf[CMSG_SPACE(sizeof(int))];
++                struct cmsghdr align;
++            } u;
+ 
+-        msg.msg_iov = vec;
+-        msg.msg_iovlen = count;
++            msg.msg_iov = vec;
++            msg.msg_iovlen = count;
+ 
+-        if (auxfd) {
+-            msg.msg_control = u.buf;
+-            msg.msg_controllen = sizeof(u.buf);
++            if (auxfd) {
++                msg.msg_control = u.buf;
++                msg.msg_controllen = sizeof(u.buf);
+ 
+-            cmsg = CMSG_FIRSTHDR(&msg);
+-            cmsg->cmsg_level = SOL_SOCKET;
+-            cmsg->cmsg_type = SCM_RIGHTS;
+-            cmsg->cmsg_len = CMSG_LEN(sizeof(int));
+-            *((int *) CMSG_DATA(cmsg)) = auxfd;
++                cmsg = CMSG_FIRSTHDR(&msg);
++                cmsg->cmsg_level = SOL_SOCKET;
++                cmsg->cmsg_type = SCM_RIGHTS;
++                cmsg->cmsg_len = CMSG_LEN(sizeof(int));
++                *((int *) CMSG_DATA(cmsg)) = auxfd;
++            }
++
++            do {
++                rc = sendmsg(fd, &msg, 0);
++            } while (rc < 0 && errno == EINTR);
++        }
++#endif
++        if (rc < 0) {
++            return errno;
++        }
++        if (rc == 0) {
++            return APR_INCOMPLETE;
+         }
+ 
+-        do {
+-            rc = sendmsg(fd, &msg, 0);
+-        } while (rc < 0 && errno == EINTR);
+-    }
+-#endif
+-    
+-    if (rc < 0) {
+-        return errno;
++        auxfd = 0;
++        while (count && rc >= vec[0].iov_len) {
++            rc -= vec[0].iov_len;
++            vec++;
++            count--;
++        }
++        if (count && rc) {
++            vec[0].iov_base = (char *)vec[0].iov_base + rc;
++            vec[0].iov_len -= rc;
++        }
+     }
+ 
+     return APR_SUCCESS;

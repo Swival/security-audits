@@ -1,0 +1,27 @@
+diff --git a/modules/proxy/mod_proxy_fcgi.c b/modules/proxy/mod_proxy_fcgi.c
+index 128cf1e..e91b2b6 100644
+--- a/modules/proxy/mod_proxy_fcgi.c
++++ b/modules/proxy/mod_proxy_fcgi.c
+@@ -611,6 +611,7 @@ static apr_status_t dispatch(proxy_conn_rec *conn, proxy_dir_conf *conf,
+     apr_pollfd_t *flushpoll = NULL;
+     apr_int32_t flushpoll_fd;
+     int header_state = HDR_STATE_READING_HEADERS;
++    apr_size_t header_buffered = 0;
+     char stack_iobuf[AP_IOBUFSIZE];
+     apr_size_t iobuf_size = AP_IOBUFSIZE;
+     char *iobuf = stack_iobuf;
+@@ -907,6 +908,14 @@ recv_again:
+                             /* We're still looking for the end of the
+                              * headers, so this part of the data will need
+                              * to persist. */
++                            if (header_buffered > HUGE_STRING_LEN - readbuflen) {
++                                ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(10501)
++                                              "FastCGI response headers exceeded %d bytes",
++                                              HUGE_STRING_LEN);
++                                rv = APR_ENOSPC;
++                                break;
++                            }
++                            header_buffered += readbuflen;
+                             apr_bucket_setaside(b, setaside_pool);
+                         }
+                     } else {

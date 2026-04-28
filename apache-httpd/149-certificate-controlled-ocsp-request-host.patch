@@ -1,0 +1,27 @@
+diff --git a/modules/ssl/ssl_engine_ocsp.c b/modules/ssl/ssl_engine_ocsp.c
+index 5e04512..aef696f 100644
+--- a/modules/ssl/ssl_engine_ocsp.c
++++ b/modules/ssl/ssl_engine_ocsp.c
+@@ -58,19 +58,9 @@ static apr_uri_t *determine_responder_uri(SSLSrvConfigRec *sc, X509 *cert,
+     const char *s;
+     apr_status_t rv;
+ 
+-    /* Use default responder URL if forced by configuration, else use
+-     * certificate-specified responder, falling back to default if
+-     * necessary and possible. */
+-    if (sc->server->ocsp_force_default == TRUE) {
+-        s = sc->server->ocsp_responder;
+-    }
+-    else {
+-        s = extract_responder_uri(cert, p);
+-
+-        if (s == NULL && sc->server->ocsp_responder) {
+-            s = sc->server->ocsp_responder;
+-        }
+-    }
++    /* Only use the configured responder URL; certificate AIA data is not
++     * trusted to choose the outbound OCSP request host. */
++    s = sc->server->ocsp_responder;
+ 
+     if (s == NULL) {
+         ap_log_cerror(APLOG_MARK, APLOG_DEBUG, 0, c, APLOGNO(01918)

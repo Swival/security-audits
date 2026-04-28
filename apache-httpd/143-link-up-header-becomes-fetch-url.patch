@@ -1,0 +1,42 @@
+diff --git a/modules/md/md_acme_drive.c b/modules/md/md_acme_drive.c
+index 94bcc8a..809ce77 100644
+--- a/modules/md/md_acme_drive.c
++++ b/modules/md/md_acme_drive.c
+@@ -194,12 +194,37 @@ leave:
+ /**************************************************************************************************/
+ /* poll cert */
+ 
++static int same_acme_origin(md_acme_t *acme, const char *url, apr_pool_t *p)
++{
++    apr_uri_t ca_uri, link_uri;
++    apr_port_t ca_port, link_port;
++
++    if (APR_SUCCESS != apr_uri_parse(p, acme->url, &ca_uri)
++        || APR_SUCCESS != apr_uri_parse(p, url, &link_uri)
++        || !ca_uri.scheme || !link_uri.scheme
++        || !ca_uri.hostname || !link_uri.hostname) {
++        return 0;
++    }
++
++    ca_port = ca_uri.port? ca_uri.port : apr_uri_port_of_scheme(ca_uri.scheme);
++    link_port = link_uri.port? link_uri.port : apr_uri_port_of_scheme(link_uri.scheme);
++    return !apr_cstr_casecmp(ca_uri.scheme, link_uri.scheme)
++           && !apr_cstr_casecmp(ca_uri.hostname, link_uri.hostname)
++           && ca_port == link_port;
++}
++
+ static void get_up_link(md_proto_driver_t *d, apr_table_t *headers)
+ {
+     md_acme_driver_t *ad = d->baton;
+ 
+     ad->chain_up_link = md_link_find_relation(headers, d->p, "up");
+     if (ad->chain_up_link) {
++        if (!same_acme_origin(ad->acme, ad->chain_up_link, d->p)) {
++            md_log_perror(MD_LOG_MARK, MD_LOG_WARNING, 0, d->p,
++                          "ignoring chain up link from untrusted origin: %s", ad->chain_up_link);
++            ad->chain_up_link = NULL;
++            return;
++        }
+         md_log_perror(MD_LOG_MARK, MD_LOG_DEBUG, 0, d->p, 
+                       "server reports up link as %s", ad->chain_up_link);
+     }

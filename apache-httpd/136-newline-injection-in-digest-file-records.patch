@@ -1,0 +1,39 @@
+diff --git a/support/htdigest.c b/support/htdigest.c
+index 43f7054..e4132e8 100644
+--- a/support/htdigest.c
++++ b/support/htdigest.c
+@@ -128,6 +128,11 @@ static void putline(apr_file_t *f, char *l)
+         apr_file_putc(l[x], f);
+ }
+ 
++static int field_has_invalid_chars(const char *field)
++{
++    return strchr(field, ':') || strchr(field, LF) || strchr(field, CR);
++}
++
+ 
+ static void add_password(const char *user, const char *realm, apr_file_t *f)
+ {
+@@ -222,6 +227,10 @@ int main(int argc, const char * const argv[])
+     if (argc == 5) {
+         if (strcmp(argv[1], "-c"))
+             usage();
++        if (field_has_invalid_chars(argv[3]) || field_has_invalid_chars(argv[4])) {
++            apr_file_printf(errfile, "Username and realm may not contain ':' or newline characters.\n");
++            exit(1);
++        }
+         rv = apr_file_open(&f, argv[2], APR_WRITE | APR_CREATE,
+                            APR_OS_DEFAULT, cntxt);
+         if (rv != APR_SUCCESS) {
+@@ -240,6 +249,11 @@ int main(int argc, const char * const argv[])
+     else if (argc != 4)
+         usage();
+ 
++    if (field_has_invalid_chars(argv[2]) || field_has_invalid_chars(argv[3])) {
++        apr_file_printf(errfile, "Username and realm may not contain ':' or newline characters.\n");
++        exit(1);
++    }
++
+     if (apr_temp_dir_get((const char**)&dirname, cntxt) != APR_SUCCESS) {
+         apr_file_printf(errfile, "%s: could not determine temp dir\n",
+                         argv[0]);

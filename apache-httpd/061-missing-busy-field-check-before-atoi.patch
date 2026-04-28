@@ -1,0 +1,15 @@
+diff --git a/modules/cluster/mod_heartmonitor.c b/modules/cluster/mod_heartmonitor.c
+index 68db585..dabecf6 100644
+--- a/modules/cluster/mod_heartmonitor.c
++++ b/modules/cluster/mod_heartmonitor.c
+@@ -772,6 +772,10 @@ static int hm_handler(request_rec *r)
+     buf[len] = '\0';
+     tbl = apr_table_make(r->pool, 10);
+     qs_to_table(buf, tbl, r->pool);
++    if (apr_table_get(tbl, "busy") == NULL ||
++        apr_table_get(tbl, "ready") == NULL) {
++        return HTTP_BAD_REQUEST;
++    }
+     apr_sockaddr_ip_get(&ip, r->connection->client_addr);
+     hmserver.ip = ip;
+     hmserver.port = 80;

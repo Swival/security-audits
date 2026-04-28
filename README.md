@@ -19,6 +19,7 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 
 | Project                                                       | Findings | Description                                    |
 | ------------------------------------------------------------- | -------: | ---------------------------------------------- |
+| [apache-httpd](apache-httpd/)                                 |      141 | Apache HTTP Server                             |
 | [boringssl](boringssl/)                                       |       15 | Google's fork of OpenSSL                       |
 | [bunnycdn-cli](bunnycdn-cli/)                                 |       31 | BunnyCDN command-line client                   |
 | [bunnycdn-tokenauthentication](bunnycdn-tokenauthentication/) |       10 | BunnyCDN token authentication library          |

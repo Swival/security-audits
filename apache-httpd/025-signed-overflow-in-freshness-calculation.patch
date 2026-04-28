@@ -1,0 +1,47 @@
+diff --git a/modules/cache/cache_util.c b/modules/cache/cache_util.c
+index fc36431..d787f6f 100644
+--- a/modules/cache/cache_util.c
++++ b/modules/cache/cache_util.c
+@@ -530,6 +530,26 @@ int ap_cache_check_no_store(cache_request_rec *cache, request_rec *r)
+     return 1;
+ }
+ 
++static int cache_freshness_lifetime_is_fresh(apr_int64_t age,
++        apr_int64_t lifetime, apr_int64_t maxstale, apr_int64_t minfresh)
++{
++    apr_uint64_t adjusted_age;
++
++    if (age < 0 || maxstale < 0 || minfresh < 0) {
++        return 0;
++    }
++
++    adjusted_age = (apr_uint64_t)age + (apr_uint64_t)minfresh;
++    if (lifetime < 0) {
++        apr_int64_t adjusted_lifetime = lifetime + maxstale;
++
++        return adjusted_lifetime > 0
++            && adjusted_age < (apr_uint64_t)adjusted_lifetime;
++    }
++
++    return adjusted_age < (apr_uint64_t)lifetime + (apr_uint64_t)maxstale;
++}
++
+ int cache_check_freshness(cache_handle_t *h, cache_request_rec *cache,
+         request_rec *r)
+ {
+@@ -693,10 +713,14 @@ int cache_check_freshness(cache_handle_t *h, cache_request_rec *cache,
+     }
+ 
+     /* handle expiration */
+-    if (((maxage != -1) && (age < (maxage + maxstale - minfresh))) ||
++    if (((maxage >= 0)
++         && cache_freshness_lifetime_is_fresh(age, maxage, maxstale,
++                                              minfresh)) ||
+         ((smaxage == -1) && (maxage == -1) &&
+          (info->expire != APR_DATE_BAD) &&
+-         (age < (apr_time_sec(info->expire - info->date) + maxstale - minfresh)))) {
++         cache_freshness_lifetime_is_fresh(age,
++                                           apr_time_sec(info->expire - info->date),
++                                           maxstale, minfresh))) {
+ 
+         warn_head = apr_table_get(h->resp_hdrs, "Warning");

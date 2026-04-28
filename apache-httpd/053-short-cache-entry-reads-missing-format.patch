@@ -1,0 +1,18 @@
+diff --git a/modules/cache/mod_cache_socache.c b/modules/cache/mod_cache_socache.c
+index 38f1bfb..e13a836 100644
+--- a/modules/cache/mod_cache_socache.c
++++ b/modules/cache/mod_cache_socache.c
+@@ -521,6 +521,13 @@ static int open_entity(cache_handle_t *h, request_rec *r, const char *key)
+         sobj->pool = NULL;
+         return DECLINED;
+     }
++    if (buffer_len < sizeof(format)) {
++        ap_log_rerror(APLOG_MARK, APLOG_DEBUG, rc, r, APLOGNO(02353)
++                "Key found in cache but too short, ignoring: %s", key);
++        apr_pool_destroy(sobj->pool);
++        sobj->pool = NULL;
++        return DECLINED;
++    }
+ 
+     /* read the format from the cache file */
+     memcpy(&format, sobj->buffer, sizeof(format));

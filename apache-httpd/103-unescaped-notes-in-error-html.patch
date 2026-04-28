@@ -1,0 +1,46 @@
+diff --git a/modules/mappers/mod_negotiation.c b/modules/mappers/mod_negotiation.c
+index 1234567..89abcde 100644
+--- a/modules/mappers/mod_negotiation.c
++++ b/modules/mappers/mod_negotiation.c
+@@ -2633,9 +2633,9 @@ static char *make_variant_list(request_rec *r, negotiation_state *neg)
+         var_rec *variant = &((var_rec *) neg->avail_vars->elts)[i];
+         const char *filename = variant->file_name ? variant->file_name : "";
+         apr_array_header_t *languages = variant->content_languages;
+-        const char *description = variant->description
+-                                    ? variant->description
+-                                    : "";
++        const char *description = variant->description
++                                    ? ap_escape_html(r->pool, variant->description)
++                                    : "";
+
+         /* The format isn't very neat, and it would be nice to make
+          * the tags human readable (eg replace 'language en' with 'English').
+@@ -2651,15 +2651,18 @@ static char *make_variant_list(request_rec *r, negotiation_state *neg)
+
+         if (variant->mime_type && *variant->mime_type) {
+             *((const char **) apr_array_push(arr)) = ", type ";
+-            *((const char **) apr_array_push(arr)) = variant->mime_type;
++            *((const char **) apr_array_push(arr)) =
++                ap_escape_html(r->pool, variant->mime_type);
+         }
+         if (languages && languages->nelts) {
+             *((const char **) apr_array_push(arr)) = ", language ";
+-            *((const char **) apr_array_push(arr)) = apr_array_pstrcat(r->pool,
+-                                                       languages, ',');
++            *((const char **) apr_array_push(arr)) =
++                ap_escape_html(r->pool,
++                               apr_array_pstrcat(r->pool, languages, ','));
+         }
+         if (variant->content_charset && *variant->content_charset) {
+             *((const char **) apr_array_push(arr)) = ", charset ";
+-            *((const char **) apr_array_push(arr)) = variant->content_charset;
++            *((const char **) apr_array_push(arr)) =
++                ap_escape_html(r->pool, variant->content_charset);
+         }
+         if (variant->content_encoding) {
+             *((const char **) apr_array_push(arr)) = ", encoding ";
+-            *((const char **) apr_array_push(arr)) = variant->content_encoding;
++            *((const char **) apr_array_push(arr)) =
++                ap_escape_html(r->pool, variant->content_encoding);
+         }
+         *((const char **) apr_array_push(arr)) = "</li>\n";

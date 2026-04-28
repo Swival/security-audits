@@ -1,0 +1,17 @@
+diff --git a/modules/aaa/mod_auth_digest.c b/modules/aaa/mod_auth_digest.c
+index 791cec2..8856dc7 100644
+--- a/modules/aaa/mod_auth_digest.c
++++ b/modules/aaa/mod_auth_digest.c
+@@ -1397,6 +1397,12 @@ static int check_nc(const request_rec *r, const digest_header_rec *resp,
+         return OK;
+     }
+ 
++    if (snc == NULL) {
++        ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(01773)
++                      "missing nonce count");
++        return !OK;
++    }
++
+     nc = strtol(snc, &endptr, 16);
+     if (endptr < (snc+strlen(snc)) && !apr_isspace(*endptr)) {
+         ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(01773)

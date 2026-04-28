@@ -1,0 +1,29 @@
+diff --git a/modules/filters/mod_xml2enc.c b/modules/filters/mod_xml2enc.c
+index eb05c18..df7ea91 100644
+--- a/modules/filters/mod_xml2enc.c
++++ b/modules/filters/mod_xml2enc.c
+@@ -549,6 +549,12 @@ static apr_status_t xml2enc_ffunc(ap_filter_t* f, apr_bucket_brigade* bb)
+                             ap_log_rerror(APLOG_MARK, APLOG_DEBUG, rv, f->r, APLOGNO(01446)
+                                           "ap_fflush failed");
+                         apr_brigade_cleanup(ctx->bbnext);
++                        if (rv == APR_SUCCESS && insz > 0) {
++                            b = apr_bucket_heap_create(buf+(bytes - insz), insz,
++                                                       NULL, bb->bucket_alloc);
++                            APR_BRIGADE_INSERT_HEAD(bb, b);
++                        }
++                        insz = 0;
+                     }
+                 }
+             } else {
+@@ -557,6 +563,11 @@ static apr_status_t xml2enc_ffunc(ap_filter_t* f, apr_bucket_brigade* bb)
+             }
+             if (bdestroy)
+                 apr_bucket_destroy(bdestroy);
++            if (!ctx->convset && rv == APR_SUCCESS) {
++                rv = ap_pass_brigade(f->next, bb);
++                ap_remove_output_filter(f);
++                return rv;
++            }
+             if (rv != APR_SUCCESS)
+                 return rv;
+         }

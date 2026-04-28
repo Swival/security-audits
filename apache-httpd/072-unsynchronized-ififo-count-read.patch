@@ -1,0 +1,18 @@
+diff --git a/modules/http2/h2_util.c b/modules/http2/h2_util.c
+index b377ff7..7a9e17b 100644
+--- a/modules/http2/h2_util.c
++++ b/modules/http2/h2_util.c
+@@ -953,7 +953,12 @@ apr_status_t h2_ififo_term(h2_ififo *fifo)
+ 
+ int h2_ififo_count(h2_ififo *fifo)
+ {
+-    return fifo->count;
++    int n;
++
++    apr_thread_mutex_lock(fifo->lock);
++    n = fifo->count;
++    apr_thread_mutex_unlock(fifo->lock);
++    return n;
+ }
+ 
+ static apr_status_t icheck_not_empty(h2_ififo *fifo, int block)
