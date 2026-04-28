@@ -1,0 +1,17 @@
+diff --git a/modules/cache/mod_cache_disk.c b/modules/cache/mod_cache_disk.c
+index 8d17a19..352aa24 100644
+--- a/modules/cache/mod_cache_disk.c
++++ b/modules/cache/mod_cache_disk.c
+@@ -454,7 +454,11 @@ static int open_entity(cache_handle_t *h, request_rec *r, const char *key)
+ 
+     /* read the format from the cache file */
+     len = sizeof(format);
+-    apr_file_read_full(dobj->vary.fd, &format, len, &len);
++    rc = apr_file_read_full(dobj->vary.fd, &format, len, &len);
++    if (rc != APR_SUCCESS || len != sizeof(format)) {
++        apr_file_close(dobj->vary.fd);
++        return DECLINED;
++    }
+ 
+     if (format == VARY_FORMAT_VERSION) {
+         apr_array_header_t* varray;

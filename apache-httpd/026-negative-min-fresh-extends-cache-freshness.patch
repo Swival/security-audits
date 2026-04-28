@@ -1,0 +1,13 @@
+diff --git a/modules/cache/cache_util.c b/modules/cache/cache_util.c
+index fc36431..8218bac 100644
+--- a/modules/cache/cache_util.c
++++ b/modules/cache/cache_util.c
+@@ -1079,7 +1079,7 @@ int ap_cache_control(request_rec *r, cache_control_t *cc,
+                 else if (!ap_cstr_casecmpn(token, "min-fresh", 9)) {
+                     if (token[9] == '='
+                             && !apr_strtoff(&offt, token + 10, &endp, 10)
+-                            && endp > token + 10 && !*endp) {
++                            && endp > token + 10 && !*endp && offt >= 0) {
+                         cc->min_fresh = 1;
+                         cc->min_fresh_value = offt;
+                     }

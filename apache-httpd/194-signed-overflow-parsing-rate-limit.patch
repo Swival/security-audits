@@ -1,0 +1,41 @@
+diff --git a/modules/filters/mod_ratelimit.c b/modules/filters/mod_ratelimit.c
+index d16eb39..cfc7ec3 100644
+--- a/modules/filters/mod_ratelimit.c
++++ b/modules/filters/mod_ratelimit.c
+@@ -14,6 +14,8 @@
+  * limitations under the License.
+  */
+ 
++#include <limits.h>
++
+ #include "httpd.h"
+ #include "http_config.h"
+ #include "http_log.h"
+@@ -66,7 +68,7 @@ rate_limit_filter(ap_filter_t *f, apr_bucket_brigade *bb)
+     /* Set up our rl_ctx_t on first use */
+     if (ctx == NULL) {
+         const char *rl = NULL;
+-        int ratelimit;
++        apr_int64_t ratelimit;
+         int burst = 0;
+ 
+         /* no subrequests. */
+@@ -84,8 +86,8 @@ rate_limit_filter(ap_filter_t *f, apr_bucket_brigade *bb)
+         }
+         
+         /* rl is in kilo bytes / second  */
+-        ratelimit = atoi(rl) * 1024;
+-        if (ratelimit <= 0) {
++        ratelimit = apr_strtoi64(rl, NULL, 10);
++        if (ratelimit <= 0 || ratelimit > INT_MAX / 1024) {
+             /* remove ourselves */
+             ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, f->r,
+                           APLOGNO(03488) "rl: disabling: rate-limit = %s (too high?)", rl);
+@@ -108,7 +110,7 @@ rate_limit_filter(ap_filter_t *f, apr_bucket_brigade *bb)
+         ctx = apr_palloc(f->r->pool, sizeof(rl_ctx_t));
+         f->ctx = ctx;
+         ctx->state = RATE_LIMIT;
+-        ctx->speed = ratelimit;
++        ctx->speed = (int)ratelimit * 1024;
+         ctx->burst = burst;
+         ctx->do_sleep = 0;

@@ -1,0 +1,47 @@
+diff --git a/modules/proxy/mod_proxy_hcheck.c b/modules/proxy/mod_proxy_hcheck.c
+index 70f1de8..0588d69 100644
+--- a/modules/proxy/mod_proxy_hcheck.c
++++ b/modules/proxy/mod_proxy_hcheck.c
+@@ -26,6 +26,7 @@ module AP_MODULE_DECLARE_DATA proxy_hcheck_module;
+ 
+ #define HCHECK_WATHCHDOG_NAME ("_proxy_hcheck_")
+ #define HC_THREADPOOL_SIZE (16)
++#define HC_MAX_BODY_SIZE (64 * 1024)
+ 
+ /* Why? So we can easily set/clear HC_USE_THREADS during dev testing */
+ #if APR_HAS_THREADS
+@@ -794,10 +795,12 @@ static int hc_read_headers(request_rec *r)
+ static int hc_read_body(request_rec *r, apr_bucket_brigade *bb)
+ {
+     apr_status_t rv = APR_SUCCESS;
++    apr_size_t body_len = 0;
+     int seen_eos = 0;
+ 
+     do {
+         apr_size_t len = HUGE_STRING_LEN;
++        const char *data;
+ 
+         apr_brigade_cleanup(bb);
+         rv = ap_get_brigade(r->proto_input_filters, bb, AP_MODE_READBYTES,
+@@ -823,11 +826,20 @@ static int hc_read_body(request_rec *r, apr_bucket_brigade *bb)
+                 apr_bucket_delete(bucket);
+                 continue;
+             }
++            rv = apr_bucket_read(bucket, &data, &len, APR_BLOCK_READ);
++            if (rv != APR_SUCCESS) {
++                break;
++            }
++            if (len > HC_MAX_BODY_SIZE - body_len) {
++                rv = APR_ENOSPC;
++                break;
++            }
++            body_len += len;
+             APR_BUCKET_REMOVE(bucket);
+             APR_BRIGADE_INSERT_TAIL(r->kept_body, bucket);
+         }
+     }
+-    while (!seen_eos);
++    while (!seen_eos && rv == APR_SUCCESS);
+     apr_brigade_cleanup(bb);
+     return (rv == APR_SUCCESS ? OK : !OK);
+ }

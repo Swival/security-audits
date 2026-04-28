@@ -1,0 +1,13 @@
+diff --git a/modules/cache/mod_socache_memcache.c b/modules/cache/mod_socache_memcache.c
+index f122ba4..7351a84 100644
+--- a/modules/cache/mod_socache_memcache.c
++++ b/modules/cache/mod_socache_memcache.c
+@@ -306,7 +306,7 @@ static void socache_mc_status(ap_socache_instance_t *ctx, request_rec *r, int fl
+             continue;
+         if (!(flags & AP_STATUS_SHORT)) {
+             ap_rprintf(r, "<b>Version:</b> <i>%s</i> [%u bits], PID: <i>%u</i>, Uptime: <i>%u hrs</i> <br />\n",
+-                    stats->version , stats->pointer_size, stats->pid, stats->uptime/3600);
++                    ap_escape_html(r->pool, stats->version), stats->pointer_size, stats->pid, stats->uptime/3600);
+             ap_rprintf(r, "<b>Clients::</b> Structures: <i>%u</i>, Total: <i>%u</i>, Current: <i>%u</i> <br />\n",
+                     stats->connection_structures, stats->total_connections, stats->curr_connections);
+             ap_rprintf(r, "<b>Storage::</b> Total Items: <i>%u</i>, Current Items: <i>%u</i>, Bytes: <i>%" APR_UINT64_T_FMT "</i> <br />\n",

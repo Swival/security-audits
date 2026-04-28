@@ -1,0 +1,21 @@
+diff --git a/modules/arch/win32/mod_isapi.c b/modules/arch/win32/mod_isapi.c
+index a9816e5..8381fb4 100644
+--- a/modules/arch/win32/mod_isapi.c
++++ b/modules/arch/win32/mod_isapi.c
+@@ -447,12 +447,14 @@ apr_status_t isapi_lookup(apr_pool_t *p, server_rec *s, request_rec *r,
+     (*isa)->last_load_time = apr_time_now();
+     (*isa)->last_load_rv = rv;
+ 
+-    if (r && (rv == APR_SUCCESS)) {
++    if (r) {
+         /* Let others who are blocked on this particular
+          * module resume their requests, for better or worse.
+          */
+         apr_thread_rwlock_t *unlock = (*isa)->in_progress;
+-        (*isa)->in_progress = NULL;
++        if (rv == APR_SUCCESS) {
++            (*isa)->in_progress = NULL;
++        }
+         apr_thread_rwlock_unlock(unlock);
+     }
+     else if (!r && (rv != APR_SUCCESS)) {

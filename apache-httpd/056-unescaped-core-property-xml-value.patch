@@ -1,0 +1,21 @@
+diff --git a/modules/dav/main/props.c b/modules/dav/main/props.c
+index c320f8a..ad44bda 100644
+--- a/modules/dav/main/props.c
++++ b/modules/dav/main/props.c
+@@ -435,8 +435,15 @@ static dav_error * dav_insert_coreprop(dav_propdb *propdb,
+                             name, "\"/>" DEBUG_CR, NULL);
+         }
+         else if (what == DAV_PROP_INSERT_VALUE && *value != '\0') {
++            const char *xml_value = value;
++
++            if (propid == DAV_PROPID_CORE_getcontenttype
++                || propid == DAV_PROPID_CORE_getcontentlanguage) {
++                xml_value = apr_xml_quote_string(propdb->p, value, 0);
++            }
++
+             /* use D: prefix to refer to the DAV: namespace URI */
+-            s = apr_pstrcat(propdb->p, "<D:", name, ">", value, "</D:", name,
++            s = apr_pstrcat(propdb->p, "<D:", name, ">", xml_value, "</D:", name,
+                             ">" DEBUG_CR, NULL);
+         }
+         else {

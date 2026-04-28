@@ -1,0 +1,15 @@
+diff --git a/modules/filters/sed0.c b/modules/filters/sed0.c
+index a044f64..1a71931 100644
+--- a/modules/filters/sed0.c
++++ b/modules/filters/sed0.c
+@@ -295,6 +295,10 @@ swit:
+         case '{':
+             commands->rep->command = BCOM;
+             commands->rep->negfl = !(commands->rep->negfl);
++            if (commands->depth >= SED_DEPTH) {
++                command_errf(commands, SEDERR_TMOMES);
++                return -1;
++            }
+             commands->cmpend[commands->depth++] = &commands->rep->lb1;
+             commands->rep = alloc_reptr(commands);
+             commands->rep->ad1 = p;

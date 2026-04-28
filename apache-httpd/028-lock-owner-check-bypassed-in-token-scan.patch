@@ -1,0 +1,43 @@
+diff --git a/modules/dav/main/util.c b/modules/dav/main/util.c
+index 50af183..6eaa9e7 100644
+--- a/modules/dav/main/util.c
++++ b/modules/dav/main/util.c
+@@ -853,7 +853,8 @@ static dav_error * dav_process_if_header(request_rec *r, dav_if_header **p_ih)
+ 
+ static int dav_find_submitted_locktoken(const dav_if_header *if_header,
+                                         const dav_lock *lock_list,
+-                                        const dav_hooks_locks *locks_hooks)
++                                        const dav_hooks_locks *locks_hooks,
++                                        const char *auth_user)
+ {
+     for (; if_header != NULL; if_header = if_header->next) {
+         const dav_if_state_list *state_list;
+@@ -882,7 +883,9 @@ static int dav_find_submitted_locktoken(const dav_if_header *if_header,
+                 */
+                 for (lock = lock_list; lock != NULL; lock = lock->next) {
+ 
+-                    if (!(*locks_hooks->compare_locktoken)(state_list->locktoken, lock->locktoken)) {
++                    if (!(*locks_hooks->compare_locktoken)(state_list->locktoken, lock->locktoken)
++                        && (!lock->auth_user
++                            || (auth_user && !strcmp(lock->auth_user, auth_user)))) {
+                         return 1;
+                     }
+                 }
+@@ -1383,7 +1386,7 @@ static dav_error * dav_validate_resource_state(apr_pool_t *p,
+             ** which implies locks_hooks != NULL.
+             */
+             if (dav_find_submitted_locktoken(if_header, lock_list,
+-                                             locks_hooks)) {
++                                             locks_hooks, r->user)) {
+                 /*
+                 ** We found a match! We're set... none of the If: header
+                 ** assertions apply (implicit success), and the If: header
+@@ -1442,7 +1445,7 @@ static dav_error * dav_validate_resource_state(apr_pool_t *p,
+     ** Note that seen_locktoken == 0 implies lock_list != NULL which implies
+     ** locks_hooks != NULL.
+     */
+-    if (dav_find_submitted_locktoken(if_header, lock_list, locks_hooks)) {
++    if (dav_find_submitted_locktoken(if_header, lock_list, locks_hooks, r->user)) {
+         /*
+         ** We found a match! We're set... we have a matching state list,
+         ** and the If: header specified the locktoken somewhere. We're done.

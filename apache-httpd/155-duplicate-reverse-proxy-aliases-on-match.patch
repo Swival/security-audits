@@ -1,0 +1,19 @@
+diff --git a/modules/proxy/mod_proxy_express.c b/modules/proxy/mod_proxy_express.c
+index 5d458c4..411e420 100644
+--- a/modules/proxy/mod_proxy_express.c
++++ b/modules/proxy/mod_proxy_express.c
+@@ -203,13 +203,12 @@ static int xlate_name(request_rec *r)
+      */
+     for (i = 0; i < dconf->raliases->nelts; i++, ralias++) {
+         if (strcasecmp(backend, ralias->real) == 0) {
+-            ralias = NULL;
+             break;
+         }
+     }
+ 
+     /* Didn't find one... add it */
+-    if (!ralias) {
++    if (i >= dconf->raliases->nelts) {
+         ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, APLOGNO(01006)
+                       "proxy_express: adding PPR entry");
+         ralias = apr_array_push(dconf->raliases);

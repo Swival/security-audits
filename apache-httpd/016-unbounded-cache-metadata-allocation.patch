@@ -1,0 +1,16 @@
+diff --git a/modules/cache/mod_cache_disk.c b/modules/cache/mod_cache_disk.c
+index 8d17a19..43ce22e 100644
+--- a/modules/cache/mod_cache_disk.c
++++ b/modules/cache/mod_cache_disk.c
+@@ -238,6 +238,11 @@ static int file_cache_recall_mydata(apr_file_t *fd, cache_info *info,
+ 
+     memcpy(&info->control, &dobj->disk_info.control, sizeof(cache_control_t));
+ 
++    if (dobj->disk_info.name_len == (apr_size_t)-1 ||
++            dobj->disk_info.name_len != strlen(dobj->name)) {
++        return APR_EGENERAL;
++    }
++
+     /* Note that we could optimize this by conditionally doing the palloc
+      * depending upon the size. */
+     urlbuff = apr_palloc(r->pool, dobj->disk_info.name_len + 1);

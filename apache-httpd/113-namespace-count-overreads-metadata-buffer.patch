@@ -1,0 +1,55 @@
+diff --git a/modules/dav/fs/dbm.c b/modules/dav/fs/dbm.c
+index 39ab4ad..c5f84ca 100644
+--- a/modules/dav/fs/dbm.c
++++ b/modules/dav/fs/dbm.c
+@@ -473,6 +473,17 @@ static dav_error * dav_propdb_open(apr_pool_t *pool,
+         dav_propdb_metadata m;
+         long ns;
+         const char *uri;
++        const char *end;
++
++        if (value.dsize < sizeof(m)) {
++            dav_dbm_freedatum(db, value);
++            dav_dbm_close(db);
++
++            return dav_new_error(pool, HTTP_INTERNAL_SERVER_ERROR,
++                                 DAV_ERR_PROP_BAD_MAJOR, 0,
++                                 "Prop database metadata is corrupt "
++                                 "and cannot be used.");
++        }
+ 
+         dav_set_bufsize(pool, &db->ns_table, value.dsize);
+         memcpy(db->ns_table.buf, value.dptr, value.dsize);
+@@ -488,19 +499,30 @@ static dav_error * dav_propdb_open(apr_pool_t *pool,
+         }
+         db->version = m.minor;
+         db->ns_count = ntohs(m.ns_count);
+-
+-        dav_dbm_freedatum(db, value);
++        end = db->ns_table.buf + db->ns_table.cur_len;
+ 
+         /* create db->uri_index */
+         for (ns = 0, uri = db->ns_table.buf + sizeof(dav_propdb_metadata);
+              ns++ < db->ns_count;
+              uri += strlen(uri) + 1) {
+ 
++            if (uri >= end || memchr(uri, '\0', end - uri) == NULL) {
++                dav_dbm_freedatum(db, value);
++                dav_dbm_close(db);
++
++                return dav_new_error(pool, HTTP_INTERNAL_SERVER_ERROR,
++                                     DAV_ERR_PROP_BAD_MAJOR, 0,
++                                     "Prop database metadata is corrupt "
++                                     "and cannot be used.");
++            }
++
+             /* we must copy the key, in case ns_table.buf moves */
+             apr_hash_set(db->uri_index,
+                          apr_pstrdup(pool, uri), APR_HASH_KEY_STRING,
+                          (void *)ns);
+         }
++
++        dav_dbm_freedatum(db, value);
+     }
+ 
+     *pdb = db;

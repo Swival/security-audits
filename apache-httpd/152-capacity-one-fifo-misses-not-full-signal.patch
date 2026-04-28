@@ -1,0 +1,17 @@
+diff --git a/modules/http2/h2_proxy_util.c b/modules/http2/h2_proxy_util.c
+index bb384b9..a239b00 100644
+--- a/modules/http2/h2_proxy_util.c
++++ b/modules/http2/h2_proxy_util.c
+@@ -1276,9 +1276,9 @@ static void *pull_head(h2_proxy_fifo *fifo)
+     --fifo->count;
+     if (fifo->count > 0) {
+         fifo->head = nth_index(fifo, 1);
+-        if (fifo->count+1 == fifo->nelems) {
+-            apr_thread_cond_broadcast(fifo->not_full);
+-        }
++    }
++    if (fifo->count+1 == fifo->nelems) {
++        apr_thread_cond_broadcast(fifo->not_full);
+     }
+     return elem;
+ }

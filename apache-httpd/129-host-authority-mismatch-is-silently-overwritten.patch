@@ -1,0 +1,15 @@
+diff --git a/modules/http2/h2_request.c b/modules/http2/h2_request.c
+index 6373e0a..e8b2863 100644
+--- a/modules/http2/h2_request.c
++++ b/modules/http2/h2_request.c
+@@ -210,6 +210,10 @@ apr_status_t h2_request_end_headers(h2_request *req, apr_pool_t *pool,
+         req->authority = host;
+     }
+     else {
++        const char *host = apr_table_get(req->headers, "Host");
++        if (host && strcmp(req->authority, host)) {
++            return APR_BADARG;
++        }
+         apr_table_setn(req->headers, "Host", req->authority);
+     }
+     req->raw_bytes += raw_bytes;

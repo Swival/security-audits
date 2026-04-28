@@ -1,0 +1,14 @@
+diff --git a/modules/aaa/mod_auth_basic.c b/modules/aaa/mod_auth_basic.c
+index c8c9492..8a8b068 100644
+--- a/modules/aaa/mod_auth_basic.c
++++ b/modules/aaa/mod_auth_basic.c
+@@ -481,8 +481,7 @@ static int authenticate_basic_fake(request_rec *r)
+     apr_table_setn(r->headers_in, "Authorization", auth_line);
+ 
+     ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, r, APLOGNO(02457)
+-                  "AuthBasicFake: \"Authorization: %s\"",
+-                  auth_line);
++                  "AuthBasicFake: Authorization header set");
+ 
+     return OK;
+ }

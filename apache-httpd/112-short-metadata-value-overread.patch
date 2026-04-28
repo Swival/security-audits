@@ -1,0 +1,20 @@
+diff --git a/modules/dav/fs/dbm.c b/modules/dav/fs/dbm.c
+index 39ab4ad..97e74aa 100644
+--- a/modules/dav/fs/dbm.c
++++ b/modules/dav/fs/dbm.c
+@@ -477,6 +477,15 @@ static dav_error * dav_propdb_open(apr_pool_t *pool,
+         dav_set_bufsize(pool, &db->ns_table, value.dsize);
+         memcpy(db->ns_table.buf, value.dptr, value.dsize);
+ 
++        if (value.dsize < sizeof(m)) {
++            dav_dbm_close(db);
++
++            return dav_new_error(pool, HTTP_INTERNAL_SERVER_ERROR,
++                                 DAV_ERR_PROP_BAD_MAJOR, 0,
++                                 "Prop database has the wrong major "
++                                 "version number and cannot be used.");
++        }
++
+         memcpy(&m, value.dptr, sizeof(m));
+         if (m.major != DAV_DBVSN_MAJOR) {
+             dav_dbm_close(db);

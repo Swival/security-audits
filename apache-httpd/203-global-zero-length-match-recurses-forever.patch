@@ -1,0 +1,13 @@
+diff --git a/server/util_regex.c b/server/util_regex.c
+index 5405f8d..c4056a7 100644
+--- a/server/util_regex.c
++++ b/server/util_regex.c
+@@ -162,7 +162,7 @@ AP_DECLARE(int) ap_rxplus_exec(apr_pool_t *pool, ap_rxplus_t *rx,
+         newl = strlen(*newpattern);
+         diffsz = newl - oldl;
+         remainder = pattern + startl + oldl;
+-        if (rx->flags & AP_REG_MULTI) {
++        if ((rx->flags & AP_REG_MULTI) && oldl > 0) {
+             /* recurse to do any further matches */
+             ret += ap_rxplus_exec(pool, rx, remainder, &subs);
+             if (ret > 1) {

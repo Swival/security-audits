@@ -1,0 +1,19 @@
+diff --git a/modules/http2/h2_mplx.c b/modules/http2/h2_mplx.c
+index f9616ab..8ca8391 100644
+--- a/modules/http2/h2_mplx.c
++++ b/modules/http2/h2_mplx.c
+@@ -501,12 +501,12 @@ void h2_mplx_c1_destroy(h2_mplx *m)
+ 
+     ap_log_cerror(APLOG_MARK, APLOG_TRACE2, 0, m->c1,
+                   H2_MPLX_MSG(m, "start release"));
++    H2_MPLX_ENTER_ALWAYS(m);
++
+     /* How to shut down a h2 connection:
+      * 0. abort and tell the workers that no more work will come from us */
+     m->shutdown = m->aborted = 1;
+ 
+-    H2_MPLX_ENTER_ALWAYS(m);
+-
+     /* While really terminating any c2 connections, treat the master
+      * connection as aborted. It's not as if we could send any more data
+      * at this point. */

@@ -1,0 +1,21 @@
+diff --git a/server/mpm/winnt/child.c b/server/mpm/winnt/child.c
+index 05151a8..3aa09a8 100644
+--- a/server/mpm/winnt/child.c
++++ b/server/mpm/winnt/child.c
+@@ -910,8 +910,14 @@ static void create_listener_thread(void)
+              * To convert to CreateThread, the returned handle cannot be
+              * ignored, it must be closed/joined.
+              */
+-            _beginthreadex(NULL, 65536, winnt_accept,
+-                           (void *) lr, stack_res_flag, &tid);
++            HANDLE thread_handle = (HANDLE)_beginthreadex(NULL, 65536,
++                                                          winnt_accept,
++                                                          (void *) lr,
++                                                          stack_res_flag,
++                                                          &tid);
++            if (thread_handle) {
++                CloseHandle(thread_handle);
++            }
+         }
+     }
+ }

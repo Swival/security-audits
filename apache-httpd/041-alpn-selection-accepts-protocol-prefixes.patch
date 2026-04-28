@@ -1,0 +1,13 @@
+diff --git a/modules/ssl/ssl_engine_io.c b/modules/ssl/ssl_engine_io.c
+index 0be5318..968d751 100644
+--- a/modules/ssl/ssl_engine_io.c
++++ b/modules/ssl/ssl_engine_io.c
+@@ -1395,7 +1395,7 @@ static apr_status_t ssl_io_filter_handshake(ssl_filter_ctx_t *filter_ctx)
+                 int i, found = 0;
+                 for (i = 0; !found && i < alpn_proposed->nelts; ++i) {
+                     proto = APR_ARRAY_IDX(alpn_proposed, i, const char *);
+-                    found = !strncmp(selected, proto, slen);
++                    found = (slen == strlen(proto) && !strncmp(selected, proto, slen));
+                 }
+                 if (!found) {
+                     /* From a conforming peer, this should never happen,

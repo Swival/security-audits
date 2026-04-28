@@ -1,0 +1,14 @@
+diff --git a/modules/arch/unix/mod_unixd.c b/modules/arch/unix/mod_unixd.c
+index 1baa278..7cd15d1 100644
+--- a/modules/arch/unix/mod_unixd.c
++++ b/modules/arch/unix/mod_unixd.c
+@@ -254,6 +254,9 @@ unixd_set_chroot_dir(cmd_parms *cmd, void *dummy,
+     if (err != NULL) {
+         return err;
+     }
++    if (arg[0] != '/') {
++        return "ChrootDir must be an absolute path";
++    }
+     if (!ap_is_directory(cmd->pool, arg)) {
+         return "ChrootDir must be a valid directory";
+     }

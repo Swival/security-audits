@@ -1,0 +1,49 @@
+diff --git a/server/config.c b/server/config.c
+index 635b65d..c6663ab 100644
+--- a/server/config.c
++++ b/server/config.c
+@@ -2006,10 +2006,12 @@ AP_CORE_DECLARE(int) ap_parse_htaccess(ap_conf_vector_t **result,
+     apr_status_t status;
+ 
+     /* firstly, search cache */
+-    for (cache = r->htaccess; cache != NULL; cache = cache->next) {
+-        if (cache->override == override && strcmp(cache->dir, d) == 0) {
+-            *result = cache->htaccess;
+-            return OK;
++    if (override_list == NULL) {
++        for (cache = r->htaccess; cache != NULL; cache = cache->next) {
++            if (cache->override == override && strcmp(cache->dir, d) == 0) {
++                *result = cache->htaccess;
++                return OK;
++            }
+         }
+     }
+ 
+@@ -2066,16 +2068,18 @@ AP_CORE_DECLARE(int) ap_parse_htaccess(ap_conf_vector_t **result,
+         }
+     }
+ 
+-    /* cache it */
+-    new = apr_palloc(r->pool, sizeof(struct htaccess_result));
+-    new->dir = parms.path;
+-    new->override = override;
+-    new->override_opts = override_opts;
+-    new->htaccess = dc;
++    if (override_list == NULL) {
++        /* cache it */
++        new = apr_palloc(r->pool, sizeof(struct htaccess_result));
++        new->dir = parms.path;
++        new->override = override;
++        new->override_opts = override_opts;
++        new->htaccess = dc;
+ 
+-    /* add to head of list */
+-    new->next = r->htaccess;
+-    r->htaccess = new;
++        /* add to head of list */
++        new->next = r->htaccess;
++        r->htaccess = new;
++    }
+ 
+     return OK;
+ }

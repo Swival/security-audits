@@ -1,0 +1,12 @@
+diff --git a/support/win32/wintty.c b/support/win32/wintty.c
+index 684ce5b..0b914c5 100644
+--- a/support/win32/wintty.c
++++ b/support/win32/wintty.c
+@@ -246,7 +246,7 @@ int main(int argc, char** argv)
+         char *appname = NULL;
+         char *cmdline = GetCommandLine();
+ 
+-        if (!GetModuleFileName(NULL, appbuff, sizeof(appbuff))) {
++        if (GetModuleFileName(NULL, appbuff, sizeof(appbuff))) {
+             appname = appbuff;
+         }

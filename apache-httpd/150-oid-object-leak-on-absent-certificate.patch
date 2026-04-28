@@ -1,0 +1,11 @@
+diff --git a/modules/ssl/ssl_engine_vars.c b/modules/ssl/ssl_engine_vars.c
+index 4060c0f..1b28bae 100644
+--- a/modules/ssl/ssl_engine_vars.c
++++ b/modules/ssl/ssl_engine_vars.c
+@@ -1072,6 +1072,7 @@ apr_array_header_t *ssl_ext_list(apr_pool_t *p, conn_rec *c, int peer,
+ 
+     xs = peer ? SSL_get_peer_certificate(ssl) : SSL_get_certificate(ssl);
+     if (xs == NULL) {
++        ASN1_OBJECT_free(oid);
+         return NULL;
+     }

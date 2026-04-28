@@ -1,0 +1,23 @@
+diff --git a/modules/filters/mod_ratelimit.c b/modules/filters/mod_ratelimit.c
+index d16eb39..1d37aea 100644
+--- a/modules/filters/mod_ratelimit.c
++++ b/modules/filters/mod_ratelimit.c
+@@ -96,12 +96,16 @@ rate_limit_filter(ap_filter_t *f, apr_bucket_brigade *bb)
+         /* Configuration: optional initial burst */
+         rl = apr_table_get(f->r->subprocess_env, "rate-initial-burst");
+         if (rl != NULL) {
+-            burst = atoi(rl) * 1024;
+-            if (burst <= 0) {
++            apr_int64_t burst_kb = apr_atoi64(rl);
++
++            if (burst_kb <= 0 || burst_kb > APR_INT32_MAX / 1024) {
+                ap_log_rerror(APLOG_MARK, APLOG_INFO, 0, f->r,
+                              APLOGNO(03489) "rl: disabling burst: rate-initial-burst = %s (too high?)", rl);
+                burst = 0;
+             }
++            else {
++                burst = (int)(burst_kb * 1024);
++            }
+         }
+ 
+         /* Set up our context */

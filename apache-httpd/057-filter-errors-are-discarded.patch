@@ -1,0 +1,12 @@
+diff --git a/modules/filters/mod_ext_filter.c b/modules/filters/mod_ext_filter.c
+index 6a7c9e4..3eaf8d2 100644
+--- a/modules/filters/mod_ext_filter.c
++++ b/modules/filters/mod_ext_filter.c
+@@ -880,6 +880,7 @@ static apr_status_t ef_output_filter(ap_filter_t *f, apr_bucket_brigade *bb)
+     if (rv != APR_SUCCESS) {
+         ap_log_rerror(APLOG_MARK, APLOG_ERR, rv, r, APLOGNO(01468)
+                       "ef_unified_filter() failed");
++        return rv;
+     }
+ 
+     if ((rv = ap_pass_brigade(f->next, bb)) != APR_SUCCESS) {

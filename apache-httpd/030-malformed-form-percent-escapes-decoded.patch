@@ -1,0 +1,15 @@
+diff --git a/server/util.c b/server/util.c
+index 11d0e40..7056af5 100644
+--- a/server/util.c
++++ b/server/util.c
+@@ -2870,6 +2870,10 @@ AP_DECLARE(int) ap_parse_form_data(request_rec *r, ap_filter_t *f,
+                 }
+                 if (FORM_PERCENTB == percent) {
+                     escaped_char[1] = c;
++                    if (!apr_isxdigit(escaped_char[0]) || !apr_isxdigit(escaped_char[1])) {
++                        apr_brigade_destroy(bb);
++                        return HTTP_BAD_REQUEST;
++                    }
+                     c = x2c(escaped_char);
+                     percent = FORM_NORMAL;
+                 }
