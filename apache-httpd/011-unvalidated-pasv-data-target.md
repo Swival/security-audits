@@ -72,6 +72,18 @@ Because the original code used the PASV host literally, an FTP server reached by
 
 EPSV handling already follows the safer model: it uses the control connection peer address and only applies the server-supplied port. PASV lacked equivalent protection.
 
+## Practical Exploit Scenario
+
+A corporate forward proxy is configured with `ProxyRequests On` and `mod_proxy_ftp` enabled so internal users can browse FTP archives through the standard HTTP proxy. An external attacker hosts a cooperating FTP server at `ftp://files.attacker.example` and convinces (or simply waits for) any internal client to fetch a URL such as `ftp://files.attacker.example/anything.txt` through the proxy.
+
+The malicious FTP server replies normally to USER, PASS, TYPE, and SIZE, then refuses EPSV with a `500` response so the proxy falls back to PASV. Its PASV reply forges an internal target:
+
+```text
+227 Entering Passive Mode (10,0,0,5,24,5)
+```
+
+The proxy parses `10.0.0.5:6149` from the response, calls `apr_sockaddr_info_get` on the attacker-supplied octets, and opens an outbound TCP data connection from the proxy host to the internal address. Anything that target service writes as a banner or initial response (Redis `*1\r\n$4\r\nPING`, SSH `SSH-2.0-OpenSSH...`, internal HTTP error pages, mongod handshake, etc.) is then forwarded to the attacker as the FTP response body. Repeated requests with different forged octets sweep the internal subnet, identify reachable services, and exfiltrate first-response bytes that frequently leak software versions, hostnames, and authentication challenges. The attack requires no proxy credentials beyond what the forward-proxy ACL allows, and it pivots from any external attacker who can lure a single proxied FTP fetch.
+
 ## Fix Requirement
 
 PASV handling must not allow the remote FTP server to select an arbitrary data connection host.

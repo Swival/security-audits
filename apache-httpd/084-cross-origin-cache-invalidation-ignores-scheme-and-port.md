@@ -72,6 +72,28 @@ The code validates only hostname but then invalidates a key that is canonicalize
 
 This is not merely a logging or accounting issue: the provider state is changed by `invalidate_entity()`, and later cache lookup behavior changes because invalidated entries are considered stale.
 
+## Practical Exploit Scenario
+
+A media site fronts both a public marketing site on `http://example.test:80` and a higher-cost dynamic application on `http://example.test:8080` (or, more commonly, `https://example.test:443` and `http://example.test:80`) through a single `mod_cache` instance with `CacheEnable disk /`. The expensive endpoint serves dashboards generated from large database queries, whose cached representations are critical for keeping origin load manageable. Cache hit ratio there is normally above 95%.
+
+An attacker observes that the marketing vhost on port 80 accepts unsafe requests at `/contact` (form submission, comment posting, or any endpoint returning 201/200 with a server-emitted `Location` header). They can also influence the response `Location`, either because the marketing endpoint reflects a user-supplied path, because rewrite rules synthesize it from query parameters, or simply because the application is co-administered and the attacker has push access to its rewrite map. They send:
+
+```http
+POST /update HTTP/1.1
+Host: example.test:80
+Content-Length: 0
+
+```
+
+The application responds:
+
+```
+HTTP/1.1 201 Created
+Location: http://example.test:8080/dashboards/finance.json
+```
+
+`cache_invalidate` parses the response `Location`, derives the cache key for `http://example.test:8080/dashboards/finance.json`, and invalidates that entity, despite the request having targeted port 80. The next legitimate user requesting the dashboard misses the cache and forces a full origin fetch. Repeating the POST on a loop, with different `Location` values pointing at every popular cached resource on the high-cost vhost, holds the entire app's cache empty. Origin load spikes, latency degrades for every customer, and revenue-impacting dashboards stall under origin contention. The attack costs the attacker only one trivial POST per invalidation and never has to touch the protected origin directly.
+
 ## Fix Requirement
 
 Before invalidating cache keys derived from `Location` or `Content-Location`, require equivalence of:

@@ -49,6 +49,23 @@ A `Not <locktoken>` assertion means the client predicates the request on that lo
 
 Counting `Not` tokens as submitted tokens violates the lock validation requirement and can bypass the normal positive-token path where `auth_user` ownership is checked while evaluating a matching lock-token state.
 
+## Practical Exploit Scenario
+
+A team uses the WebDAV server hosted at `dav.example` for collaborative document editing. When a user opens `/dav/quarterly-report.docx` in a desktop editor, the editor takes an exclusive WebDAV lock and obtains an opaque lock token. The token is intentionally hidden from other clients so they cannot impersonate the lock holder. Concurrent editors are expected to receive `423 Locked` until the lock is released or its owner submits the token.
+
+A second user (a teammate, a hostile insider, or any unauthenticated attacker if the deployment grants `Require all granted`) wants to overwrite the locked document without ever obtaining the legitimate token. The attacker observes that they have learned the *existence* of a lock through `PROPFIND`'s `lockdiscovery`, but not the token value. They issue:
+
+```http
+PUT /dav/quarterly-report.docx HTTP/1.1
+Host: dav.example
+If: <http://dav.example/dav/elsewhere> (Not <opaquelocktoken:00000000-0000-0000-0000-000000000000>)
+Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+
+<malicious or destructive payload>
+```
+
+The tagged list points at an unrelated resource and contains only a negated, all-zero token. Because the resource has no submitted token in any normally-evaluated tagged list, the validator falls back to scanning all parsed `If` states. The negated state is treated as a submitted opaquelock and trivially "matches" any lock whose token is *not* the all-zero placeholder. Validation succeeds, the server returns `204 No Content`, and the locked file is overwritten while the original editor still believes their lock is enforced. There is no audit trail of an unlock, no token theft, and the attacker never had the real token.
+
 ## Fix Requirement
 
 Only positive opaquelock states may satisfy the submitted-lock-token requirement.

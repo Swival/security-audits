@@ -62,6 +62,30 @@ Therefore `urlen - pglen == -14`, so the expression evaluates a pointer equivale
 
 `r->uri`, `r->filename`, and `r->path_info` are derived from request-controlled routing state and can reach `check_speling` under normal server configuration. The code assumes `postgood` is no longer than `r->uri` but does not validate that invariant before pointer arithmetic. In C, forming and dereferencing a pointer before the object is undefined behavior and can cause a crash or denial of service depending on allocator layout.
 
+## Practical Exploit Scenario
+
+A site uses `mod_speling` with `CheckSpelling On` to forgive typos on user-facing URLs (a common ergonomic choice on community sites and documentation portals). The administrator also publishes content via `Alias` directives that point at deeply nested filesystem paths, for example:
+
+```apache
+Alias /s "/srv/uploads/long-customer-bucket-prefix-2026-q1-archive"
+
+<Directory "/srv/uploads">
+    CheckSpelling On
+    Require all granted
+</Directory>
+```
+
+An unauthenticated attacker discovers the alias and sends:
+
+```http
+GET /s/p HTTP/1.1
+Host: example.test
+```
+
+The aliased file does not exist, so `mod_speling` is invoked. Internally `r->uri` is the short `/s/p` (4 bytes) while `postgood` becomes the alias basename joined with `path_info`, here `long-customer-bucket-prefix-2026-q1-archive/p` (45 bytes). The expression `r->uri + (urlen - pglen)` evaluates to a pointer 41 bytes *before* the URI buffer. `strcmp` then walks backward through whatever happens to live in the request pool: pool node headers, prior request strings, allocator metadata, or guard pages.
+
+On hardened builds (ASan, FORTIFY, libc canaries, or pool guard pages) the read faults and kills the worker. The attacker scripts the request in a tight loop and exhausts every MPM child until the server stops accepting connections, all without any credentials, valid path knowledge, or large payload. On stock builds the read is silent but unstable: occasional false matches in `strcmp` change the spelling-correction outcome, occasional alignment-sensitive crashes still bring workers down, and any future hardening enables the DoS unconditionally. Because `Alias` paths longer than the request URI are extremely common on real servers (anything aliased into a deeply nested data directory satisfies the precondition), the trigger does not require a contrived configuration.
+
 ## Fix Requirement
 
 Before computing or using `r->uri + (urlen - pglen)`, reject the request when `pglen > urlen`.
