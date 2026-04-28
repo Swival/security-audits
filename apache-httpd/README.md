@@ -4,9 +4,9 @@ Security audit of the Apache HTTP Server, covering the core request pipeline, au
 
 ## Summary
 
-**Total retained findings: 74** -- High: 11, Medium: 49, Low: 14
+**Total retained findings: 56** -- High: 11, Medium: 39, Low: 6
 
-This index has been reviewed to retain findings that are valid and practical security concerns. Reports that depended only on administrator-authored configuration, corrupted server-owned state, trusted module/hook misuse, obsolete platform edge cases, OOM-only behavior, or expected directive semantics were removed.
+This index has been reviewed to retain findings that are valid and practical security concerns. Reports that depended only on administrator-authored configuration, corrupted server-owned state, trusted module/hook misuse, obsolete platform edge cases, OOM-only behavior, or expected directive semantics were removed, along with generic logic and error-handling bugs that lack any plausible attacker leverage.
 
 ## Remote Exploitability
 
@@ -39,15 +39,10 @@ These findings require a non-default module/directive, a configured backend, del
 - [024](024-null-nonce-count-parsing.md) - Null nonce-count parsing (Medium)
 - [025](025-signed-overflow-in-freshness-calculation.md) - Signed Overflow In Freshness Calculation (Medium)
 - [029](029-per-directory-passphrase-directive-executes-commands.md) - Per-Directory Passphrase Directive Executes Commands (Medium)
-- [031](031-subrequest-leak-in-ssi-include.md) - SSI Include Subrequest Pool Leak (Low)
-- [033](033-short-write-reported-successful.md) - Short Write Reported Successful (Medium)
-- [034](034-short-writev-reported-successful.md) - Short writev reported successful (Medium)
 - [035](035-uninitialized-pid-cleanup.md) - Uninitialized PID Cleanup (Medium)
 - [041](041-alpn-selection-accepts-protocol-prefixes.md) - ALPN selection accepts protocol prefixes (Medium)
 - [048](048-unescaped-health-check-expression-in-manager-html.md) - Unescaped Health Check Expression In Manager HTML (Medium)
 - [056](056-unescaped-core-property-xml-value.md) - Unescaped Core Property XML Value (Medium)
-- [057](057-filter-errors-are-discarded.md) - filter errors are discarded (Medium)
-- [058](058-nghttp2-consume-errors-ignored.md) - nghttp2 consume errors ignored (Low)
 - [059](059-unbounded-fastcgi-header-buffering.md) - Unbounded FastCGI Header Buffering (Medium)
 - [061](061-missing-busy-field-check-before-atoi.md) - Missing Busy/Ready Field Check Before atoi (Medium)
 - [063](063-per-directory-directive-enables-server-forward-proxy.md) - Per-Directory H2ProxyRequests Enables Server Forward Proxy (Medium)
@@ -67,19 +62,10 @@ These findings require a non-default module/directive, a configured backend, del
 - [109](109-unchecked-uri-slash-in-key-construction.md) - Unchecked URI Slash in Authn Socache Key Construction (Medium)
 - [117](117-input-filtering-bypass-by-read-mode.md) - InputSed filtering bypass by read mode (Medium)
 - [120](120-ocsp-response-times-accepted-without-validity-check.md) - OCSP response times accepted without validity check (Medium)
-- [124](124-unchecked-bucket-read-in-request-inflate.md) - Unchecked Bucket Read In Request Inflate (Medium)
-- [125](125-unchecked-bucket-read-in-proxy-inflate.md) - Unchecked Bucket Read In Proxy Inflate (Medium)
 - [137](137-fake-authorization-header-logged.md) - Fake Authorization Header Logged (Medium)
-- [140](140-stale-provider-match-state.md) - Stale Provider Match State (Medium)
-- [151](151-termination-does-not-wake-fifo-waiters.md) - FIFO Termination Does Not Wake Blocked Waiters (Medium)
-- [152](152-capacity-one-fifo-misses-not-full-signal.md) - Capacity-One FIFO Misses `not_full` Signal (Medium)
 - [153](153-negative-ready-inflates-slot-total.md) - Negative Ready Inflates Slot Total (Medium)
-- [154](154-unbounded-ready-conversion.md) - Unbounded Ready Conversion (Low)
-- [159](159-wrong-certificate-index-during-freeze.md) - Wrong Certificate Index During Freeze (Low)
 - [161](161-infinite-loop-on-empty-backreference-star.md) - Infinite Loop On Empty Starred Backreference (Medium)
-- [166](166-unchecked-crypt-result-reaches-strcmp.md) - unchecked crypt result reaches strcmp (Low)
 - [167](167-unescaped-imagemap-comments-in-html-menu.md) - Unescaped Imagemap Comments in HTML Menu (Medium)
-- [170](170-authz-dereference-after-failed-retrieval.md) - authz dereference after failed retrieval (Low)
 - [174](174-header-length-check-omits-header-bytes.md) - Header Length Check Omits Header Bytes (High)
 - [175](175-uint8-getter-reads-at-message-end.md) - uint8 getter reads at message end (Medium)
 - [176](176-string-read-ignores-declared-message-length.md) - string read ignores declared message length (Medium)
@@ -87,17 +73,13 @@ These findings require a non-default module/directive, a configured backend, del
 - [195](195-signed-overflow-parsing-initial-burst.md) - signed overflow parsing initial burst (Low)
 - [196](196-output-buffer-length-not-adjusted-after-skip.md) - Output Buffer Length Not Adjusted After Skip (High)
 - [197](197-null-convset-retained-in-conversion-loop.md) - null convset retained in conversion loop (Medium)
-- [202](202-substitution-n-flag-dereferences-null-pmatch.md) - substitution n flag dereferences null pmatch (Medium)
-- [203](203-global-zero-length-match-recurses-forever.md) - Global Zero-Length Match Recurses Forever (Medium)
 
 ### Local or platform specific
 
-These findings are not directly remotely exploitable, but remain practical for local support tooling, Windows/ISAPI deployments, chroot startup, or setuid helper boundaries:
+These findings are not directly remotely exploitable, but remain practical for local support tooling or setuid helper boundaries:
 
 - [021](021-docroot-prefix-bypass.md) - docroot prefix bypass (High)
-- [022](022-request-load-failure-leaks-write-lock.md) - Request Load Failure Leaks Write Lock (Low)
 - [136](136-newline-injection-in-digest-file-records.md) - Newline Injection In Digest File Records (Low)
-- [158](158-relative-chrootdir-re-resolution.md) - Relative ChrootDir Re-Resolution (Low)
 
 ## Findings
 
@@ -139,7 +121,6 @@ These findings are not directly remotely exploitable, but remain practical for l
 | [095](095-invalid-pointer-for-empty-header-value.md) | Invalid Pointer For Empty Header Value | Low |
 | [096](096-empty-response-header-underflows-pointer.md) | Empty Response Header Underflows Pointer | Low |
 | [153](153-negative-ready-inflates-slot-total.md) | Negative Ready Inflates Slot Total | Medium |
-| [154](154-unbounded-ready-conversion.md) | Unbounded Ready Conversion | Low |
 | [174](174-header-length-check-omits-header-bytes.md) | Header Length Check Omits Header Bytes | High |
 | [175](175-uint8-getter-reads-at-message-end.md) | uint8 getter reads at message end | Medium |
 | [176](176-string-read-ignores-declared-message-length.md) | string read ignores declared message length | Medium |
@@ -148,12 +129,9 @@ These findings are not directly remotely exploitable, but remain practical for l
 
 | # | Finding | Severity |
 |---|---------|----------|
-| [058](058-nghttp2-consume-errors-ignored.md) | nghttp2 consume errors ignored | Low |
 | [063](063-per-directory-directive-enables-server-forward-proxy.md) | Per-Directory H2ProxyRequests Enables Server Forward Proxy | Medium |
 | [064](064-unbounded-priority-recursion.md) | Unbounded HTTP/2 Priority Recursion | Medium |
 | [129](129-host-authority-mismatch-is-silently-overwritten.md) | Host authority mismatch is silently overwritten | Medium |
-| [151](151-termination-does-not-wake-fifo-waiters.md) | FIFO Termination Does Not Wake Blocked Waiters | Medium |
-| [152](152-capacity-one-fifo-misses-not-full-signal.md) | Capacity-One FIFO Misses `not_full` Signal | Medium |
 
 ### Cache
 
@@ -174,8 +152,6 @@ These findings are not directly remotely exploitable, but remain practical for l
 | # | Finding | Severity |
 |---|---------|----------|
 | [120](120-ocsp-response-times-accepted-without-validity-check.md) | OCSP response times accepted without validity check | Medium |
-| [159](159-wrong-certificate-index-during-freeze.md) | Wrong Certificate Index During Freeze | Low |
-| [170](170-authz-dereference-after-failed-retrieval.md) | authz dereference after failed retrieval | Low |
 
 ### Session
 
@@ -187,15 +163,10 @@ These findings are not directly remotely exploitable, but remain practical for l
 
 | # | Finding | Severity |
 |---|---------|----------|
-| [031](031-subrequest-leak-in-ssi-include.md) | SSI Include Subrequest Pool Leak | Low |
-| [057](057-filter-errors-are-discarded.md) | filter errors are discarded | Medium |
 | [075](075-edit-zero-length-match-recursion.md) | edit* zero-length match recursion | Medium |
 | [116](116-request-body-length-desynchronization.md) | request body length desynchronization | Medium |
 | [117](117-input-filtering-bypass-by-read-mode.md) | InputSed filtering bypass by read mode | Medium |
-| [124](124-unchecked-bucket-read-in-request-inflate.md) | Unchecked Bucket Read In Request Inflate | Medium |
-| [125](125-unchecked-bucket-read-in-proxy-inflate.md) | Unchecked Bucket Read In Proxy Inflate | Medium |
 | [130](130-out-of-bounds-read-on-trailing-cr.md) | Out-of-Bounds Read on Trailing CR | Medium |
-| [140](140-stale-provider-match-state.md) | Stale Provider Match State | Medium |
 | [141](141-out-of-bounds-read-in-meta-header-scan.md) | Out-of-Bounds Read in META Header Scan | High |
 | [161](161-infinite-loop-on-empty-backreference-star.md) | Infinite Loop On Empty Starred Backreference | Medium |
 | [194](194-signed-overflow-parsing-rate-limit.md) | Signed Overflow Parsing Rate Limit | Medium |
@@ -215,8 +186,6 @@ These findings are not directly remotely exploitable, but remain practical for l
 
 | # | Finding | Severity |
 |---|---------|----------|
-| [033](033-short-write-reported-successful.md) | Short Write Reported Successful | Medium |
-| [034](034-short-writev-reported-successful.md) | Short writev reported successful | Medium |
 | [035](035-uninitialized-pid-cleanup.md) | Uninitialized PID Cleanup | Medium |
 
 ### Cluster heartbeat
@@ -226,27 +195,12 @@ These findings are not directly remotely exploitable, but remain practical for l
 | [060](060-out-of-bounds-terminator-write-for-maximum-heartbeat-body.md) | Out-of-Bounds Terminator Write for Maximum Heartbeat Body | High |
 | [061](061-missing-busy-field-check-before-atoi.md) | Missing Busy/Ready Field Check Before atoi | Medium |
 
-### Lua
-
-| # | Finding | Severity |
-|---|---------|----------|
-| [166](166-unchecked-crypt-result-reaches-strcmp.md) | unchecked crypt result reaches strcmp | Low |
-
 ### Server core and request processing
 
 | # | Finding | Severity |
 |---|---------|----------|
 | [069](069-htaccess-cache-omits-override-list.md) | htaccess Cache Omits override_list | Medium |
 | [073](073-ignored-path-normalization-failure.md) | Ignored Path Normalization Failure | High |
-| [202](202-substitution-n-flag-dereferences-null-pmatch.md) | substitution n flag dereferences null pmatch | Medium |
-| [203](203-global-zero-length-match-recurses-forever.md) | Global Zero-Length Match Recurses Forever | Medium |
-
-### Windows and platform support
-
-| # | Finding | Severity |
-|---|---------|----------|
-| [022](022-request-load-failure-leaks-write-lock.md) | Request Load Failure Leaks Write Lock | Low |
-| [158](158-relative-chrootdir-re-resolution.md) | Relative ChrootDir Re-Resolution | Low |
 
 ### Support tools
 
