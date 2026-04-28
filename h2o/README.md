@@ -4,7 +4,7 @@ Security audit of the h2o HTTP server. Each finding includes a detailed write-up
 
 ## Summary
 
-**Total findings: 25** -- High: 14, Medium: 9, Low: 2
+**Total findings: 19** -- High: 13, Medium: 6, Low: 0
 
 ## Findings
 
@@ -37,7 +37,6 @@ Security audit of the h2o HTTP server. Each finding includes a detailed write-up
 
 | # | Finding | Severity |
 |---|---------|----------|
-| [007](007-temporary-fastcgi-socket-directory-remains-undeleted.md) | Temporary FastCGI socket directory leak on spawn failure | Low |
 | [008](008-unlimited-header-buffering-before-parse-completes.md) | Unlimited FastCGI Header Buffering | Medium |
 
 ### URL / authority parsing
@@ -46,21 +45,18 @@ Security audit of the h2o HTTP server. Each finding includes a detailed write-up
 |---|---------|----------|
 | [023](023-non-digit-port-suffix-accepted-as-valid-authority.md) | Non-digit port suffix accepted as valid authority | Medium |
 | [024](024-empty-port-is-normalized-to-port-zero.md) | Empty port accepted as port zero | Medium |
-| [027](027-port-ivar-truncates-silently-to-16-bits.md) | Port ivar truncates silently to 16 bits | Medium |
 
 ### Connection management
 
 | # | Finding | Severity |
 |---|---------|----------|
 | [011](011-dispose-frees-pool-targets-before-async-close-callback-runs.md) | Dispose races leased socket close callback | High |
-| [019](019-pending-requests-are-dropped-during-reconnect-window.md) | Pending requests dropped during reconnect | Medium |
 
 ### Socket I/O
 
 | # | Finding | Severity |
 |---|---------|----------|
 | [009](009-wrong-buffer-terminated-before-getaddrinfo.md) | Wrong service buffer left unterminated before getaddrinfo | High |
-| [020](020-imported-socket-leaks-fd-on-uv-tcp-open-failure.md) | Imported socket import failure leaks ownership and crashes caller | Medium |
 | [021](021-write-path-ignores-uv-write-failure-and-loses-completion.md) | Write path drops completion on synchronous uv_write error | High |
 
 ### WebSocket
@@ -74,16 +70,9 @@ Security audit of the h2o HTTP server. Each finding includes a detailed write-up
 | # | Finding | Severity |
 |---|---------|----------|
 | [001](001-streaming-redis-channel-never-marks-unsubscribe-state.md) | Streaming Redis channel never marks unsubscribe state | Medium |
-| [026](026-redis-command-callback-leaks-command-context.md) | Redis command callback retains native command context until GC | Medium |
 
 ### Memory
 
 | # | Finding | Severity |
 |---|---------|----------|
 | [025](025-receiver-removal-memmove-writes-past-vector-end.md) | Receiver removal shifts array the wrong direction | High |
-
-### Logging
-
-| # | Finding | Severity |
-|---|---------|----------|
-| [013](013-access-log-writes-ignore-i-o-failures.md) | Access log write failures are silently ignored | Low |
