@@ -4,7 +4,7 @@ Security audit of the Go standard library `crypto` package. Each finding include
 
 ## Summary
 
-**Total findings: 69** -- High: 3, Medium: 41, Low: 25
+**Total findings: 54** -- High: 2, Medium: 35, Low: 17
 
 ## Findings
 
@@ -12,11 +12,9 @@ Security audit of the Go standard library `crypto` package. Each finding include
 
 | # | Finding | Severity |
 |---|---------|----------|
-| [001](001-nil-session-inserted-for-missing-key.md) | Nil session inserted for missing key | Low |
 | [005](005-context-cancellation-can-close-completed-handshake.md) | Context cancellation can close completed handshake | Medium |
 | [010](010-echconfiglist-parser-can-loop-forever.md) | ECHConfigList parser can loop forever | Medium |
 | [011](011-trailing-ech-extension-bytes-accepted.md) | Trailing ECH extension bytes accepted | Low |
-| [014](014-start-error-leaves-blocking-state.md) | Start error leaves blocking state | Low |
 | [016](016-hrr-allows-psk-identity-changes.md) | HRR allows PSK identity changes | Low |
 | [017](017-unchecked-ech-hash-clone.md) | Unchecked ECH hash clone | Medium |
 | [027](027-shared-xor-nonce-race.md) | Shared XOR nonce race | Medium |
@@ -33,8 +31,6 @@ Security audit of the Go standard library `crypto` package. Each finding include
 |---|---------|----------|
 | [006](006-zero-certificate-serial-accepted.md) | Zero certificate serial accepted | Low |
 | [007](007-crl-issuer-key-not-enforced.md) | CRL issuer key not enforced | Medium |
-| [018](018-null-policy-failure-reports-success-status.md) | NULL policy failure reports success status | Low |
-| [019](019-null-chain-failure-reports-success-status.md) | NULL chain failure reports success status | Low |
 | [020](020-certificatepolicies-not-enforced-without-explicit-policy.md) | CertificatePolicies not enforced without explicit policy | Medium |
 | [038](038-email-constraints-match-subdomains.md) | Email constraints match subdomains | Medium |
 | [039](039-trailing-der-accepted.md) | Trailing DER accepted | Low |
@@ -67,8 +63,6 @@ Security audit of the Go standard library `crypto` package. Each finding include
 | [042](042-nil-remote-key-panic.md) | Nil remote key panic | Low |
 | [045](045-mutable-private-scalar-exposure.md) | Mutable private scalar exposure | Medium |
 | [046](046-mutable-public-key-exposure.md) | Mutable public key exposure | Medium |
-| [068](068-unknown-public-curve-panics.md) | Unknown public curve panics | Medium |
-| [069](069-unknown-private-curve-panics.md) | Unknown private curve panics | Medium |
 
 ### RSA
 
@@ -85,11 +79,9 @@ Security audit of the Go standard library `crypto` package. Each finding include
 
 | # | Finding | Severity |
 |---|---------|----------|
-| [012](012-wrong-generated-assembly-target.md) | Wrong generated assembly target | Low |
 | [031](031-tail-decryption-over-reads-ciphertext.md) | Tail decryption over-reads ciphertext | Medium |
 | [032](032-counter-nonce-skips-allowed.md) | Counter nonce skips allowed | Low |
 | [033](033-xor-counter-nonce-skips-allowed.md) | XOR counter nonce skips allowed | Low |
-| [043](043-empty-aes-key-panics.md) | Empty AES key panics | Low |
 | [044](044-ctr-counter-wrap-is-unchecked.md) | CTR counter wrap is unchecked | High |
 
 ### HPKE
@@ -129,15 +121,3 @@ Security audit of the Go standard library `crypto` package. Each finding include
 | # | Finding | Severity |
 |---|---------|----------|
 | [026](026-imported-keys-skip-pct.md) | Imported keys skip PCT | Medium |
-
-### FIPS 140 testing
-
-| # | Finding | Severity |
-|---|---------|----------|
-| [002](002-short-randnonce-ciphertext-panics.md) | Short randNonce ciphertext panics | Medium |
-| [003](003-oversized-cmac-panics.md) | Oversized CMAC panics | Medium |
-| [004](004-oversized-rsa-exponent-panics.md) | Oversized RSA exponent panics | Medium |
-| [013](013-file-descriptor-leak-on-write-error.md) | File descriptor leak on write error | Low |
-| [015](015-siggen-mu-argument-is-ignored-as-context.md) | sigGen mu argument is ignored as context | Medium |
-| [040](040-empty-samples-panic.md) | Empty samples panic | Low |
-| [071](071-unbounded-request-argument-count-can-exhaust-memory.md) | Unbounded request argument count can exhaust memory | High |
