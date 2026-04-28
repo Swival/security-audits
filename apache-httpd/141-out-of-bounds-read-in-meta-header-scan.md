@@ -40,6 +40,31 @@ Inside `metafix()`:
 
 APR bucket data is length-delimited and not guaranteed to contain a trailing NUL byte. The scan treats the buffer as if a later alphabetic byte must exist, but malformed input can place no alphabetic byte before the end of the matched META tag or the bucket. This makes the out-of-bounds read reachable during normal proxy-html output filtering and can crash under guard/ASan conditions or consume adjacent memory as part of the header scan.
 
+## Practical Exploit Scenario
+
+A reverse proxy serves customer-facing HTML by fronting an internal application server, configured with the URL-rewriting filter chain that normalizes META tags during transit:
+
+```apache
+<Location /up>
+    ProxyPass        http://app.internal/
+    ProxyPassReverse http://app.internal/
+    ProxyHTMLEnable  On
+    ProxyHTMLMeta    On
+</Location>
+```
+
+`ProxyHTMLMeta` is enabled because the operator uses `mod_proxy_html` to merge `Content-Type` charset hints from `<meta http-equiv>` into the response. The application backend is *not* fully trusted: it is operated by a different team, contains attacker-influenced content (user comments, document previews, tenant-uploaded HTML, a CMS with template injection), or has simply been compromised.
+
+An attacker arranges for a single response from the backend to contain a malformed META tag at the right offset:
+
+```html
+xxxx<meta http-equiv=>
+```
+
+The `seek_meta` regex matches the directive within the bounded APR bucket. `metafix` advances `p` past `http-equiv` and enters `while (!apr_isalpha(*++p))`, sailing through `=` and `>` looking for an alphabetic header token. Because the malformed tag has none, the loop walks straight off the end of the bucket buffer. The next byte read might be allocator metadata, a guard page, or an unrelated bucket; under hardened builds (ASan, FORTIFY, guard pages) the worker faults and exits. Even without hardening, the read can return adjacent bytes that the loop's `apr_isalpha` accepts, leading metafix to copy memory beyond the bucket into the response's `header` and `content` notes, where downstream filters then echo or log them.
+
+An attacker who controls only a small fragment of backend HTML can crash the proxy on every render of the affected page. Public-facing CDN cache miss patterns turn this into broad service degradation: every cold request that hits a regenerated page kills a worker, and the cache layer dutifully retries through new workers until none remain. The bug is reachable by any input that influences proxied HTML, which is typical of mod_proxy_html deployments precisely because they exist to clean up other people's HTML.
+
 ## Fix Requirement
 
 Bound all `p` and `q` scans in `metafix()` to the current META regex match end, `buf + offs + pmatch[0].rm_eo`, before every dereference. If no valid header token is found within the match, skip the malformed directive.

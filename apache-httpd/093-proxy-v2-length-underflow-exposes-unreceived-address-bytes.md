@@ -61,6 +61,35 @@ The PROXY v2 `len` field is peer-controlled and is used as the completeness cond
 
 This creates a direct mismatch between received bytes and parsed bytes. On every enabled connection, before request handling, an attacker can cause the module to derive the client IP and port from bytes that were not part of the received PROXY header. That affects logging and any downstream IP-based authorization or application behavior relying on the client address.
 
+## Practical Exploit Scenario
+
+A production Apache instance sits behind an L4 load balancer that prepends PROXY protocol v2 to each forwarded TCP connection. The Apache configuration enables:
+
+```apache
+RemoteIPProxyProtocol On
+RemoteIPTrustedProxy 10.0.0.0/8
+
+<Location "/admin">
+    Require ip 198.51.100.0/24
+</Location>
+```
+
+The expectation is that `X-Forwarded-For`-style spoofing is impossible because the LB rewrites the source address through PROXY v2, and only `198.51.100.0/24` (the corporate office NAT) can reach `/admin`.
+
+An attacker discovers that the listener accepting PROXY v2 is reachable directly (the LB's frontend IP also happens to forward, the firewall fails open for an internal subnet, or the operator inadvertently exposed the backend port). They open a TCP connection to that listener and send a deliberately truncated PROXY v2 TCPv4 header followed immediately by a normal HTTP request:
+
+```text
+\r\n\r\n\x00\r\nQUIT\n      ; PROXY v2 magic
+\x21\x11                    ; ver=2, cmd=PROXY, fam=TCPv4
+\x00\x04                    ; len = 4 (only enough for src_addr)
+\xC6\x33\x64\x07            ; 198.51.100.7 as src_addr
+GET /admin/console HTTP/1.1\r\nHost: target\r\nConnection: close\r\n\r\n
+```
+
+`remoteip_get_v2_len` reports `len = 4`, so the parser stops reading after the four address bytes. The TCPv4 processing code still references `hdr->v2.addr.ip4.src_port` and the destination fields by struct offset; those bytes were never received from the wire and instead reflect whatever happened to remain in the parsing buffer (often zeros, sometimes leftover bytes from a prior request on the same buffer, sometimes adjacent stack data depending on layout). The src_addr field, however, *was* received and contains the attacker-chosen `198.51.100.7`.
+
+`remoteip_modify_request` overwrites the connection's client_addr/client_ip with `198.51.100.7`. Apache's request processing now believes the request came from inside the corporate NAT. `Require ip 198.51.100.0/24` matches and the admin console responds. Access logs record the spoofed IP, audit forensics blame an innocent corporate user, IP-based rate limits and block lists are completely defeated, and any application logic that consults `r->useragent_ip` for authorization (mod_authnz_external, custom Lua, downstream backends receiving the rewritten client IP via headers) is fooled in identical fashion. The attacker did not need to control the LB, predict any secret, or otherwise authenticate.
+
 ## Fix Requirement
 
 Validate the PROXY v2 family-specific minimum address lengths before reading address or port fields:

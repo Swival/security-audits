@@ -52,6 +52,20 @@ Runtime confirmation from the reproducer showed the equivalent expression aborti
 
 The code performs pointer arithmetic and indexing outside the bounds of the copied header string for attacker-controlled input. Even if common non-sanitized builds often read the original `<` byte and return `400 Bad Request`, the C behavior is undefined. Sanitized or hardened builds can abort, making the issue malformed-request-triggerable in the UNLOCK header parser.
 
+## Practical Exploit Scenario
+
+A site exposes WebDAV at `/dav/` for collaborative document editing, fronted by a worker MPM running an Apache build hardened with FORTIFY_SOURCE, libc heap canaries, or running under a sanitizer for QA. An unauthenticated attacker probes the endpoint and sends a stream of trivial UNLOCK requests:
+
+```http
+UNLOCK /dav/anything HTTP/1.1
+Host: dav.example
+Lock-Token: <
+Content-Length: 0
+
+```
+
+Each request advances the parser to a NUL byte and reads `locktoken_txt[(size_t)-1]`. On hardened builds the resulting fault terminates the worker before the response is sent. With prefork or worker MPM, the attacker rapidly exhausts the MaxRequestWorkers pool, since each TCP connection burns a process. On builds without hardening, the read silently lands inside the request pool's redzone and the request returns 400, but any downstream sanitizer-equipped tier (CI canaries, debug probes, fuzz harnesses) crashes with no useful trace beyond the malformed UNLOCK. The attack requires no credentials and no prior knowledge of locks or paths under `/dav/`.
+
 ## Fix Requirement
 
 Reject an empty token body before subtracting one from `strlen(locktoken_txt)`, or validate the original header length before advancing past `<`.

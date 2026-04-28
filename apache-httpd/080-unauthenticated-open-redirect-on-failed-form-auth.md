@@ -60,6 +60,30 @@ This is security-relevant because:
 - The behavior occurs on protected endpoints before authentication succeeds.
 - Browsers will follow the `302` response to the attacker-supplied destination.
 
+## Practical Exploit Scenario
+
+A bank deploys a customer portal where authenticated areas under `/account/*` are protected by `AuthType form` with the standard `httpd_username` / `httpd_password` / `httpd_location` field names. The login flow is well known: legitimate users authenticate at `/login` and are bounced back to the page they originally tried to view.
+
+An attacker drafts a phishing email that arrives from a plausible address and contains a single, harmless-looking link that tells the browser to submit a hidden POST to the real bank:
+
+```html
+<form id="f" method="POST" action="https://bank.example/account/statements" enctype="application/x-www-form-urlencoded">
+  <input name="httpd_username" value="anyone">
+  <input name="httpd_password" value="anything">
+  <input name="httpd_location" value="https://bank-secure-login.attacker.example/continue?ref=statements">
+</form>
+<script>document.getElementById('f').submit();</script>
+```
+
+The victim clicks the link. Their browser POSTs to the real bank domain. `mod_auth_form` parses the body, calls `check_authn`, and rejects the bogus credentials. The vulnerable redirect block then writes:
+
+```
+HTTP/1.1 302 Found
+Location: https://bank-secure-login.attacker.example/continue?ref=statements
+```
+
+The browser dutifully follows the redirect, having just been bounced *from the genuine bank domain*, so the URL bar's recent history, the `Referer`, and any user-visible breadcrumbs all show the attacker arriving via `bank.example`. The attacker's site mimics the post-authentication experience or a "session expired, please re-enter your credentials" dialog and harvests the real password on the second attempt. Because no authentication is required to trigger the redirect, the same primitive works against arbitrary visitors, can be embedded in any third-party site that drops a form, and circumvents user expectation that a redirect from a trusted origin will stay on that origin.
+
 ## Fix Requirement
 
 Only honor the client-supplied form location after successful authentication.

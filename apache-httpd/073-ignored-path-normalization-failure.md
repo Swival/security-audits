@@ -49,6 +49,34 @@ follows this flow:
 
 The second normalization already detects this condition by returning failure. Ignoring that failure converts a rejected URI into an accepted normalized target URI, allowing ordinary remote requests to proceed despite core normalization marking the path invalid.
 
+## Practical Exploit Scenario
+
+A site enables `AllowEncodedSlashes On` (commonly required by applications that embed slash-bearing identifiers, REST APIs that use encoded path segments, or repositories storing keys with literal `/` in names) and exposes a sensitive handler under a `<Location>` that is meant to be locked down. A representative configuration:
+
+```apache
+AllowEncodedSlashes On
+
+<Location "/server-status">
+    SetHandler server-status
+    Require ip 10.0.0.0/8
+</Location>
+
+<Location "/public">
+    Require all granted
+</Location>
+```
+
+The administrator believes the IP restriction on `/server-status` is enforced because a request for `/server-status` from outside `10.0.0.0/8` would be denied. An external attacker instead requests:
+
+```http
+GET /public/%2e%2e%2fserver-status HTTP/1.1
+Host: target.example
+```
+
+The first `ap_normalize_path` runs against the still-encoded path and sees only `/public/%2e%2e%2fserver-status`, which contains no traversal segments because `%2f` is still encoded. Location walking and access checks bind to `/public`, where the policy is `Require all granted`. The unescape step then turns `%2e%2e%2f` into `../`, producing `/public/../server-status`. The second normalization detects the above-root violation and returns failure, but its return value is dropped on the floor; the path is rewritten to `/server-status` and processing continues into translation, handler dispatch, and response generation under the access control already accepted for `/public`. The status page is delivered to an external IP that should never have been able to reach it.
+
+The same primitive lets an attacker reach any handler whose protection depends on `<Location>`-scoped rules: admin consoles bound to `/admin`, debug endpoints behind `Require valid-user`, mod_proxy reverse-proxy maps with per-location auth, or `<LocationMatch>` rules that gate sensitive subtrees. Because the bypass is purely path-shape based, no credentials, special headers, or fragile timing are required.
+
 ## Fix Requirement
 
 Check the second `ap_normalize_path()` return value and return `HTTP_BAD_REQUEST` on failure.

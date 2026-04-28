@@ -53,6 +53,39 @@ The source comment in `assign_headers()` states that mismatches between `:author
 
 This creates a validation gap because downstream request validation, virtual host selection, and modules observe only the rewritten `Host` value and cannot detect that the original client request contained conflicting authority information.
 
+## Practical Exploit Scenario
+
+A hosting provider runs many vhosts on a single TLS-terminated HTTP/2 listener. Two of them share an IP and certificate:
+
+```apache
+<VirtualHost *:443>
+    ServerName api.bank.example          ; high value, restricted
+    DocumentRoot /srv/api-bank
+    <Location "/admin"> Require ip 10.0.0.0/8 </Location>
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName status.bank.example        ; public health checks
+    DocumentRoot /srv/status
+</VirtualHost>
+```
+
+A reverse proxy tier in front of Apache routes to the backend by inspecting the request's `Host` header. WAF rules also key on `Host` (different rule sets for the API versus the status page), and a SIEM correlates traffic by the same field.
+
+An attacker establishes an HTTP/2 connection to the listener using SNI for the status host and sends a HEADERS frame whose pseudo-header and regular-header authorities disagree:
+
+```
+:method GET
+:scheme https
+:path   /admin/internal-keys
+:authority api.bank.example
+host       status.bank.example
+```
+
+`h2_request_end_headers` overwrites `Host` with `:authority`, so Apache binds the request to the high-value `api.bank.example` vhost and serves `/admin/internal-keys` directly from `/srv/api-bank`. Meanwhile the WAF, the access log format `%{Host}i`, and the SIEM all observed the original `host: status.bank.example`, applied the lower-trust rule set, and recorded the request as a benign hit on the status page. The IP-based admin restriction is also bypassed if the front tier applied it on `Host` and Apache trusted the request after rewrite.
+
+The same primitive enables fooling per-vhost auth modules, defeating tenant isolation between co-hosted customers, and smuggling administrative traffic past monitoring under the cover of a public-facing hostname. Detection is hard because the malicious request never appears suspicious in any log keyed on `Host`.
+
 ## Fix Requirement
 
 Reject requests with differing `Host` and `:authority` values before overwriting or normalizing the `Host` header.

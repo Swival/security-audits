@@ -67,6 +67,24 @@ The `/locked` tagged list applies and succeeds via the harmless non-matching `No
 
 The normal validation path documents and enforces the invariant that if an authenticated user created a lock, only that same user may submit the lock token to manipulate the resource. The fallback helper is part of the same locked-resource validation flow but skipped the same authorization check. Because that helper can independently satisfy the “submitted lock token” requirement, the omission creates an authorization bypass rather than a cosmetic inconsistency.
 
+## Practical Exploit Scenario
+
+A WebDAV deployment under `dav.example/dav/` is fronted by `AuthType Basic`/`Require valid-user`, so every modifying request is tied to a named user. Alice locks `/dav/contracts/2026-q1.docx` while drafting a contract; the server records `lock->auth_user = "alice"` so Bob cannot overwrite the file even if he somehow obtains the token.
+
+Bob, an authenticated colleague (or a compromised low-privilege account on the same DAV instance), discovers Alice's lock token. Tokens leak in many ordinary channels: PROPFIND's `lockdiscovery` element exposes them to anyone with read access to the resource, server access logs may record them in `Lock-Token` request headers, and shared editing tools occasionally surface them in error dialogs. With the token in hand, Bob sends:
+
+```http
+PUT /dav/contracts/2026-q1.docx HTTP/1.1
+Host: dav.example
+Authorization: Basic <bob credentials>
+If: <http://dav.example/dav/contracts/2026-q1.docx> (Not <opaquelocktoken:00000000-0000-0000-0000-000000000000>) <http://dav.example/dav/other> (<opaquelocktoken:T_alice>)
+Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+
+<bob's modified contract>
+```
+
+The first tagged list applies to the target and trivially passes through its negated all-zero token without setting `seen_locktoken`. The validator then enters the fallback path and scans every list, finds Alice's real token under the unrelated `/dav/other` URI, and returns success. Crucially, the fallback never compared `lock->auth_user` against `r->user`, so Bob's PUT proceeds as `204 No Content`. Alice's contract is rewritten silently, with Bob's account in the access log but no indication that lock ownership was bypassed. The same primitive enables targeted sabotage of locked files in source-control-over-DAV, document management systems, and any workflow that relies on DAV locks as an integrity gate between users.
+
 ## Fix Requirement
 
 `dav_find_submitted_locktoken()` must validate `lock->auth_user` before accepting a matching submitted lock token. A token should satisfy the fallback scan only when the lock is unauthenticated or the current request user matches the lock owner.

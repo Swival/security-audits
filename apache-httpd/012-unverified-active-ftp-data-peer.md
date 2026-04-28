@@ -34,6 +34,18 @@ Reported by Swival Security Scanner: https://swival.dev
 
 Active FTP data connections are expected to originate from the same FTP server reached over the control connection. The vulnerable code crosses that trust boundary by treating any accepted TCP peer as authoritative FTP data. A malicious or cooperating FTP control server can expose the `PORT` target to another peer or withhold its own data connection, letting the other peer win the accept race and inject arbitrary response content.
 
+## Practical Exploit Scenario
+
+A reverse proxy publishes legacy FTP archives over HTTPS using `mod_proxy_ftp`, allowing customers to download release artifacts through `https://downloads.example/ftp/*`. Behind the scenes the proxy talks to a vendor-controlled FTP server that disables both EPSV and PASV (perhaps to force older clients into deterministic active mode), so the proxy issues `PORT 192.0.2.10,A,B` advertising its own data endpoint.
+
+An attacker who can reach the proxy host on the dynamic data port (a co-tenant on the same VPC, an attacker behind the same NAT, or anyone targeting an instance whose firewall lets in high TCP ports) races the legitimate FTP server to `accept()`. The accept loop in `mod_proxy_ftp` takes the first connection without verifying it came from the FTP control peer. The attacker writes:
+
+```text
+<malicious binary or HTML payload>
+```
+
+Apache wraps that socket as the data brigade and streams the bytes back to the HTTP client as if they came from the real FTP server. Customers downloading what they believe is a signed release artifact instead receive attacker-controlled content over a legitimate TLS connection from `downloads.example`. Because the URL, certificate, and HTTP framing are all genuine, integrity expectations based on origin authenticity are completely defeated. The attacker does not need to compromise the FTP server, just to win one TCP accept race per targeted download.
+
 ## Fix Requirement
 
 After accepting an active FTP data connection, retrieve the accepted socket’s remote address and verify it matches the remote address of the FTP control socket before reading or streaming any data. Reject and close mismatched data sockets.

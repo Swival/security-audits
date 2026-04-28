@@ -46,6 +46,36 @@ The source comments explicitly note that sed finalization may append a newline w
 
 The response filter already unsets `Content-Length` after initializing sed processing, demonstrating that length-changing sed output requires metadata invalidation. The request filter lacked the equivalent protection.
 
+## Practical Exploit Scenario
+
+A site uses Apache as a frontend that filters request bodies before forwarding to an SCGI/FastCGI backend. The administrator wants to redact secrets that occasionally appear in client-submitted bodies (API keys, internal hostnames) and configures `mod_sed` accordingly:
+
+```apache
+<Location /api/>
+    SetInputFilter Sed
+    InputSed "s/AAAA/B/g"
+    ProxyPass "scgi://backend.internal:4000/"
+</Location>
+```
+
+Apache reads the inbound request body, applies the substitution, and forwards the rewritten body to the backend over SCGI. Because `Content-Length` from the original request is never invalidated, `mod_proxy_scgi` advertises `CONTENT_LENGTH=16` to the backend even though after substitution the rewritten body is only 4 bytes long.
+
+The immediate consequence is that the backend's body parser blocks waiting for the missing 12 bytes, eventually timing out or returning a 502. An attacker repeats this against pipelined or HTTP/2-multiplexed clients to keep backend workers stuck, draining the pool and producing denial of service.
+
+A more dangerous variant exploits the desync directly. The attacker pipelines two requests on a single keep-alive connection from Apache to the backend:
+
+```http
+POST /api/redact HTTP/1.1
+Content-Length: 16
+
+AAAAAAAAAAAAAAAA
+POST /api/login HTTP/1.1
+Content-Length: 32
+...
+```
+
+Apache rewrites the first body to four `B` bytes but still tells the backend `CONTENT_LENGTH=16`. The backend reads the four post-Sed bytes plus 12 bytes from the *next* pipelined request to satisfy its declared length. Those 12 bytes were the start of the second request's headers, so what the backend sees as request boundaries no longer align with what Apache sent. The attacker has constructed a frontend/backend request smuggling primitive: the second request's effective body, headers, or method are now under attacker control, and any per-request authentication state on the backend can be reused, hijacked, or confused. Because `mod_sed` finalization can also append a newline to bodies that lack one, this length skew can be triggered with no substitution rule that ever changes characters, only normalizes terminators.
+
 ## Fix Requirement
 
 Whenever `InputSed` is active for a request body, the original request `Content-Length` must not remain authoritative unless it is recomputed for the transformed body.

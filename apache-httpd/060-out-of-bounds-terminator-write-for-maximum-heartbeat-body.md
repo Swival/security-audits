@@ -68,6 +68,23 @@ before passing the buffer to `hm_processmsg`.
 
 The vulnerable path is directly reachable by any configured endpoint mapped to the `heartbeat` handler using method `POST`. The handler explicitly supports POST bodies up to `MAX_MSG_LEN`, but its allocation only reserves space for the body bytes and not the required terminator. The out-of-bounds write occurs before request parsing continues and does not require malformed APR behavior.
 
+## Practical Exploit Scenario
+
+A load-balanced cluster runs `mod_heartmonitor` on a coordinator host, exposing `/HeartbeatAccept` so backend workers can post liveness data. The endpoint is intentionally unauthenticated (`Require all granted`) because heartbeat traffic is expected to be filtered by network policy, but in many real deployments that filter is loose: the endpoint ends up reachable from any internal subnet, from anyone who compromises a single backend, or from the public internet on misconfigured listeners.
+
+An attacker who can reach the handler sends a single 1000-byte POST:
+
+```http
+POST /HeartbeatAccept HTTP/1.1
+Host: cluster-coord.internal
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 1000
+
+v=1&busy=0&ready=1&xxxxxxxxxxxxxxxxxxxx...   (padded to exactly 1000 bytes)
+```
+
+The handler allocates exactly 1000 bytes, reads exactly 1000 bytes, and then writes a NUL byte at `buf[1000]`, one byte past the allocation. Apache's pool allocator places small objects back-to-back, so the overflow byte lands in the next pool node header or adjacent allocation. On hardened builds (FORTIFY, ASan, MSan, or pool guard pages) this terminates the worker. On stock builds it silently corrupts the next allocation: usually the header parsing scratch buffer, sometimes a string interned for the access log, occasionally a function pointer in pool cleanup metadata. The attacker can replay the request thousands of times per second from a single IP, repeatedly knocking out the coordinator and causing the rest of the cluster to lose heartbeat consensus, drop healthy backends from rotation, and degrade or fail entirely. With deeper allocator shaping, the single-byte write can also be steered into adjacent state to corrupt cleanup function pointers, providing a stepping stone toward control-flow hijack on a long-running coordinator.
+
 ## Fix Requirement
 
 Reserve space for the NUL terminator when reading up to `MAX_MSG_LEN` bytes, or reject/avoid termination when `len == MAX_MSG_LEN`.
