@@ -1,0 +1,28 @@
+diff --git a/src/xferlog.c b/src/xferlog.c
+index ebc147be2..cbc69150c 100644
+--- a/src/xferlog.c
++++ b/src/xferlog.c
+@@ -70,7 +70,8 @@ int xferlog_write(long xfertime, const char *remhost, off_t fsize,
+     const char *user, char abort_flag, const char *action_flags) {
+   pool *tmp_pool;
+   const char *rfc1413_ident = NULL, *xfer_proto;
+-  char buf[LOGBUFFER_SIZE] = {'\0'}, fbuf[LOGBUFFER_SIZE] = {'\0'};
++  char buf[LOGBUFFER_SIZE] = {'\0'}, fbuf[LOGBUFFER_SIZE] = {'\0'},
++    ibuf[LOGBUFFER_SIZE] = {'\0'};
+   int have_ident = FALSE, len;
+   register unsigned int i = 0;
+ 
+@@ -106,6 +107,13 @@ int xferlog_write(long xfertime, const char *remhost, off_t fsize,
+     rfc1413_ident = "*";
+   }
+ 
++  for (i = 0; (i + 1 < sizeof(ibuf)) && rfc1413_ident[i] != '\0'; i++) {
++    ibuf[i] = (PR_ISSPACE(rfc1413_ident[i]) || PR_ISCNTRL(rfc1413_ident[i])) ? '_' :
++      rfc1413_ident[i];
++  }
++  ibuf[i] = '\0';
++  rfc1413_ident = ibuf;
++
+   xfer_proto = pr_session_get_protocol(0);
+   tmp_pool = make_sub_pool(session.pool);
+   pr_pool_tag(tmp_pool, "TransferLog message pool");

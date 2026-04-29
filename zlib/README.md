@@ -1,6 +1,6 @@
 # zlib Audit Findings
 
-Security audit of zlib, including the core compression library, minizip, DotZLib (.NET bindings), and associated utilities. Each finding includes a detailed write-up and a patch.
+Security audit of the zlib compression library and its bundled ports. Each finding includes a detailed write-up and a patch.
 
 ## Summary
 
@@ -8,50 +8,65 @@ Security audit of zlib, including the core compression library, minizip, DotZLib
 
 ## Findings
 
-### minizip (ZIP archive handling)
+### minizip / zip extraction
+
+| # | Finding | Severity |
+|---|---------|----------|
+| [004](004-global-comment-api-dereferences-null-buffer.md) | Global comment API NULL buffer dereference | Medium |
+| [007](007-archive-paths-can-escape-extraction-directory.md) | Archive paths can escape extraction directory | High |
+| [028](028-negative-local-header-offset-written-after-signed-overflow.md) | Repaired archive can claim omitted oversized entry data | Medium |
+
+### Zip64 / extra fields
 
 | # | Finding | Severity |
 |---|---------|----------|
 | [003](003-zip64-extra-field-parser-reads-past-declared-field.md) | ZIP64 extra field parser overreads declared subfield | High |
-| [004](004-global-comment-api-dereferences-null-buffer.md) | Global comment API NULL buffer dereference | Medium |
-| [006](006-failed-length-read-can-use-uninitialized-size-t-value.md) | Failed length read can use uninitialized size_t value | High |
-| [007](007-archive-paths-can-escape-extraction-directory.md) | Archive paths can escape extraction directory | High |
-| [009](009-extra-field-parser-trusts-attacker-controlled-lengths-and-ov.md) | Extra-field parser trusts attacker-controlled lengths and overruns buffers | High |
-| [021](021-zip-encryption-uses-legacy-pkware-cipher.md) | ZIP encryption disabled for legacy PKWARE cipher | High |
-| [022](022-encrypted-header-leaks-crc-bytes-for-password-verification.md) | Encrypted header leaks CRC bytes for password verification | Medium |
-| [023](023-negative-file-length-drives-unchecked-allocation-size.md) | Negative file length drives unchecked allocation size | Medium |
-| [024](024-short-filename-suffix-check-reads-before-argument-buffer.md) | Short filename suffix check reads before argument buffer | High |
-| [028](028-negative-local-header-offset-written-after-signed-overflow.md) | Repaired archive can claim omitted oversized entry data | Medium |
+| [009](009-extra-field-parser-trusts-attacker-controlled-lengths-and-ov.md) | Extra-field parser trusts attacker-controlled lengths | High |
 
-### DotZLib (.NET bindings)
+### ZIP encryption
 
 | # | Finding | Severity |
 |---|---------|----------|
-| [015](015-unqualified-zlib1-dll-import-crosses-library-loading-trust-b.md) | Unqualified ZLIB1.dll import crosses library-loading trust boundary | Medium |
+| [021](021-zip-encryption-uses-legacy-pkware-cipher.md) | ZIP encryption relies on legacy PKWARE cipher | High |
+| [022](022-encrypted-header-leaks-crc-bytes-for-password-verification.md) | Encrypted header leaks CRC bytes for offline password checks | Medium |
 
-### gzlog
-
-| # | Finding | Severity |
-|---|---------|----------|
-| [001](001-lock-ownership-check-can-delete-another-process-s-lock.md) | Lock ownership check can delete another process's lock | Medium |
-| [002](002-user-controlled-path-enables-symlink-clobbering-of-sidecar-f.md) | User-controlled sidecar path allows symlink clobbering | Medium |
-
-### gzjoin
+### gzip stream / trailer
 
 | # | Finding | Severity |
 |---|---------|----------|
 | [011](011-trailer-crc-is-taken-from-input-without-validation.md) | Trailer CRC validation missing in joined members | Medium |
+| [020](020-insecure-fallback-overflows-gzprintf-buffer.md) | Insecure vsprintf fallback overflows gzprintf buffer | High |
 
-### iostream2 (C++ bindings)
+### iostream2 stream parsing
 
 | # | Finding | Severity |
 |---|---------|----------|
 | [005](005-unchecked-length-prefixed-read-overflows-caller-buffer.md) | Unchecked length-prefixed read overflows caller buffer | High |
+| [006](006-failed-length-read-can-use-uninitialized-size-t-value.md) | Failed length read can use uninitialized size_t value | High |
 
-### zlib core
+### Locking and file handling
+
+| # | Finding | Severity |
+|---|---------|----------|
+| [001](001-lock-ownership-check-can-delete-another-process-s-lock.md) | Lock ownership check can delete another process's lock | Medium |
+| [023](023-negative-file-length-drives-unchecked-allocation-size.md) | Negative file length drives unchecked allocation size | Medium |
+| [024](024-short-filename-suffix-check-reads-before-argument-buffer.md) | Short filename suffix check reads before argument buffer | High |
+
+### Symlink and path traversal
+
+| # | Finding | Severity |
+|---|---------|----------|
+| [002](002-user-controlled-path-enables-symlink-clobbering-of-sidecar-f.md) | User-controlled sidecar path allows symlink clobbering | Medium |
+
+### Concurrency
 
 | # | Finding | Severity |
 |---|---------|----------|
 | [019](019-fixed-huffman-table-initialization-races-across-threads.md) | Fixed Huffman table initialization races across threads | Medium |
-| [020](020-insecure-fallback-overflows-gzprintf-buffer.md) | Insecure vsprintf fallback overflows gzprintf buffer | High |
-| [026](026-unsynchronized-lazy-huffman-table-initialization.md) | Unsynchronized lazy Huffman table initialization | Medium |
+| [026](026-unsynchronized-lazy-huffman-table-initialization.md) | Unsynchronized lazy Huffman table initialization in blast | Medium |
+
+### DLL / Windows loading
+
+| # | Finding | Severity |
+|---|---------|----------|
+| [015](015-unqualified-zlib1-dll-import-crosses-library-loading-trust-b.md) | Unqualified ZLIB1.dll import crosses library-loading trust boundary | Medium |

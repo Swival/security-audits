@@ -1,0 +1,71 @@
+diff --git a/modules/mod_ls.c b/modules/mod_ls.c
+index 3ab883ee5..421fa745c 100644
+--- a/modules/mod_ls.c
++++ b/modules/mod_ls.c
+@@ -86,10 +86,46 @@ struct list_limit_rec {
+   unsigned char logged;
+ };
+ 
++struct list_seen_dir {
++  dev_t dev;
++  ino_t ino;
++};
++
++static array_header *list_seen_dirs = NULL;
++
+ static struct list_limit_rec list_ndepth;
+ static struct list_limit_rec list_ndirs;
+ static struct list_limit_rec list_nfiles;
+ 
++static int listdir_seen_dir(cmd_rec *cmd) {
++  register unsigned int i;
++  struct list_seen_dir *dirs, *dir;
++  struct stat st;
++
++  pr_fs_clear_cache2(".");
++  if (pr_fsio_stat(".", &st) < 0) {
++    return FALSE;
++  }
++
++  if (list_seen_dirs == NULL) {
++    list_seen_dirs = make_array(cmd->tmp_pool, 8, sizeof(struct list_seen_dir));
++  }
++
++  dirs = list_seen_dirs->elts;
++  for (i = 0; i < list_seen_dirs->nelts; i++) {
++    if (dirs[i].dev == st.st_dev &&
++        dirs[i].ino == st.st_ino) {
++      return FALSE;
++    }
++  }
++
++  dir = push_array(list_seen_dirs);
++  dir->dev = st.st_dev;
++  dir->ino = st.st_ino;
++
++  return TRUE;
++}
++
+ /* ls options */
+ static int
+     opt_1 = 0,
+@@ -1375,6 +1411,11 @@ static int listdir(cmd_rec *cmd, pool *workp, const char *resp_code,
+     return -1;
+   }
+ 
++  if (opt_R &&
++      !listdir_seen_dir(cmd)) {
++    return 0;
++  }
++
+   if (workp == NULL) {
+     workp = make_sub_pool(cmd->tmp_pool);
+     pr_pool_tag(workp, "mod_ls: listdir(): workp (from cmd->tmp_pool)");
+@@ -1909,6 +1950,7 @@ static int dolist(cmd_rec *cmd, const char *opt, const char *resp_code,
+   char *arg = (char*) opt;
+ 
+   ls_curtime = time(NULL);
++  list_seen_dirs = NULL;
+ 
+   if (clear_flags) {
+     opt_1 = opt_A = opt_a = opt_B = opt_C = opt_d = opt_F = opt_h = opt_n =

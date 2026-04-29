@@ -1,0 +1,40 @@
+diff --git a/modules/mod_core.c b/modules/mod_core.c
+index 91298231a..ee7ba380c 100644
+--- a/modules/mod_core.c
++++ b/modules/mod_core.c
+@@ -6366,6 +6366,17 @@ MODRET core_rnto(cmd_rec *cmd) {
+ 
+   path = dir_canonical_path(cmd->tmp_pool, path);
+ 
++  if (!path ||
++      !dir_check_canon(cmd->tmp_pool, cmd, cmd->group, path, NULL)) {
++    pr_log_debug(DEBUG8, "%s command denied by <Limit> config",
++      (char *) cmd->argv[0]);
++    pr_response_add_err(R_550, _("%s: %s"), cmd->arg, strerror(EPERM));
++
++    pr_cmd_set_errno(cmd, EPERM);
++    errno = EPERM;
++    return PR_ERROR(cmd);
++  }
++
+   allow_overwrite = get_param_ptr(CURRENT_CONF, "AllowOverwrite", FALSE);
+ 
+   /* Deny the rename if AllowOverwrites are not allowed, and the destination
+@@ -6382,17 +6393,6 @@ MODRET core_rnto(cmd_rec *cmd) {
+     return PR_ERROR(cmd);
+   }
+ 
+-  if (!path ||
+-      !dir_check_canon(cmd->tmp_pool, cmd, cmd->group, path, NULL)) {
+-    pr_log_debug(DEBUG8, "%s command denied by <Limit> config",
+-      (char *) cmd->argv[0]);
+-    pr_response_add_err(R_550, _("%s: %s"), cmd->arg, strerror(EPERM));
+-
+-    pr_cmd_set_errno(cmd, EPERM);
+-    errno = EPERM;
+-    return PR_ERROR(cmd);
+-  }
+-
+   res = pr_fsio_rename_with_error(cmd->pool, session.xfer.path, path, &err);
+   if (res < 0) {
+     int xerrno = errno;
