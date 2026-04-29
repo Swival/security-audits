@@ -1,0 +1,20 @@
+diff --git a/src/redis.c b/src/redis.c
+index 36277a43d..8e392dcc0 100644
+--- a/src/redis.c
++++ b/src/redis.c
+@@ -3051,6 +3051,16 @@ int pr_redis_hash_kgetall(pool *p, pr_redis_t *redis, module *m,
+     return -1;
+   }
+ 
++  if ((reply->elements % 2) != 0) {
++    pr_trace_msg(trace_channel, 2,
++      "expected even number of elements for %s, got %lu", cmd,
++      (unsigned long) reply->elements);
++    freeReplyObject(reply);
++    destroy_pool(tmp_pool);
++    errno = EINVAL;
++    return -1;
++  }
++
+   if (reply->elements > 0) {
+     register unsigned int i;

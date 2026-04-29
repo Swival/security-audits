@@ -1,0 +1,72 @@
+diff --git a/modules/mod_facl.c b/modules/mod_facl.c
+index c6099d22f..a8be44d9e 100644
+--- a/modules/mod_facl.c
++++ b/modules/mod_facl.c
+@@ -649,7 +649,8 @@ static int check_solaris_facl(pool *p, const char *path, int mode, void *acl,
+     int nents, struct stat *st, uid_t uid, gid_t gid,
+     array_header *suppl_gids) {
+   register unsigned int i;
+-  int have_access_entry = FALSE, have_mask_entry = FALSE, idx, res = -1;
++  int have_access_entry = FALSE, have_mask_entry = FALSE;
++  int have_matching_denied_group = FALSE, idx, res = -1;
+   pool *acl_pool;
+   aclent_t *acls = acl;
+   aclent_t ae;
+@@ -811,6 +812,9 @@ static int check_solaris_facl(pool *p, const char *path, int mode, void *acl,
+       pr_trace_msg(trace_channel, 10,
+         "primary group ID %s matches ACL owner group ID",
+         pr_gid2str(NULL, gid));
++
++    } else {
++      have_matching_denied_group = TRUE;
+     }
+   }
+ 
+@@ -832,6 +836,9 @@ static int check_solaris_facl(pool *p, const char *path, int mode, void *acl,
+             pr_gid2str(NULL, suppl_gid));
+ 
+           break;
++
++        } else {
++          have_matching_denied_group = TRUE;
+         }
+       }
+     }
+@@ -860,6 +867,9 @@ static int check_solaris_facl(pool *p, const char *path, int mode, void *acl,
+           pr_gid2str(NULL, gid));
+ 
+         break;
++
++      } else {
++        have_matching_denied_group = TRUE;
+       }
+     }
+ 
+@@ -883,6 +893,9 @@ static int check_solaris_facl(pool *p, const char *path, int mode, void *acl,
+               pr_gid2str(NULL, suppl_gid));
+ 
+             break;
++
++          } else {
++            have_matching_denied_group = TRUE;
+           }
+         }
+       }
+@@ -895,7 +908,16 @@ static int check_solaris_facl(pool *p, const char *path, int mode, void *acl,
+    *    the requested permissions, access is denied.
+    */
+ 
+-  /* XXX implement this condition properly */
++  if (!have_access_entry &&
++      have_matching_denied_group) {
++    destroy_pool(acl_pool);
++
++    pr_trace_msg(trace_channel, 3,
++      "returning EACCES for path '%s', user ID %s", path,
++      pr_uid2str(NULL, uid));
++    errno = EACCES;
++    return -1;
++  }
+ 
+   /* 6. If not matched above, the other entry determines access.
+    */

@@ -1,0 +1,13 @@
+diff --git a/src/redis.c b/src/redis.c
+index 36277a43d..3a99376f3 100644
+--- a/src/redis.c
++++ b/src/redis.c
+@@ -5656,7 +5656,7 @@ int pr_redis_sentinel_get_master_addr(pool *p, pr_redis_t *redis,
+     return -1;
+   }
+ 
+-  if (reply->elements > 0) {
++  if (reply->elements >= 2) {
+     redisReply *elt;
+     char *host = NULL;
+     int port = -1;

@@ -1,0 +1,13 @@
+diff --git a/modules/mod_auth_unix.c b/modules/mod_auth_unix.c
+index 531f4c9f9..5c63b31ef 100644
+--- a/modules/mod_auth_unix.c
++++ b/modules/mod_auth_unix.c
+@@ -1193,7 +1193,7 @@ static int get_groups_by_getgrset(const char *user, gid_t primary_gid,
+ 
+     pr_signals_handle();
+ 
+-    if (ngroups >= sizeof(group_ids)) {
++    if (ngroups >= NGROUPS_MAX) {
+       /* Reached capacity of the group_ids array. */
+       break;
+     }
