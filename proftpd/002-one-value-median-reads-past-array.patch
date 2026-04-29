@@ -1,0 +1,13 @@
+diff --git a/modules/mod_delay.c b/modules/mod_delay.c
+index 2fc2808ac..09b14cbc9 100644
+--- a/modules/mod_delay.c
++++ b/modules/mod_delay.c
+@@ -301,7 +301,7 @@ static long delay_get_median(pool *p, unsigned int rownum, const char *protocol,
+   pr_trace_msg(trace_channel, 6, "selecting median interval from %d %s",
+     list->nelts, list->nelts != 1 ? "values" : "value");
+ 
+-  median = delay_select_k(((list->nelts + 1) / 2), list);
++  median = delay_select_k((list->nelts / 2), list);
+   if (median >= 0) {
+ 
+     /* Enforce an additional restriction: no delays over a hard limit. */

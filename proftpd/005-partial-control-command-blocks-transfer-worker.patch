@@ -1,0 +1,28 @@
+diff --git a/src/data.c b/src/data.c
+index c53f29f88..a146b02d6 100644
+--- a/src/data.c
++++ b/src/data.c
+@@ -988,20 +988,17 @@ static int peek_is_abor_cmd(void) {
+   }
+ 
+   /* If we reach here, the peer must have sent something.  Let's see what it
+-   * might be.  Chances are that we received at least 5 bytes, but to be
+-   * defensive, we use MSG_WAITALL anyway.  TCP allows for sending one byte
+-   * at time, if need be.  The shortest FTP command is 5 bytes, e.g. "CCC\r\n".
+-   * ABOR would be 6 bytes, but we do not want to block until we see 6 bytes;
+-   * we're peeking opportunistically, and optimistically.
++   * might be.  TCP allows for sending one byte at time, if need be, so avoid
++   * waiting for the full buffer and just peek at what is currently available.
+    */
+   memset(&buf, 0, sizeof(buf));
+-  len = recv(fd, buf, sizeof(buf), MSG_PEEK|MSG_WAITALL);
++  len = recv(fd, buf, sizeof(buf), MSG_PEEK);
+   while (len < 0) {
+     int xerrno = errno;
+ 
+     if (xerrno == EINTR) {
+       pr_signals_handle();
+-      len = recv(fd, &buf, sizeof(buf), MSG_PEEK|MSG_WAITALL);
++      len = recv(fd, &buf, sizeof(buf), MSG_PEEK);
+       continue;
+     }

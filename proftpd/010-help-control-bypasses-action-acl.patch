@@ -1,0 +1,19 @@
+diff --git a/modules/mod_ctrls.c b/modules/mod_ctrls.c
+index 392307f9a..45f963327 100644
+--- a/modules/mod_ctrls.c
++++ b/modules/mod_ctrls.c
+@@ -800,6 +800,14 @@ static int ctrls_handle_help(pr_ctrls_t *ctrl, int reqargc,
+    * response, including the module in which they appear.
+    */
+ 
++  /* Check the help ACL */
++  if (pr_ctrls_check_acl(ctrl, ctrls_acttab, "help") != TRUE) {
++
++    /* Access denied */
++    pr_ctrls_add_response(ctrl, "access denied");
++    return PR_CTRLS_STATUS_ACCESS_DENIED;
++  }
++
+   if (reqargc != 0) {
+     pr_ctrls_add_response(ctrl, "wrong number of parameters");
+     return PR_CTRLS_STATUS_WRONG_PARAMETERS;

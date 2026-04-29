@@ -1,0 +1,17 @@
+diff --git a/src/lastlog.c b/src/lastlog.c
+index 898582636..95156a1d8 100644
+--- a/src/lastlog.c
++++ b/src/lastlog.c
+@@ -55,6 +55,12 @@ int log_lastlog(uid_t uid, const char *user_name, const char *tty,
+   }
+ 
+   if (S_ISDIR(st.st_mode)) {
++    if (strchr(user_name, '/') != NULL || strcmp(user_name, ".") == 0 ||
++        strcmp(user_name, "..") == 0) {
++      errno = EINVAL;
++      return -1;
++    }
++
+     memset(path, '\0', sizeof(path));
+     pr_snprintf(path, sizeof(path), "%s/%s", PR_LASTLOG_PATH, user_name);
+     path[sizeof(path)-1] = '\0';

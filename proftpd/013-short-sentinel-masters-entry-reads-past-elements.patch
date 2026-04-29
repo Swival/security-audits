@@ -1,0 +1,14 @@
+diff --git a/src/redis.c b/src/redis.c
+index 36277a43d..2e1c12616 100644
+--- a/src/redis.c
++++ b/src/redis.c
+@@ -5783,7 +5783,8 @@ int pr_redis_sentinel_get_masters(pool *p, pr_redis_t *redis,
+       redisReply *elt;
+ 
+       elt = reply->element[i];
+-      if (elt->type == REDIS_REPLY_ARRAY) {
++      if (elt->type == REDIS_REPLY_ARRAY &&
++          elt->elements >= 2) {
+         redisReply *info;
+ 
+         info = elt->element[1];

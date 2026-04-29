@@ -1,0 +1,16 @@
+diff --git a/src/inet.c b/src/inet.c
+index 193223fe1..96163facb 100644
+--- a/src/inet.c
++++ b/src/inet.c
+@@ -1698,6 +1698,11 @@ conn_t *pr_inet_accept(pool *p, conn_t *d, conn_t *c, int rfd, int wfd,
+             } else {
+               pr_log_debug(DEBUG8, "<Class> '%s' not found for filtering "
+                 "AllowForeignAddress", class_name);
++
++              (void) close(fd);
++              d->mode = CM_ERROR;
++              d->xerrno = EACCES;
++              return NULL;
+             }
+ 
+           } else {

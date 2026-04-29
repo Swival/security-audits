@@ -1,0 +1,27 @@
+diff --git a/src/privs.c b/src/privs.c
+index 4212febf8..8afbfc79c 100644
+--- a/src/privs.c
++++ b/src/privs.c
+@@ -282,8 +282,22 @@ int pr_privs_relinquish(const char *file, int lineno) {
+    */
+   if (root_privs + user_privs > 1) {
+     pr_trace_msg(trace_channel, 9,
+-      "root privs count = %u, user privs count = %u, ignoring PRIVS_RELINQUISH",
++      "root privs count = %u, user privs count = %u, honoring PRIVS_RELINQUISH",
+       root_privs, user_privs);
++
++    if (geteuid() == PR_ROOT_UID &&
++        root_privs > 0) {
++      root_privs--;
++      user_privs--;
++      return pr_privs_user(file, lineno);
++    }
++
++    if (user_privs > 0) {
++      user_privs--;
++      root_privs--;
++      return pr_privs_root(file, lineno);
++    }
++
+     return 0;
+   }

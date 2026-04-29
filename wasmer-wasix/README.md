@@ -1,6 +1,6 @@
 # Wasmer WASIX Audit Findings
 
-Security audit of Wasmer's WASIX implementation, covering the package manager and registry client, the virtual filesystem and I/O layer, networking and sockets, snapshot/restore and journaling, threading and scheduling, process management, and memory safety invariants. Each finding includes a detailed write-up and a patch.
+Security audit of the WASIX runtime in Wasmer. Each finding includes a detailed write-up and a patch.
 
 ## Summary
 
@@ -12,7 +12,7 @@ Security audit of Wasmer's WASIX implementation, covering the package manager an
 
 | # | Finding | Severity |
 |---|---------|----------|
-| [001](001-decompression-reads-unbounded-output-into-memory.md) | Decompression output cap added | Medium |
+| [001](001-decompression-reads-unbounded-output-into-memory.md) | Decompression reads unbounded output into memory | Medium |
 | [002](002-hash-verification-is-disabled-by-default.md) | Hash verification is disabled by default | Medium |
 | [003](003-package-command-name-can-escape-bin-writes.md) | Package command names can escape intended `/bin` write targets | High |
 | [007](007-graphql-query-injection-via-package-name-substitution.md) | GraphQL query injection via package name substitution | Medium |
@@ -28,7 +28,7 @@ Security audit of Wasmer's WASIX implementation, covering the package manager an
 |---|---------|----------|
 | [005](005-relative-library-paths-ignore-calling-module-directory.md) | Relative dependency paths bypass caller directory | High |
 | [009](009-untrusted-file-read-can-panic-on-i-o-error.md) | Untrusted file read can panic on I/O error | Medium |
-| [010](010-malformed-package-file-can-panic-during-package-creation.md) | Malformed package file panic on package creation | Medium |
+| [010](010-malformed-package-file-can-panic-during-package-creation.md) | Malformed package file panics during package creation | Medium |
 | [011](011-write-lock-held-across-async-filesystem-load.md) | Write lock held across async filesystem load | Medium |
 | [039](039-opened-fd-ignores-requested-base-rights.md) | Opened fd ignores requested base rights | Medium |
 | [062](062-guest-path-reaches-filesystem-module-loader-unchecked.md) | Guest `dlopen` path bypasses guest file-access checks | Medium |
@@ -41,7 +41,7 @@ Security audit of Wasmer's WASIX implementation, covering the package manager an
 |---|---------|----------|
 | [015](015-duplicate-spin-up-races-for-same-shard.md) | Duplicate shard spin-up race | Medium |
 | [016](016-untrusted-x-shard-header-controls-backend-shard-selection.md) | Untrusted X-Shard header controls backend shard selection | Medium |
-| [030](030-ipv6-segments-decoded-using-host-endianness.md) | IPv6 segment decoding depended on host endianness | Medium |
+| [030](030-ipv6-segments-decoded-using-host-endianness.md) | IPv6 segment decoding depends on host endianness | Medium |
 | [031](031-port-reader-mismatches-writer-byte-order.md) | Port reader mismatches writer byte order | High |
 | [033](033-accepted-connections-are-tracked-without-any-concurrency-lim.md) | Accepted connection tracking lacks a concurrency bound | Medium |
 | [057](057-unchecked-iovec-length-sum-can-wrap-max-size.md) | Unchecked iovec length sum can wrap max_size | Medium |
@@ -86,3 +86,5 @@ Security audit of Wasmer's WASIX implementation, covering the package manager an
 | [013](013-reading-stack-offset-underflows-when-pointer-exceeds-stack-u.md) | Stack pointer bounds check underflow | Medium |
 | [028](028-read-guard-marked-send-without-sync-bound.md) | Read guard `Send` without `Sync` bound | High |
 | [029](029-write-guard-marked-send-without-required-sync-bound.md) | Write guard incorrectly marked `Send` | High |
+</content>
+</invoke>

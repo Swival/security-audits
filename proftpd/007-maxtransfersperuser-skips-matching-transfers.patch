@@ -1,0 +1,13 @@
+diff --git a/modules/mod_xfer.c b/modules/mod_xfer.c
+index bcaf72ba7..1730fb84b 100644
+--- a/modules/mod_xfer.c
++++ b/modules/mod_xfer.c
+@@ -417,7 +417,7 @@ static int xfer_check_limit(cmd_rec *cmd) {
+         continue;
+       }
+ 
+-      if (strcmp(score->sce_cmd, xfer_cmd) == 0) {
++      if (strcmp(score->sce_cmd, xfer_cmd) != 0) {
+         pr_trace_msg(trace_channel, 25,
+           "MaxTransfersPerUser: command '%s' does not match '%s', skipping",
+           xfer_cmd, score->sce_cmd);

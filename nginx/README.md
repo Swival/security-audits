@@ -1,6 +1,6 @@
 # nginx Audit Findings
 
-Security audit of the nginx web server, covering core modules, protocol handling, and platform-specific code paths. Each finding includes a detailed write-up and a patch.
+Security audit of nginx, a high-performance HTTP server and reverse proxy. Each finding includes a detailed write-up and a patch.
 
 ## Summary
 

@@ -1,0 +1,22 @@
+diff --git a/src/fsio.c b/src/fsio.c
+index c72102cd9..cb71f1873 100644
+--- a/src/fsio.c
++++ b/src/fsio.c
+@@ -124,6 +124,7 @@ static const char *trace_channel = "fsio";
+  * Currently, we guard the /etc and /lib directories.
+  */
+ static int chroot_allow_path(const char *path) {
++  char cleaned_path[PR_TUNABLE_PATH_MAX + 1] = {'\0'};
+   size_t path_len;
+   int res = 0;
+ 
+@@ -131,6 +132,9 @@ static int chroot_allow_path(const char *path) {
+    * ever not be the case, this check will not work.
+    */
+ 
++  pr_fs_clean_path(path, cleaned_path, sizeof(cleaned_path)-1);
++  path = cleaned_path;
++
+   path_len = strlen(path);
+   if (path_len < 4) {
+     /* Path is not long enough to include one of the guarded directories. */
