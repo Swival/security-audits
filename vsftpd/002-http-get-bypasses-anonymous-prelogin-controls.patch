@@ -1,0 +1,38 @@
+diff --git a/prelogin.c b/prelogin.c
+index f9e63ba..4ccc5ae 100644
+--- a/prelogin.c
++++ b/prelogin.c
+@@ -204,6 +204,33 @@ handle_get(struct vsf_session* p_sess)
+   p_sess->is_http = 1;
+   str_copy(&p_sess->http_get_arg, &p_sess->ftp_arg_str);
+   str_alloc_text(&p_sess->user_str, "FTP");
++  if (p_sess->control_use_ssl && !tunable_allow_anon_ssl &&
++      !tunable_force_anon_logins_ssl)
++  {
++    vsf_cmdio_write(
++      p_sess, FTP_LOGINERR, "Anonymous sessions may not use encryption.");
++    str_empty(&p_sess->user_str);
++    return;
++  }
++  if (tunable_ssl_enable && !p_sess->control_use_ssl &&
++      tunable_force_anon_logins_ssl)
++  {
++    vsf_cmdio_write_exit(
++      p_sess, FTP_LOGINERR, "Anonymous sessions must use encryption.", 1);
++  }
++  if (tunable_userlist_enable)
++  {
++    int located = str_contains_line(&p_sess->userlist_str, &p_sess->user_str);
++    if ((located && tunable_userlist_deny) ||
++        (!located && !tunable_userlist_deny))
++    {
++      check_login_delay();
++      vsf_cmdio_write(p_sess, FTP_LOGINERR, "Permission denied.");
++      check_login_fails(p_sess);
++      str_empty(&p_sess->user_str);
++      return;
++    }
++  }
+   str_alloc_text(&p_sess->ftp_arg_str, "<http>");
+   handle_pass_command(p_sess);
+ }

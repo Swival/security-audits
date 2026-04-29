@@ -32,6 +32,7 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | [quicly](quicly/)                                             |        1 | QUIC protocol implementation in C              |
 | [rust-stdlib](rust-stdlib/)                                   |      151 | Rust standard library and supporting crates    |
 | [viceroy](viceroy/)                                           |       30 | Local development server for Fastly Compute    |
+| [vsftpd](vsftpd/)                                             |        3 | Secure FTP daemon for Unix-like systems        |
 | [wasmer-wasix](wasmer-wasix/)                                 |       44 | WASIX runtime in Wasmer                        |
 | [wasmtime-wasi](wasmtime-wasi/)                               |        5 | WASI implementation in Wasmtime                |
 | [wasmtools-wasmparser](wasmtools-wasmparser/)                 |        2 | WebAssembly binary parser from `wasm-tools`    |
