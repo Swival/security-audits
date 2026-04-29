@@ -1,0 +1,30 @@
+diff --git a/ssl.c b/ssl.c
+index 6e042aa..ee3b905 100644
+--- a/ssl.c
++++ b/ssl.c
+@@ -744,12 +744,13 @@ ssl_alpn_callback(SSL* p_ssl,
+   *p_out = p_in;
+   *outlen = 0;
+ 
+-  for (i = 0; i < inlen; ++i) {
++  for (i = 0; i < inlen;) {
++    unsigned int proto_len = p_in[i];
+     unsigned int left = (inlen - i);
+-    if (left < 4) {
+-      continue;
++    if (proto_len + 1 > left) {
++      break;
+     }
+-    if (p_in[i] == 3 && p_in[i + 1] == 'f' && p_in[i + 2] == 't' &&
++    if (proto_len == 3 && p_in[i + 1] == 'f' && p_in[i + 2] == 't' &&
+         p_in[i + 3] == 'p')
+     {
+       is_ok = 1;
+@@ -757,6 +758,7 @@ ssl_alpn_callback(SSL* p_ssl,
+       *outlen = 3;
+       break;
+     }
++    i += proto_len + 1;
+   }
+   
+   if (!is_ok)

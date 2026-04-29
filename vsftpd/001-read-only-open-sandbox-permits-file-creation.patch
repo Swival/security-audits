@@ -1,0 +1,14 @@
+diff --git a/ptracesandbox.c b/ptracesandbox.c
+index 37efd5a..a5b84d4 100644
+--- a/ptracesandbox.c
++++ b/ptracesandbox.c
+@@ -804,7 +804,8 @@ validate_open_readonly(struct pt_sandbox* p_sandbox, void* p_arg)
+   {
+     return ret;
+   }
+-  if ((arg2 & O_ACCMODE) != O_RDONLY)
++  if ((arg2 & O_ACCMODE) != O_RDONLY ||
++      (arg2 & (O_CREAT | O_TRUNC | O_APPEND)))
+   {
+     return -1;
+   }
