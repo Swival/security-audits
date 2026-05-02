@@ -1,0 +1,15 @@
+diff --git a/gen/getgrent.c b/gen/getgrent.c
+index 5836485..eaf902f 100644
+--- a/gen/getgrent.c
++++ b/gen/getgrent.c
+@@ -418,6 +418,10 @@ grscan(int search, gid_t gid, const char *name, struct group *p_gr,
+ 				default:
+ 					return 0;
+ 				}
++				if (datalen >= sizeof(gs->line)) {
++					free(data);
++					continue;
++				}
+ 				bcopy(data, line, datalen);
+ 				free(data);
+ 				line[datalen] = '\0';

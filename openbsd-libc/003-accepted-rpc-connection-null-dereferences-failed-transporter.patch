@@ -1,0 +1,15 @@
+diff --git a/rpc/svc_tcp.c b/rpc/svc_tcp.c
+index 6339f9a..38ee698 100644
+--- a/rpc/svc_tcp.c
++++ b/rpc/svc_tcp.c
+@@ -286,6 +286,10 @@ rendezvous_request(SVCXPRT *xprt, struct rpc_msg *ignored)
+ 	 * make a new transporter (re-uses xprt)
+ 	 */
+ 	xprt = makefd_xprt(sock, r->sendsize, r->recvsize);
++	if (xprt == NULL) {
++		close(sock);
++		return (FALSE);
++	}
+ 	xprt->xp_raddr = addr;
+ 	xprt->xp_addrlen = len;
+ 	return (FALSE); /* there is never an rpc msg to be processed */

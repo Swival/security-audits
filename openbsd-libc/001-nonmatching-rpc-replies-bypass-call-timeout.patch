@@ -1,0 +1,66 @@
+diff --git a/rpc/clnt_tcp.c b/rpc/clnt_tcp.c
+index 86675f8..6ab1b3c 100644
+--- a/rpc/clnt_tcp.c
++++ b/rpc/clnt_tcp.c
+@@ -82,6 +82,7 @@ struct ct_data {
+ 	bool_t		ct_closeit;
+ 	int		ct_connected;	/* pre-connected */
+ 	struct timeval	ct_wait;
++	struct timespec	ct_deadline;
+ 	bool_t          ct_waitset;       /* wait set by clnt_control? */
+ 	struct sockaddr_in ct_addr; 
+ 	struct rpc_err	ct_error;
+@@ -230,6 +231,7 @@ clnttcp_call(CLIENT *h, u_long proc, xdrproc_t xdr_args, caddr_t args_ptr,
+ 	struct ct_data *ct = (struct ct_data *) h->cl_private;
+ 	XDR *xdrs = &(ct->ct_xdrs);
+ 	struct rpc_msg reply_msg;
++	struct timespec now, wait;
+ 	u_long x_id;
+ 	u_int32_t *msg_x_id = (u_int32_t *)(ct->ct_mcall);	/* yuk */
+ 	bool_t shipnow;
+@@ -267,6 +269,9 @@ call_again:
+ 		return(ct->ct_error.re_status = RPC_TIMEDOUT);
+ 	}
+ 
++	TIMEVAL_TO_TIMESPEC(&ct->ct_wait, &wait);
++	WRAP(clock_gettime)(CLOCK_MONOTONIC, &now);
++	timespecadd(&now, &wait, &ct->ct_deadline);
+ 
+ 	/*
+ 	 * Keep receiving until we get a valid transaction id
+@@ -387,7 +392,7 @@ static int
+ readtcp(struct ct_data *ct, caddr_t buf, int len)
+ {
+ 	struct pollfd pfd[1];
+-	struct timespec start, after, duration, delta, wait;
++	struct timespec now, delta;
+ 	int r, save_errno;
+ 
+ 	if (len == 0)
+@@ -395,19 +400,17 @@ readtcp(struct ct_data *ct, caddr_t buf, int len)
+ 
+ 	pfd[0].fd = ct->ct_sock;
+ 	pfd[0].events = POLLIN;
+-	TIMEVAL_TO_TIMESPEC(&ct->ct_wait, &wait);
+-	delta = wait;
+-	WRAP(clock_gettime)(CLOCK_MONOTONIC, &start);
+ 	for (;;) {
++		WRAP(clock_gettime)(CLOCK_MONOTONIC, &now);
++		timespecsub(&ct->ct_deadline, &now, &delta);
++		if (delta.tv_sec < 0 || !timespecisset(&delta)) {
++			ct->ct_error.re_status = RPC_TIMEDOUT;
++			return (-1);
++		}
++
+ 		r = ppoll(pfd, 1, &delta, NULL);
+ 		save_errno = errno;
+ 
+-		WRAP(clock_gettime)(CLOCK_MONOTONIC, &after);
+-		timespecsub(&start, &after, &duration);
+-		timespecsub(&wait, &duration, &delta);
+-		if (delta.tv_sec < 0 || !timespecisset(&delta))
+-			r = 0;
+-
+ 		switch (r) {
+ 		case 0:
+ 			ct->ct_error.re_status = RPC_TIMEDOUT;

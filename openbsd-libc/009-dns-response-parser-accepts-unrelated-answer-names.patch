@@ -1,0 +1,14 @@
+diff --git a/asr/getaddrinfo_async.c b/asr/getaddrinfo_async.c
+index b24c1e3..07bfb02 100644
+--- a/asr/getaddrinfo_async.c
++++ b/asr/getaddrinfo_async.c
+@@ -658,7 +658,8 @@ addrinfo_from_pkt(struct asr_query *as, char *pkt, size_t pktlen)
+ 	for (i = 0; i < h.ancount; i++) {
+ 		_asr_unpack_rr(&p, &rr);
+ 		if (rr.rr_type != q.q_type ||
+-		    rr.rr_class != q.q_class)
++		    rr.rr_class != q.q_class ||
++		    strcasecmp(rr.rr_dname, q.q_dname))
+ 			continue;
+ 
+ 		memset(&u, 0, sizeof u);

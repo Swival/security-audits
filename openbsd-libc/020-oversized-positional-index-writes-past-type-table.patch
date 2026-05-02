@@ -1,0 +1,116 @@
+diff --git a/stdio/vfwprintf.c b/stdio/vfwprintf.c
+index 963c475..789130f 100644
+--- a/stdio/vfwprintf.c
++++ b/stdio/vfwprintf.c
+@@ -1144,29 +1144,55 @@ __find_arguments(const wchar_t *fmt0, va_list ap, union arg **argtable,
+ 	/*
+ 	 * Add an argument type to the table, expanding if necessary.
+ 	 */
+-#define ADDTYPE(type) \
+-	((nextarg >= tablesize) ? \
+-		__grow_type_table(&typetable, &tablesize) : 0, \
+-	(nextarg > tablemax) ? tablemax = nextarg : 0, \
+-	typetable[nextarg++] = type)
++#define ADDTYPE(type) do { \
++	while (nextarg >= tablesize) { \
++		if (__grow_type_table(&typetable, &tablesize) == -1) { \
++			ret = -1; \
++			goto finish; \
++		} \
++	} \
++	if (nextarg > tablemax) \
++		tablemax = nextarg; \
++	typetable[nextarg++] = type; \
++} while (0)
+ 
+-#define	ADDSARG() \
+-        ((flags&MAXINT) ? ADDTYPE(T_MAXINT) : \
+-	    ((flags&PTRINT) ? ADDTYPE(T_PTRINT) : \
+-	    ((flags&SIZEINT) ? ADDTYPE(T_SSIZEINT) : \
+-	    ((flags&LLONGINT) ? ADDTYPE(T_LLONG) : \
+-	    ((flags&LONGINT) ? ADDTYPE(T_LONG) : \
+-	    ((flags&SHORTINT) ? ADDTYPE(T_SHORT) : \
+-	    ((flags&CHARINT) ? ADDTYPE(T_CHAR) : ADDTYPE(T_INT))))))))
++#define	ADDSARG() do { \
++	if (flags&MAXINT) \
++		ADDTYPE(T_MAXINT); \
++	else if (flags&PTRINT) \
++		ADDTYPE(T_PTRINT); \
++	else if (flags&SIZEINT) \
++		ADDTYPE(T_SSIZEINT); \
++	else if (flags&LLONGINT) \
++		ADDTYPE(T_LLONG); \
++	else if (flags&LONGINT) \
++		ADDTYPE(T_LONG); \
++	else if (flags&SHORTINT) \
++		ADDTYPE(T_SHORT); \
++	else if (flags&CHARINT) \
++		ADDTYPE(T_CHAR); \
++	else \
++		ADDTYPE(T_INT); \
++} while (0)
+ 
+-#define	ADDUARG() \
+-        ((flags&MAXINT) ? ADDTYPE(T_MAXUINT) : \
+-	    ((flags&PTRINT) ? ADDTYPE(T_PTRINT) : \
+-	    ((flags&SIZEINT) ? ADDTYPE(T_SIZEINT) : \
+-	    ((flags&LLONGINT) ? ADDTYPE(T_U_LLONG) : \
+-	    ((flags&LONGINT) ? ADDTYPE(T_U_LONG) : \
+-	    ((flags&SHORTINT) ? ADDTYPE(T_U_SHORT) : \
+-	    ((flags&CHARINT) ? ADDTYPE(T_U_CHAR) : ADDTYPE(T_U_INT))))))))
++#define	ADDUARG() do { \
++	if (flags&MAXINT) \
++		ADDTYPE(T_MAXUINT); \
++	else if (flags&PTRINT) \
++		ADDTYPE(T_PTRINT); \
++	else if (flags&SIZEINT) \
++		ADDTYPE(T_SIZEINT); \
++	else if (flags&LLONGINT) \
++		ADDTYPE(T_U_LLONG); \
++	else if (flags&LONGINT) \
++		ADDTYPE(T_U_LONG); \
++	else if (flags&SHORTINT) \
++		ADDTYPE(T_U_SHORT); \
++	else if (flags&CHARINT) \
++		ADDTYPE(T_U_CHAR); \
++	else \
++		ADDTYPE(T_U_INT); \
++} while (0)
+ 
+ 	/*
+ 	 * Add * arguments to the type array.
+@@ -1451,7 +1477,7 @@ overflow:
+ 
+ finish:
+ 	if (typetable != NULL && typetable != stattypetable) {
+-		munmap(typetable, *argtablesiz);
++		munmap(typetable, tablesize);
+ 		typetable = NULL;
+ 	}
+ 	return (ret);
+@@ -1464,16 +1490,22 @@ static int
+ __grow_type_table(unsigned char **typetable, int *tablesize)
+ {
+ 	unsigned char *oldtable = *typetable;
+-	int newsize = *tablesize * 2;
++	int newsize;
+ 
++	if (*tablesize > INT_MAX / 2) {
++		errno = EOVERFLOW;
++		return (-1);
++	}
++	newsize = *tablesize * 2;
+ 	if (newsize < getpagesize())
+ 		newsize = getpagesize();
+ 
+ 	if (*tablesize == STATIC_ARG_TBL_SIZE) {
+-		*typetable = mmap(NULL, newsize, PROT_WRITE|PROT_READ,
++		unsigned char *new = mmap(NULL, newsize, PROT_WRITE|PROT_READ,
+ 		    MAP_ANON|MAP_PRIVATE, -1, 0);
+-		if (*typetable == MAP_FAILED)
++		if (new == MAP_FAILED)
+ 			return (-1);
++		*typetable = new;
+ 		bcopy(oldtable, *typetable, *tablesize);
+ 	} else {
+ 		unsigned char *new = mmap(NULL, newsize, PROT_WRITE|PROT_READ,
