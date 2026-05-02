@@ -1,0 +1,13 @@
+diff --git a/ssl_sigalgs.c b/ssl_sigalgs.c
+index ee4088f..ebe9ee0 100644
+--- a/ssl_sigalgs.c
++++ b/ssl_sigalgs.c
+@@ -278,6 +278,9 @@ ssl_sigalg_pkey_ok(SSL *s, const struct ssl_sigalg *sigalg, EVP_PKEY *pkey)
+ 	if (sigalg == NULL || pkey == NULL)
+ 		return 0;
+ 
++	if (sigalg->security_level < SSL_get_security_level(s))
++		return 0;
++
+ 	if (sigalg->key_type != EVP_PKEY_id(pkey))
+ 		return 0;

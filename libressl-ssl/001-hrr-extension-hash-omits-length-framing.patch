@@ -1,0 +1,20 @@
+diff --git a/ssl_tlsext.c b/ssl_tlsext.c
+index d879b33..367cd75 100644
+--- a/ssl_tlsext.c
++++ b/ssl_tlsext.c
+@@ -2558,6 +2558,7 @@ tlsext_clienthello_hash_extension(SSL *s, uint16_t type, CBS *cbs)
+ 	 * cookie may be added, padding may be removed.
+ 	 */
+ 	struct tls13_ctx *ctx = s->tls13;
++	uint16_t len = CBS_len(cbs);
+ 
+ 	if (type == TLSEXT_TYPE_early_data || type == TLSEXT_TYPE_cookie ||
+ 	    type == TLSEXT_TYPE_padding)
+@@ -2571,6 +2572,8 @@ tlsext_clienthello_hash_extension(SSL *s, uint16_t type, CBS *cbs)
+ 	 */
+ 	if (type == TLSEXT_TYPE_pre_shared_key || type == TLSEXT_TYPE_key_share)
+ 		return 1;
++	if (!tls13_clienthello_hash_update_bytes(ctx, (void *)&len, sizeof(len)))
++		return 0;
+ 	if (!tls13_clienthello_hash_update(ctx, cbs))
+ 		return 0;

@@ -1,0 +1,25 @@
+diff --git a/ssl_kex.c b/ssl_kex.c
+index fa420a3..9cca656 100644
+--- a/ssl_kex.c
++++ b/ssl_kex.c
+@@ -160,6 +160,7 @@ ssl_kex_peer_params_dhe(DH *dh, CBS *cbs, int *decode_error,
+ {
+ 	BIGNUM *p = NULL, *g = NULL;
+ 	CBS dh_p, dh_g;
++	int check_flags;
+ 	int ret = 0;
+ 
+ 	*decode_error = 0;
+@@ -184,9 +185,9 @@ ssl_kex_peer_params_dhe(DH *dh, CBS *cbs, int *decode_error,
+ 	p = NULL;
+ 	g = NULL;
+ 
+-	/* XXX - consider calling DH_check(). */
+-
+-	if (DH_bits(dh) < DHE_MINIMUM_BITS)
++	if (!DH_check(dh, &check_flags))
++		goto err;
++	if (check_flags != 0 || DH_bits(dh) < DHE_MINIMUM_BITS)
+ 		*invalid_params = 1;
+ 
+ 	ret = 1;
