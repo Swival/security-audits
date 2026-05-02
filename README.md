@@ -26,9 +26,11 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | [go/crypto](go/crypto/)                                       |       54 | Go standard library `crypto/*` packages        |
 | [h2o](h2o/)                                                   |       19 | HTTP/1, HTTP/2 and HTTP/3 server               |
 | [libinjection](libinjection/)                                 |        5 | SQL injection and XSS detection library        |
+| [libressl-ssl](libressl-ssl/)                                 |        3 | LibreSSL libssl, the TLS/SSL protocol library  |
 | [nginx](nginx/)                                               |       12 | High-performance HTTP server and reverse proxy |
 | [pcre2](pcre2/)                                               |        4 | Perl-compatible regular expressions library    |
 | [picotls](picotls/)                                           |       11 | TLS 1.3 implementation in C                    |
+| [proftpd](proftpd/)                                           |       17 | FTP server for Unix-like systems               |
 | [quicly](quicly/)                                             |        1 | QUIC protocol implementation in C              |
 | [rust-stdlib](rust-stdlib/)                                   |      151 | Rust standard library and supporting crates    |
 | [viceroy](viceroy/)                                           |       30 | Local development server for Fastly Compute    |
