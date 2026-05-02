@@ -1,0 +1,37 @@
+diff --git a/gen/getgrent.c b/gen/getgrent.c
+index 5836485..22b6804 100644
+--- a/gen/getgrent.c
++++ b/gen/getgrent.c
+@@ -325,6 +325,10 @@ grscan(int search, gid_t gid, const char *name, struct group *p_gr,
+ 				else
+ 					return 0;
+ 			}
++			if (datalen >= sizeof(gs->line)) {
++				free(data);
++				continue;
++			}
+ 			bcopy(data, line, datalen);
+ 			free(data);
+ 			line[datalen] = '\0';
+@@ -384,6 +388,10 @@ grscan(int search, gid_t gid, const char *name, struct group *p_gr,
+ 				default:
+ 					return 0;
+ 				}
++				if (datalen >= sizeof(gs->line)) {
++					free(data);
++					continue;
++				}
+ 				bcopy(data, line, datalen);
+ 				free(data);
+ 				line[datalen] = '\0';
+@@ -418,6 +426,10 @@ grscan(int search, gid_t gid, const char *name, struct group *p_gr,
+ 				default:
+ 					return 0;
+ 				}
++				if (datalen >= sizeof(gs->line)) {
++					free(data);
++					continue;
++				}
+ 				bcopy(data, line, datalen);
+ 				free(data);
+ 				line[datalen] = '\0';

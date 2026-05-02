@@ -1,0 +1,29 @@
+diff --git a/db/hash/hash.c b/db/hash/hash.c
+index 797a8d0..eaddaf8 100644
+--- a/db/hash/hash.c
++++ b/db/hash/hash.c
+@@ -153,6 +153,13 @@ __hash_open(const char *file, int fd, int flags, int mode,
+ 			RETURN_ERROR(EFTYPE, error1);
+ 		if (hashp->hash(CHARKEY, sizeof(CHARKEY)) != hashp->H_CHARKEY)
+ 			RETURN_ERROR(EFTYPE, error1);
++		/* Read in bitmaps */
++		bpages = (hashp->SPARES[hashp->OVFL_POINT] +
++		    (hashp->BSIZE << BYTE_SHIFT) - 1) >>
++		    (hashp->BSHIFT + BYTE_SHIFT);
++		if (bpages < 0 || bpages > NCACHED)
++			RETURN_ERROR(EFTYPE, error1);
++
+ 		/*
+ 		 * Figure out how many segments we need.  Max_Bucket is the
+ 		 * maximum bucket number, so the number of buckets is
+@@ -166,10 +173,6 @@ __hash_open(const char *file, int fd, int flags, int mode,
+ 			 * and errno will have been set.
+ 			 */
+ 			return (NULL);
+-		/* Read in bitmaps */
+-		bpages = (hashp->SPARES[hashp->OVFL_POINT] +
+-		    (hashp->BSIZE << BYTE_SHIFT) - 1) >>
+-		    (hashp->BSHIFT + BYTE_SHIFT);
+ 
+ 		hashp->nmaps = bpages;
+ 		(void)memset(&hashp->mapp[0], 0, bpages * sizeof(u_int32_t *));

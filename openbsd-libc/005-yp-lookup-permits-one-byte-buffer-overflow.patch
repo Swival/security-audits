@@ -1,0 +1,31 @@
+diff --git a/gen/getpwent.c b/gen/getpwent.c
+index d851711..dca5707 100644
+--- a/gen/getpwent.c
++++ b/gen/getpwent.c
+@@ -599,7 +599,7 @@ __yppwlookup(int lookup, char *name, uid_t uid, struct passwd *pw,
+ 				r = yp_match(__ypdomain, map,
+ 				    name, strlen(name),
+ 				    &ypcurrent, &ypcurrentlen);
+-				if (r != 0 || ypcurrentlen > buflen) {
++				if (r != 0 || ypcurrentlen >= buflen) {
+ 					free(ypcurrent);
+ 					ypcurrent = NULL;
+ 					continue;
+@@ -623,7 +623,7 @@ pwnam_netgrp:
+ 						    &ypcurrent, &ypcurrentlen);
+ 					} else
+ 						goto pwnam_netgrp;
+-					if (r != 0 || ypcurrentlen > buflen) {
++					if (r != 0 || ypcurrentlen >= buflen) {
+ 						free(ypcurrent);
+ 						ypcurrent = NULL;
+ 						/*
+@@ -642,7 +642,7 @@ pwnam_netgrp:
+ 				r = yp_match(__ypdomain, map,
+ 				    user, strlen(user),
+ 				    &ypcurrent, &ypcurrentlen);
+-				if (r != 0 || ypcurrentlen > buflen) {
++				if (r != 0 || ypcurrentlen >= buflen) {
+ 					free(ypcurrent);
+ 					ypcurrent = NULL;
+ 					continue;

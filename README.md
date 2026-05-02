@@ -28,6 +28,7 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | [libinjection](libinjection/)                                 |        5 | SQL injection and XSS detection library        |
 | [libressl/ssl](libressl/ssl/)                                 |        3 | LibreSSL libssl, the TLS/SSL protocol library  |
 | [nginx](nginx/)                                               |       12 | High-performance HTTP server and reverse proxy |
+| [openbsd-libc](openbsd-libc/)                                 |       21 | OpenBSD C standard library                     |
 | [pcre2](pcre2/)                                               |        4 | Perl-compatible regular expressions library    |
 | [picotls](picotls/)                                           |       11 | TLS 1.3 implementation in C                    |
 | [proftpd](proftpd/)                                           |       17 | FTP server for Unix-like systems               |

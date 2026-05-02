@@ -1,0 +1,13 @@
+diff --git a/rpc/rpc_callmsg.c b/rpc/rpc_callmsg.c
+index 5825a0e..aa7d8d7 100644
+--- a/rpc/rpc_callmsg.c
++++ b/rpc/rpc_callmsg.c
+@@ -81,6 +81,8 @@ xdr_callmsg(XDR *xdrs, struct rpc_msg *cmsg)
+ 			IXDR_PUT_LONG(buf, oa->oa_length);
+ 			if (oa->oa_length) {
+ 				memcpy((caddr_t)buf, oa->oa_base, oa->oa_length);
++				memset((caddr_t)buf + oa->oa_length, 0,
++				    RNDUP(oa->oa_length) - oa->oa_length);
+ 				/* no real need....
+ 				buf += RNDUP(oa->oa_length) / sizeof (int32_t);
+ 				*/

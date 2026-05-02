@@ -1,0 +1,13 @@
+diff --git a/db/hash/hash.c b/db/hash/hash.c
+index 797a8d0..eef2344 100644
+--- a/db/hash/hash.c
++++ b/db/hash/hash.c
+@@ -160,6 +160,8 @@ __hash_open(const char *file, int fd, int flags, int mode,
+ 		 */
+ 		nsegs = (hashp->MAX_BUCKET + 1 + hashp->SGSIZE - 1) /
+ 			 hashp->SGSIZE;
++		if (nsegs > hashp->DSIZE)
++			RETURN_ERROR(EFTYPE, error1);
+ 		if (alloc_segs(hashp, nsegs))
+ 			/*
+ 			 * If alloc_segs fails, table will have been destroyed

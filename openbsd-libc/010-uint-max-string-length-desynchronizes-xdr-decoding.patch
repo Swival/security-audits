@@ -1,0 +1,13 @@
+diff --git a/rpc/xdr.c b/rpc/xdr.c
+index e362446..ad29460 100644
+--- a/rpc/xdr.c
++++ b/rpc/xdr.c
+@@ -633,7 +633,7 @@ xdr_string(XDR *xdrs, char **cpp, u_int maxsize)
+ 	if (! xdr_u_int(xdrs, &size)) {
+ 		return (FALSE);
+ 	}
+-	if (size > maxsize) {
++	if (size > maxsize || size == LASTUNSIGNED) {
+ 		return (FALSE);
+ 	}
+ 	nodesize = size + 1;

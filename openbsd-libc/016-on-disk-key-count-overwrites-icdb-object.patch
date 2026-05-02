@@ -1,0 +1,15 @@
+diff --git a/stdlib/icdb.c b/stdlib/icdb.c
+index 2ddd9db..2598930 100644
+--- a/stdlib/icdb.c
++++ b/stdlib/icdb.c
+@@ -175,6 +175,10 @@ icdb_open(const char *name, int flags, uint32_t version)
+ 		errno = ENOENT;
+ 		goto fail;
+ 	}
++	if (info->nkeys > 8) {
++		errno = EINVAL;
++		goto fail;
++	}
+ 
+ 	if (!(db = calloc(1, sizeof(*db))))
+ 		goto fail;

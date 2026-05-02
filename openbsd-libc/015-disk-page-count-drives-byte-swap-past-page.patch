@@ -1,0 +1,15 @@
+diff --git a/db/hash/hash_page.c b/db/hash/hash_page.c
+index 8e273db..4c28e9a 100644
+--- a/db/hash/hash_page.c
++++ b/db/hash/hash_page.c
+@@ -547,6 +547,10 @@ __get_page(HTAB *hashp, char *p, u_int32_t bucket, int is_bucket, int is_disk,
+ 			} else {
+ 				M_16_SWAP(bp[0]);
+ 				max = bp[0] + 2;
++				if (max >= hashp->BSIZE / sizeof(u_int16_t)) {
++					errno = EFTYPE;
++					return (-1);
++				}
+ 				for (i = 1; i <= max; i++)
+ 					M_16_SWAP(bp[i]);
+ 			}

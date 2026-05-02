@@ -1,0 +1,51 @@
+diff --git a/gen/getpwent.c b/gen/getpwent.c
+index d851711..ace9d33 100644
+--- a/gen/getpwent.c
++++ b/gen/getpwent.c
+@@ -330,7 +330,7 @@ again:
+ 	if (__getpwent_has_yppw && (__ypmode != YPMODE_NONE)) {
+ 		const char *user, *host, *dom;
+ 		int keylen, datalen, r, s;
+-		char *key, *data = NULL;
++		char *key = NULL, *data = NULL;
+ 
+ 		if (!__ypdomain)
+ 			yp_get_default_domain(&__ypdomain);
+@@ -342,8 +342,9 @@ again:
+ 				    &key, &keylen, &data, &datalen);
+ 				free(__ypcurrent);
+ 				__ypcurrent = NULL;
+-				if (r != 0) {
++				if (r != 0 || datalen >= buflen) {
+ 					__ypmode = YPMODE_NONE;
++					free(key);
+ 					free(data);
+ 					goto again;
+ 				}
+@@ -354,7 +355,7 @@ again:
+ 				    &__ypcurrent, &__ypcurrentlen,
+ 				    &data, &datalen);
+ 				if (r != 0 ||
+-				    __ypcurrentlen > buflen) {
++				    datalen >= buflen) {
+ 					__ypmode = YPMODE_NONE;
+ 					free(data);
+ 					goto again;
+@@ -376,7 +377,7 @@ again:
+ 			} else
+ 				goto again;
+ 			if (r != 0 ||
+-			    __ypcurrentlen > buflen) {
++			    datalen >= buflen) {
+ 				/*
+ 				 * if the netgroup is invalid, keep looking
+ 				 * as there may be valid users later on.
+@@ -395,7 +396,7 @@ again:
+ 				free(name);
+ 				name = NULL;
+ 				if (r != 0 ||
+-				    __ypcurrentlen > buflen) {
++				    datalen >= buflen) {
+ 					free(data);
+ 					goto again;
+ 				}

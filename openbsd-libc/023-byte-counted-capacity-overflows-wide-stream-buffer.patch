@@ -1,0 +1,15 @@
+diff --git a/stdio/open_wmemstream.c b/stdio/open_wmemstream.c
+index fca0b71..42ec482 100644
+--- a/stdio/open_wmemstream.c
++++ b/stdio/open_wmemstream.c
+@@ -138,8 +138,8 @@ open_wmemstream(wchar_t **pbuf, size_t *psize)
+ 		return (NULL);
+ 	}
+ 
+-	st->size = BUFSIZ * sizeof(wchar_t);
+-	if ((st->string = calloc(1, st->size)) == NULL) {
++	st->size = BUFSIZ;
++	if ((st->string = calloc(st->size, sizeof(wchar_t))) == NULL) {
+ 		free(st);
+ 		fp->_flags = 0;
+ 		return (NULL);

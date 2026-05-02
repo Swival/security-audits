@@ -1,0 +1,18 @@
+diff --git a/rpc/xdr_rec.c b/rpc/xdr_rec.c
+index b3445d5..05b04eb 100644
+--- a/rpc/xdr_rec.c
++++ b/rpc/xdr_rec.c
+@@ -541,8 +541,11 @@ __xdrrec_getrec(XDR *xdrs, enum xprt_stat *statp, bool_t expectdata)
+ 			return (FALSE);
+ 		}
+ 		rstrm->in_reclen += fraglen;
+-		if (rstrm->in_reclen > rstrm->recvsize)
+-			realloc_stream(rstrm, rstrm->in_reclen);
++		if (rstrm->in_reclen > rstrm->recvsize &&
++		    !realloc_stream(rstrm, rstrm->in_reclen)) {
++			*statp = XPRT_DIED;
++			return (FALSE);
++		}
+ 		if (rstrm->in_header & LAST_FRAG) {
+ 			rstrm->in_header &= ~LAST_FRAG;
+ 			rstrm->last_frag = TRUE;

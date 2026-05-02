@@ -1,0 +1,11 @@
+diff --git a/rpc/svc_simple.c b/rpc/svc_simple.c
+index 9675332..0600b24 100644
+--- a/rpc/svc_simple.c
++++ b/rpc/svc_simple.c
+@@ -121,6 +121,6 @@ universal(struct svc_req *rqstp, SVCXPRT *transp)
+ 			(void)svc_freeargs(transp, pl->p_inproc, xdrbuf);
+ 			return;
+ 		}
+-	exit(1);
++	svcerr_noproc(transp);
+ }
