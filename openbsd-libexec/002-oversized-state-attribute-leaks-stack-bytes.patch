@@ -1,0 +1,16 @@
+diff --git a/login_radius/raddauth.c b/login_radius/raddauth.c
+index 6625203..8d17ccd 100644
+--- a/login_radius/raddauth.c
++++ b/login_radius/raddauth.c
+@@ -619,8 +619,12 @@ parse_challenge(auth_hdr_t *authhdr, char *state, char *challenge)
+ 	*state = 0;
+ 
+ 	while (length > 0) {
++		if (length < 2)
++			errx(1, "bogus auth packet from server");
+ 		attribute = *ptr++;
+ 		attribute_len = *ptr++;
++		if (attribute_len < 2 || attribute_len > length)
++			errx(1, "bogus auth packet from server");
+ 		length -= attribute_len;
+ 		attribute_len -= 2;

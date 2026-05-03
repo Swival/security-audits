@@ -1,0 +1,39 @@
+diff --git a/ld.so/library_mquery.c b/ld.so/library_mquery.c
+index 971d975..b607a88 100644
+--- a/ld.so/library_mquery.c
++++ b/ld.so/library_mquery.c
+@@ -114,6 +114,7 @@ _dl_tryload_shlib(const char *libname, int type, int flags, int nodelete)
+ 	Elf_Addr relro_addr = 0, relro_size = 0;
+ 	struct stat sb;
+ 	char hbuf[4096], *exec_start;
++	ssize_t hsize;
+ 	size_t exec_size;
+ 
+ #define powerof2(x) ((((x) - 1) & (x)) == 0)
+@@ -144,7 +145,12 @@ _dl_tryload_shlib(const char *libname, int type, int flags, int nodelete)
+ 		return NULL;
+ 	}
+ 
+-	_dl_read(libfile, hbuf, sizeof(hbuf));
++	hsize = _dl_read(libfile, hbuf, sizeof(hbuf));
++	if (hsize < (ssize_t)sizeof(Elf_Ehdr)) {
++		_dl_close(libfile);
++		_dl_errno = DL_NOT_ELF;
++		return(0);
++	}
+ 	ehdr = (Elf_Ehdr *)hbuf;
+ 	if (ehdr->e_ident[0] != ELFMAG0  || ehdr->e_ident[1] != ELFMAG1 ||
+ 	    ehdr->e_ident[2] != ELFMAG2 || ehdr->e_ident[3] != ELFMAG3 ||
+@@ -153,6 +159,12 @@ _dl_tryload_shlib(const char *libname, int type, int flags, int nodelete)
+ 		_dl_errno = DL_NOT_ELF;
+ 		return(0);
+ 	}
++	if (ehdr->e_phoff > (size_t)hsize || ehdr->e_phnum >
++	    ((size_t)hsize - ehdr->e_phoff) / sizeof(Elf_Phdr)) {
++		_dl_close(libfile);
++		_dl_errno = DL_NOT_ELF;
++		return(0);
++	}
+ 
+ 	/* Insertion sort */
+ #define LDLIST_INSERT(ld) do { \

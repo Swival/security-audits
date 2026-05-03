@@ -1,0 +1,22 @@
+diff --git a/rpc.rquotad/rquotad.c b/rpc.rquotad/rquotad.c
+index 7b2568c..6bebbf3 100644
+--- a/rpc.rquotad/rquotad.c
++++ b/rpc.rquotad/rquotad.c
+@@ -229,7 +229,7 @@ getfsquota(long id, char *path, struct dqblk *dqblk)
+ 	struct fs_stat *fs;
+ 	int	qcmd, fd, ret = 0;
+ 
+-	if (stat(path, &st_path) == -1)
++	if (id < 0 || stat(path, &st_path) == -1)
+ 		return (0);
+ 
+ 	qcmd = QCMD(Q_GETQUOTA, USRQUOTA);
+@@ -250,7 +250,7 @@ getfsquota(long id, char *path, struct dqblk *dqblk)
+ 		if (lseek(fd, (off_t)(id * sizeof(struct dqblk)), SEEK_SET) ==
+ 		    (off_t)-1) {
+ 			close(fd);
+-			return (1);
++			return (0);
+ 		}
+ 		switch (read(fd, dqblk, sizeof(struct dqblk))) {
+ 		case 0:

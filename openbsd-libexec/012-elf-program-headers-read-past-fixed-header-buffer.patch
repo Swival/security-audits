@@ -1,0 +1,18 @@
+diff --git a/ld.so/library.c b/ld.so/library.c
+index 9b3e974..db3724c 100644
+--- a/ld.so/library.c
++++ b/ld.so/library.c
+@@ -150,6 +150,13 @@ _dl_tryload_shlib(const char *libname, int type, int flags, int nodelete)
+ 		_dl_errno = DL_NOT_ELF;
+ 		return(0);
+ 	}
++	if (ehdr->e_phentsize != sizeof(Elf_Phdr) ||
++	    ehdr->e_phoff > sizeof(hbuf) ||
++	    ehdr->e_phnum > (sizeof(hbuf) - ehdr->e_phoff) / sizeof(Elf_Phdr)) {
++		_dl_close(libfile);
++		_dl_errno = DL_NOT_ELF;
++		return(0);
++	}
+ 
+ 	_dl_memset(&mut, 0, sizeof mut);
+ 	_dl_memset(&imut, 0, sizeof imut);

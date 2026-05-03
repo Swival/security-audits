@@ -1,0 +1,22 @@
+diff --git a/rpc.rusersd/rusers_proc.c b/rpc.rusersd/rusers_proc.c
+index 1f3ea75..f6449d4 100644
+--- a/rpc.rusersd/rusers_proc.c
++++ b/rpc.rusersd/rusers_proc.c
+@@ -362,7 +362,7 @@ rusers_service(struct svc_req *rqstp, SVCXPRT *transp)
+ 			break;
+ 
+ 		case RUSERSVERS_ORIG:
+-			xdr_result = (xdrproc_t)xdr_utmpidlearr;
++			xdr_result = (xdrproc_t)xdr_utmparr;
+ 			local = (char *(*)(void *, struct svc_req *))
+ 			    rusersproc_names_1_svc;
+ 			break;
+@@ -390,7 +390,7 @@ rusers_service(struct svc_req *rqstp, SVCXPRT *transp)
+ 			break;
+ 
+ 		case RUSERSVERS_ORIG:
+-			xdr_result = (xdrproc_t)xdr_utmpidlearr;
++			xdr_result = (xdrproc_t)xdr_utmparr;
+ 			local = (char *(*)(void *, struct svc_req *))
+ 			    rusersproc_allnames_1_svc;
+ 			break;

@@ -1,0 +1,32 @@
+diff --git a/login_ldap/aldap.c b/login_ldap/aldap.c
+index d5f5769..2fe61c1 100644
+--- a/login_ldap/aldap.c
++++ b/login_ldap/aldap.c
+@@ -463,6 +463,13 @@ aldap_parse_page_control(struct ber_element *control, size_t len)
+ 	ober_scanf_elements(control, "ss", &oid, &encoded);
+ 	ober_set_readbuf(&b, encoded, control->be_next->be_len);
+ 	elm = ober_read_elements(&b, NULL);
++	if (elm == NULL || elm->be_sub == NULL ||
++	    elm->be_sub->be_next == NULL) {
++		if (elm != NULL)
++			ober_free_elements(elm);
++		ober_free(&b);
++		return NULL;
++	}
+ 
+ 	if ((page = malloc(sizeof(struct aldap_page_control))) == NULL) {
+ 		if (elm != NULL)
+@@ -471,7 +478,12 @@ aldap_parse_page_control(struct ber_element *control, size_t len)
+ 		return NULL;
+ 	}
+ 
+-	ober_scanf_elements(elm->be_sub, "is", &page->size, &s);
++	if (ober_scanf_elements(elm->be_sub, "is", &page->size, &s) != 0) {
++		ober_free_elements(elm);
++		ober_free(&b);
++		free(page);
++		return NULL;
++	}
+ 	page->cookie_len = elm->be_sub->be_next->be_len;
+ 
+ 	if ((page->cookie = malloc(page->cookie_len)) == NULL) {

@@ -1,0 +1,23 @@
+diff --git a/login_ldap/login_ldap.c b/login_ldap/login_ldap.c
+index 83de3b9..5d612e4 100644
+--- a/login_ldap/login_ldap.c
++++ b/login_ldap/login_ldap.c
+@@ -152,13 +152,13 @@ main(int argc, char **argv)
+ 			return 1;
+ 		}
+ 
+-		/* null challenge */
+-		if (backbuf[0] == '\0')
+-			password = backbuf + 1;
+ 		/* skip the first string to get the password */
+-		else if ((password = strchr(backbuf, '\0')) != NULL)
++		if ((password = memchr(backbuf, '\0', n)) != NULL) {
+ 			password++;
+-		else
++			if (memchr(password, '\0', n - (password - backbuf)) == NULL)
++				password = NULL;
++		}
++		if (password == NULL)
+ 			dlog(0, "protocol error on back channel");
+ 
+ 	} else if (strcmp(service, "challenge") == 0) {

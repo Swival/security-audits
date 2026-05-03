@@ -1,0 +1,224 @@
+# Remote Feed Can Force Unbounded Decompression
+
+## Classification
+
+Denial of service, medium severity.
+
+Confidence: certain.
+
+## Affected Locations
+
+`spamd-setup/spamd-setup.c:472`
+
+## Summary
+
+A configured remote blacklist feed can cause `spamd-setup` to allocate memory without a decompressed-size bound. The vulnerable path accepts `http`, `https`, and `ftp` feeds, wraps the remote descriptor with zlib, and reads the entire decompressed stream into a growing buffer before parsing. A malicious gzip stream can therefore exhaust memory or prevent blacklist update completion.
+
+## Provenance
+
+Verified by Swival Security Scanner: https://swival.dev
+
+## Preconditions
+
+`spamd.conf` references an attacker-controlled blacklist or whitelist feed using `http`, `https`, or `ftp`.
+
+## Proof
+
+`getlist()` opens the configured feed through `open_file()`. `open_file()` accepts `http`, `https`, and `ftp`, calls `fileget()`, and returns a descriptor backed by `/usr/bin/ftp`.
+
+`getlist()` then calls `gzdopen(fd, "r")`, so the remote server controls the compressed stream consumed by zlib.
+
+Before the patch, `add_blacklist()` read the entire decompressed stream into memory before parsing:
+
+- It expanded `buf` by 1 MiB whenever full.
+- It called `gzread()` repeatedly until EOF.
+- It only parsed lines after `gzread()` returned `0`.
+- It enforced no decompressed-byte cap.
+- It did not stream-parse lines.
+
+An attacker-controlled feed can serve a valid gzip stream with arbitrarily large decompressed output, or keep sending gzip data without EOF. This forces memory growth or blocks completion before `collapse_blacklist()`, `configure_spamd()`, or `configure_pf()` run.
+
+## Why This Is A Real Bug
+
+The vulnerable code path is reachable from normal configuration: remote feed methods are explicitly supported. The decompression occurs before any semantic validation of blacklist entries, so invalid or excessive data still consumes memory. Since parsing only begins after EOF, the process cannot discard already processed lines and must retain the full decompressed feed.
+
+The impact is denial of service: `spamd-setup` can exhaust memory or fail to complete a blacklist update run.
+
+## Fix Requirement
+
+The feed reader must not buffer the entire decompressed response. It must parse incrementally and enforce a maximum decompressed feed size.
+
+## Patch Rationale
+
+The patch replaces whole-feed buffering with streaming line parsing:
+
+- Adds `SPAMD_FEED_MAX` as a 64 MiB decompressed-byte limit.
+- Adds `SPAMD_LINE_MAX` as an 8192-byte per-line limit.
+- Reads fixed-size chunks from `gzread()` into a stack buffer.
+- Accumulates only the current line, not the entire feed.
+- Parses each completed line immediately with `parse_netblock()`.
+- Rejects oversized feeds and oversized lines with `EFBIG`.
+- Returns `NULL` on read, allocation, feed-size, or line-size errors so callers treat the feed as failed.
+
+This bounds memory use by the current line plus parsed blacklist entries, and prevents remote compressed streams from forcing unbounded decompression buffering.
+
+## Residual Risk
+
+None
+
+## Patch
+
+```diff
+diff --git a/spamd-setup/spamd-setup.c b/spamd-setup/spamd-setup.c
+index eb2cb7d..eaf73e4 100644
+--- a/spamd-setup/spamd-setup.c
++++ b/spamd-setup/spamd-setup.c
+@@ -43,6 +43,8 @@
+ #define PATH_PFCTL		"/sbin/pfctl"
+ #define PATH_SPAMD_CONF		"/etc/mail/spamd.conf"
+ #define SPAMD_ARG_MAX		256 /* max # of args to an exec */
++#define SPAMD_FEED_MAX		(64 * 1024 * 1024) /* decompressed bytes */
++#define SPAMD_LINE_MAX		8192
+ #define SPAMD_USER		"_spamd"
+ 
+ struct cidr {
+@@ -467,72 +469,90 @@ do_message(FILE *sdc, char *msg)
+ struct bl *
+ add_blacklist(struct bl *bl, size_t *blc, size_t *bls, gzFile gzf, int white)
+ {
+-	int i, n, start, bu = 0, bs = 0, serrno = 0;
+-	char *buf = NULL, *tmp;
+-	struct bl *blt;
++	int n, serrno = 0;
++	char rbuf[SPAMD_LINE_MAX], line[SPAMD_LINE_MAX + 1];
++	size_t i, lb = 0, nblc = 0, nbls = 0, total = 0;
++	struct bl start, end, *nbl = NULL, *blt;
+ 
+ 	for (;;) {
+-		/* read in gzf, then parse */
+-		if (bu == bs) {
+-			tmp = realloc(buf, bs + (1024 * 1024) + 1);
+-			if (tmp == NULL) {
+-				serrno = errno;
+-				free(buf);
+-				buf = NULL;
+-				bs = 0;
+-				goto bldone;
+-			}
+-			bs += 1024 * 1024;
+-			buf = tmp;
+-		}
+-
+-		n = gzread(gzf, buf + bu, bs - bu);
++		n = gzread(gzf, rbuf, sizeof(rbuf));
+ 		if (n == 0)
+-			goto parse;
++			break;
+ 		else if (n == -1) {
+-			serrno = errno;
+-			goto bldone;
+-		} else
+-			bu += n;
+-	}
+- parse:
+-	start = 0;
+-	/* we assume that there is an IP for every 14 bytes */
+-	if (*blc + bu / 7 >= *bls) {
+-		*bls += bu / 7;
+-		blt = reallocarray(bl, *bls, sizeof(struct bl));
+-		if (blt == NULL) {
+-			*bls -= bu / 7;
+-			serrno = errno;
++			serrno = errno ? errno : EIO;
+ 			goto bldone;
+ 		}
+-		bl = blt;
++		if ((size_t)n > SPAMD_FEED_MAX - total) {
++			serrno = EFBIG;
++			goto bldone;
++		}
++		total += n;
++		for (i = 0; i < (size_t)n; i++) {
++			if (rbuf[i] == '\n') {
++				line[lb] = '\0';
++				if (parse_netblock(line, &start, &end, white)) {
++					if (nblc + 1 >= nbls) {
++						nbls += 1024;
++						blt = reallocarray(nbl, nbls,
++						    sizeof(struct bl));
++						if (blt == NULL) {
++							nbls -= 1024;
++							serrno = errno;
++							goto bldone;
++						}
++						nbl = blt;
++					}
++					nbl[nblc++] = start;
++					nbl[nblc++] = end;
++				}
++				lb = 0;
++			} else {
++				if (lb == SPAMD_LINE_MAX) {
++					serrno = EFBIG;
++					goto bldone;
++				}
++				line[lb++] = rbuf[i];
++			}
++		}
+ 	}
+-	for (i = 0; i <= bu; i++) {
+-		if (*blc + 1 >= *bls) {
+-			*bls += 1024;
++	if (lb != 0) {
++		line[lb] = '\0';
++		if (parse_netblock(line, &start, &end, white)) {
++			if (nblc + 1 >= nbls) {
++				nbls += 1024;
++				blt = reallocarray(nbl, nbls, sizeof(struct bl));
++				if (blt == NULL) {
++					nbls -= 1024;
++					serrno = errno;
++					goto bldone;
++				}
++				nbl = blt;
++			}
++			nbl[nblc++] = start;
++			nbl[nblc++] = end;
++		}
++	}
++	if (total == 0)
++		errno = EIO;
++	if (nblc != 0) {
++		if (*blc + nblc > *bls) {
++			*bls = *blc + nblc;
+ 			blt = reallocarray(bl, *bls, sizeof(struct bl));
+ 			if (blt == NULL) {
+-				*bls -= 1024;
+ 				serrno = errno;
+ 				goto bldone;
+ 			}
+ 			bl = blt;
+ 		}
+-		if (i == bu || buf[i] == '\n') {
+-			buf[i] = '\0';
+-			if (parse_netblock(buf + start,
+-			    bl + *blc, bl + *blc + 1, white))
+-				*blc += 2;
+-			start = i + 1;
+-		}
++		memcpy(bl + *blc, nbl, nblc * sizeof(struct bl));
++		*blc += nblc;
+ 	}
+-	if (bu == 0)
+-		errno = EIO;
+  bldone:
+-	free(buf);
+-	if (serrno)
++	free(nbl);
++	if (serrno) {
+ 		errno = serrno;
++		return (NULL);
++	}
+ 	return (bl);
+ }
+```

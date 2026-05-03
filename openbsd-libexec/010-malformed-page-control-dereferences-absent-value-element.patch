@@ -1,0 +1,14 @@
+diff --git a/login_ldap/aldap.c b/login_ldap/aldap.c
+index d5f5769..29f9821 100644
+--- a/login_ldap/aldap.c
++++ b/login_ldap/aldap.c
+@@ -460,7 +460,9 @@ aldap_parse_page_control(struct ber_element *control, size_t len)
+ 	struct aldap_page_control *page;
+ 
+ 	b.br_wbuf = NULL;
+-	ober_scanf_elements(control, "ss", &oid, &encoded);
++	if (ober_scanf_elements(control, "ss", &oid, &encoded) != 0 ||
++	    control->be_next == NULL)
++		return NULL;
+ 	ober_set_readbuf(&b, encoded, control->be_next->be_len);
+ 	elm = ober_read_elements(&b, NULL);
