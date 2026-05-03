@@ -4,7 +4,7 @@ Security audit of programs shipped under OpenBSD's `libexec` tree. These are not
 
 ## Summary
 
-**Total findings: 18** -- High: 4, Medium: 14
+**Total findings: 17** -- High: 3, Medium: 14
 
 ## Findings
 
@@ -41,7 +41,6 @@ Security audit of programs shipped under OpenBSD's `libexec` tree. These are not
 | # | Finding | Severity |
 |---|---------|----------|
 | [006](006-remote-feed-can-force-unbounded-decompression.md) | Remote feed can force unbounded decompression | Medium |
-| [016](016-missing-sync-key-falls-back-to-empty-hmac-key.md) | Missing sync key falls back to empty HMAC key | High |
 
 ### Network daemons
 
