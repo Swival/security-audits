@@ -1,0 +1,14 @@
+diff --git a/x509/x509_asid.c b/x509/x509_asid.c
+index 45a154e..7c63af6 100644
+--- a/x509/x509_asid.c
++++ b/x509/x509_asid.c
+@@ -1153,7 +1153,8 @@ asid_validate_path_internal(X509_STORE_CTX *ctx, STACK_OF(X509) *chain,
+ 		if ((X509_get_extension_flags(x) & EXFLAG_INVALID) != 0)
+ 			validation_err(X509_V_ERR_INVALID_EXTENSION);
+ 		if (x->rfc3779_asid == NULL) {
+-			if (child_as != NULL || child_rdi != NULL)
++			if (child_as != NULL || child_rdi != NULL ||
++			    inherit_as || inherit_rdi)
+ 				validation_err(X509_V_ERR_UNNESTED_RESOURCE);
+ 			continue;
+ 		}

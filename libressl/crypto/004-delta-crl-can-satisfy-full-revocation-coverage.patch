@@ -1,0 +1,24 @@
+diff --git a/x509/x509_vfy.c b/x509/x509_vfy.c
+index 7764785..0c6f050 100644
+--- a/x509/x509_vfy.c
++++ b/x509/x509_vfy.c
+@@ -1223,6 +1223,9 @@ get_crl_score(X509_STORE_CTX *ctx, X509 **pissuer, unsigned int *preasons,
+ 	/* Invalid IDP cannot be processed */
+ 	if (crl->idp_flags & IDP_INVALID)
+ 		return 0;
++	/* Don't process deltas at this stage */
++	if (crl->base_crl_number)
++		return 0;
+ 	/* Reason codes or indirect CRLs need extended CRL support */
+ 	if (!(ctx->param->flags & X509_V_FLAG_EXTENDED_CRL_SUPPORT)) {
+ 		if (crl->idp_flags & (IDP_INDIRECT | IDP_REASONS))
+@@ -1232,9 +1235,6 @@ get_crl_score(X509_STORE_CTX *ctx, X509 **pissuer, unsigned int *preasons,
+ 		if (!(crl->idp_reasons & ~tmp_reasons))
+ 			return 0;
+ 	}
+-	/* Don't process deltas at this stage */
+-	else if (crl->base_crl_number)
+-		return 0;
+ 	/* If issuer name doesn't match certificate need indirect CRL */
+ 	if (X509_NAME_cmp(X509_get_issuer_name(x), X509_CRL_get_issuer(crl))) {
+ 		if (!(crl->idp_flags & IDP_INDIRECT))

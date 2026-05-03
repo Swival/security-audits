@@ -1,0 +1,13 @@
+diff --git a/rsa/rsa_pmeth.c b/rsa/rsa_pmeth.c
+index 0b7cd00..084829b 100644
+--- a/rsa/rsa_pmeth.c
++++ b/rsa/rsa_pmeth.c
+@@ -148,6 +148,8 @@ pkey_rsa_copy(EVP_PKEY_CTX *dst, EVP_PKEY_CTX *src)
+ 	dctx->pad_mode = sctx->pad_mode;
+ 	dctx->md = sctx->md;
+ 	dctx->mgf1md = sctx->mgf1md;
++	dctx->saltlen = sctx->saltlen;
++	dctx->min_saltlen = sctx->min_saltlen;
+ 	if (sctx->oaep_label != NULL) {
+ 		free(dctx->oaep_label);
+ 		if ((dctx->oaep_label = calloc(1, sctx->oaep_label_len)) == NULL)

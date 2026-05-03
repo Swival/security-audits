@@ -1,0 +1,23 @@
+diff --git a/txt_db/txt_db.c b/txt_db/txt_db.c
+index 7d1f82c..6f17683 100644
+--- a/txt_db/txt_db.c
++++ b/txt_db/txt_db.c
+@@ -65,6 +65,7 @@
+ 
+ #undef BUFSIZE
+ #define BUFSIZE	512
++#define MAX_LINE_SIZE	(1024 * 1024)
+ 
+ TXT_DB *
+ TXT_DB_read(BIO *in, int num)
+@@ -106,6 +107,10 @@ TXT_DB_read(BIO *in, int num)
+ 	offset = 0;
+ 	for (;;) {
+ 		if (offset != 0) {
++			if (size > MAX_LINE_SIZE - BUFSIZE) {
++				er = 2;
++				goto err;
++			}
+ 			size += BUFSIZE;
+ 			if (!BUF_MEM_grow_clean(buf, size))
+ 				goto err;

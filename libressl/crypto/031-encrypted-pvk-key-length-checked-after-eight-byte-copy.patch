@@ -1,0 +1,21 @@
+diff --git a/pem/pvkfmt.c b/pem/pvkfmt.c
+index 395fd9d..22edf89 100644
+--- a/pem/pvkfmt.c
++++ b/pem/pvkfmt.c
+@@ -761,13 +761,13 @@ do_PVK_body(const unsigned char **in, unsigned int saltlen,
+ 			goto err;
+ 		}
+ 		p += saltlen;
+-		/* Copy BLOBHEADER across, decrypt rest */
+-		memcpy(enctmp, p, 8);
+-		p += 8;
+ 		if (keylen < 8) {
+ 			PEMerror(PEM_R_PVK_TOO_SHORT);
+ 			goto err;
+ 		}
++		/* Copy BLOBHEADER across, decrypt rest */
++		memcpy(enctmp, p, 8);
++		p += 8;
+ 		inlen = keylen - 8;
+ 		q = enctmp + 8;
+ 		if (!EVP_DecryptInit_ex(cctx, EVP_rc4(), NULL, keybuf, NULL))

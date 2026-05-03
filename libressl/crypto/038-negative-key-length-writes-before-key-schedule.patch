@@ -1,0 +1,13 @@
+diff --git a/rc2/rc2.c b/rc2/rc2.c
+index c122d4b..7b94d82 100644
+--- a/rc2/rc2.c
++++ b/rc2/rc2.c
+@@ -102,6 +102,8 @@ RC2_set_key(RC2_KEY *key, int len, const unsigned char *data, int bits)
+ 	k = (unsigned char *)&(key->data[0]);
+ 	*k = 0; /* for if there is a zero length key */
+ 
++	if (len < 0)
++		return;
+ 	if (len > 128)
+ 		len = 128;
+ 	if (bits <= 0)

@@ -1,0 +1,13 @@
+diff --git a/asn1/t_req.c b/asn1/t_req.c
+index 51e4b4f..e547a79 100644
+--- a/asn1/t_req.c
++++ b/asn1/t_req.c
+@@ -181,6 +181,8 @@ X509_REQ_print_ex(BIO *bp, X509_REQ *x, unsigned long nmflags,
+ 				if (X509_REQ_extension_nid(
+ 				    OBJ_obj2nid(a->object)))
+ 					continue;
++				if (sk_ASN1_TYPE_num(a->set) <= 0)
++					continue;
+ 				if (BIO_printf(bp, "%12s", "") <= 0)
+ 					goto err;
+ 				if ((j = i2a_ASN1_OBJECT(bp, a->object)) > 0) {

@@ -1,0 +1,13 @@
+diff --git a/modes/cfb128.c b/modes/cfb128.c
+index 9a63a46..c869733 100644
+--- a/modes/cfb128.c
++++ b/modes/cfb128.c
+@@ -68,7 +68,7 @@ CRYPTO_cfb128_encrypt(const unsigned char *in, unsigned char *out,
+ 	unsigned int n;
+ 	size_t l = 0;
+ 
+-	n = *num;
++	n = (unsigned int)*num % 16;
+ 
+ 	if (enc) {
+ 		if (16 % sizeof(size_t) == 0)

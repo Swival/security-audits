@@ -1,0 +1,46 @@
+diff --git a/asn1/tasn_enc.c b/asn1/tasn_enc.c
+index a65fb5b..2879c47 100644
+--- a/asn1/tasn_enc.c
++++ b/asn1/tasn_enc.c
+@@ -56,6 +56,7 @@
+  *
+  */
+ 
++#include <limits.h>
+ #include <stddef.h>
+ #include <string.h>
+ 
+@@ -319,7 +320,8 @@ asn1_template_ex_i2d(ASN1_VALUE **pval, unsigned char **out,
+ 		/* SET OF, SEQUENCE OF */
+ 		STACK_OF(ASN1_VALUE) *sk = (STACK_OF(ASN1_VALUE) *)*pval;
+ 		int isset, sktag, skaclass;
+-		int skcontlen, sklen;
++		int skcontlen, skitemlen, sklen;
++		size_t skcontlen_size;
+ 		ASN1_VALUE *skitem;
+ 
+ 		if (!*pval)
+@@ -348,12 +350,20 @@ asn1_template_ex_i2d(ASN1_VALUE **pval, unsigned char **out,
+ 		}
+ 
+ 		/* Determine total length of items */
+-		skcontlen = 0;
++		skcontlen_size = 0;
+ 		for (i = 0; i < sk_ASN1_VALUE_num(sk); i++) {
+ 			skitem = sk_ASN1_VALUE_value(sk, i);
+-			skcontlen += ASN1_item_ex_i2d(&skitem, NULL,
+-			    tt->item, -1, iclass);
++			if ((skitemlen = ASN1_item_ex_i2d(&skitem, NULL,
++			    tt->item, -1, iclass)) < 0)
++				return -1;
++			if (skcontlen_size > (size_t)INT_MAX -
++			    (size_t)skitemlen) {
++				ASN1error(ASN1_R_LENGTH_ERROR);
++				return -1;
++			}
++			skcontlen_size += skitemlen;
+ 		}
++		skcontlen = (int)skcontlen_size;
+ 		sklen = ASN1_object_size(ndef, skcontlen, sktag);
+ 		/* If EXPLICIT need length of surrounding tag */
+ 		if (flags & ASN1_TFLG_EXPTAG)

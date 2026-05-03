@@ -1,0 +1,13 @@
+diff --git a/rsa/rsa_saos.c b/rsa/rsa_saos.c
+index 3052fa9..73fc5b1 100644
+--- a/rsa/rsa_saos.c
++++ b/rsa/rsa_saos.c
+@@ -128,7 +128,7 @@ RSA_verify_ASN1_OCTET_STRING(int dtype, const unsigned char *m,
+ 
+ 	p = s;
+ 	sig = d2i_ASN1_OCTET_STRING(NULL, &p, (long)i);
+-	if (sig == NULL)
++	if (sig == NULL || p != s + i)
+ 		goto err;
+ 
+ 	if ((unsigned int)sig->length != m_len ||

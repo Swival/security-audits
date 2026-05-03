@@ -1,0 +1,22 @@
+diff --git a/des/des.c b/des/des.c
+index 113fc4b..78f5940 100644
+--- a/des/des.c
++++ b/des/des.c
+@@ -214,14 +214,15 @@ DES_ede3_cfb_encrypt(const unsigned char *in, unsigned char *out,
+     DES_cblock *ivec, int enc)
+ {
+ 	DES_LONG d0, d1, v0, v1;
+-	unsigned long l = length, n = ((unsigned int)numbits + 7)/8;
++	unsigned long l = length, n;
+ 	int num = numbits, i;
+ 	DES_LONG ti[2];
+ 	unsigned char *iv;
+ 	unsigned char ovec[16];
+ 
+-	if (num > 64)
++	if (num <= 0 || num > 64)
+ 		return;
++	n = ((unsigned int)numbits + 7)/8;
+ 	iv = &(*ivec)[0];
+ 	c2l(iv, v0);
+ 	c2l(iv, v1);
