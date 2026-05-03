@@ -1,0 +1,33 @@
+diff --git a/net/pf_lb.c b/net/pf_lb.c
+index 329427f..0b8e466 100644
+--- a/net/pf_lb.c
++++ b/net/pf_lb.c
+@@ -568,9 +568,11 @@ pf_map_addr(sa_family_t af, struct pf_rule *r, struct pf_addr *saddr,
+ 		if ((rpool->addr.type == PF_ADDR_TABLE &&
+ 		    rpool->addr.p.tbl->pfrkt_refcntcost > 0) ||
+ 		    (rpool->addr.type == PF_ADDR_DYNIFTL &&
+-		    rpool->addr.p.dyn->pfid_kt->pfrkt_refcntcost > 0))
++		    rpool->addr.p.dyn->pfid_kt->pfrkt_refcntcost > 0)) {
++			if (rpool->weight == 0)
++				return (1);
+ 			load = ((UINT16_MAX * rpool->states) / rpool->weight);
+-		else
++		} else
+ 			load = states;
+ 
+ 		pf_addrcpy(&faddr, &rpool->counter, af);
+@@ -596,10 +598,12 @@ pf_map_addr(sa_family_t af, struct pf_rule *r, struct pf_addr *saddr,
+ 			if ((rpool->addr.type == PF_ADDR_TABLE &&
+ 			    rpool->addr.p.tbl->pfrkt_refcntcost > 0) ||
+ 			    (rpool->addr.type == PF_ADDR_DYNIFTL &&
+-			    rpool->addr.p.dyn->pfid_kt->pfrkt_refcntcost > 0))
++			    rpool->addr.p.dyn->pfid_kt->pfrkt_refcntcost > 0)) {
++				if (rpool->weight == 0)
++					return (1);
+ 				cload = ((UINT16_MAX * rpool->states)
+ 					/ rpool->weight);
+-			else
++			} else
+ 				cload = rpool->states;
+ 
+ 			/* find lc minimum */

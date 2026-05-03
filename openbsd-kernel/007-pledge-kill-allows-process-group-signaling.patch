@@ -1,0 +1,13 @@
+diff --git a/kern/kern_pledge.c b/kern/kern_pledge.c
+index 2186172..e68bef2 100644
+--- a/kern/kern_pledge.c
++++ b/kern/kern_pledge.c
+@@ -1613,7 +1613,7 @@ pledge_kill(struct proc *p, pid_t pid)
+ 		return 0;
+ 	if (p->p_pledge & PLEDGE_PROC)
+ 		return 0;
+-	if (pid == 0 || pid == p->p_p->ps_pid)
++	if (pid == p->p_p->ps_pid)
+ 		return 0;
+ 	return pledge_fail(p, EPERM, PLEDGE_PROC);
+ }

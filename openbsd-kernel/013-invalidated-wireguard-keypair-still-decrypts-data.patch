@@ -1,0 +1,12 @@
+diff --git a/net/wg_noise.c b/net/wg_noise.c
+--- a/net/wg_noise.c
++++ b/net/wg_noise.c
+@@ -633,6 +633,7 @@ noise_remote_decrypt(struct noise_remote *r, uint32_t r_idx, uint64_t nonce,
+ 	 * are the same as the encrypt routine.
+ 	 *
+ 	 * kp_ctr isn't locked here, we're happy to accept a racy read. */
+-	if (noise_timer_expired(&kp->kp_birthdate, REJECT_AFTER_TIME, 0) ||
++	if (!kp->kp_valid ||
++	    noise_timer_expired(&kp->kp_birthdate, REJECT_AFTER_TIME, 0) ||
+ 	    kp->kp_ctr.c_recv >= REJECT_AFTER_MESSAGES)
+ 		goto error;

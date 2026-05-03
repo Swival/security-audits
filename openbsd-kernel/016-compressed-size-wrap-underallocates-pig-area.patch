@@ -1,0 +1,30 @@
+diff --git a/kern/subr_hibernate.c b/kern/subr_hibernate.c
+index a21c330..cd089a0 100644
+--- a/kern/subr_hibernate.c
++++ b/kern/subr_hibernate.c
+@@ -1715,8 +1715,13 @@ hibernate_read_image(union hibernate_info *hib)
+ 
+ 	chunks = (struct hibernate_disk_chunk *)chunktable;
+ 
+-	for (i = 0; i < hib->chunk_ctr; i++)
++	for (i = 0; i < hib->chunk_ctr; i++) {
++		if (compressed_size + chunks[i].compressed_size < compressed_size) {
++			status = 1;
++			goto unmap;
++		}
+ 		compressed_size += chunks[i].compressed_size;
++	}
+ 
+ 	disk_size = compressed_size;
+ 
+@@ -1725,6 +1730,10 @@ hibernate_read_image(union hibernate_info *hib)
+ 
+ 	/* Allocate the pig area */
+ 	pig_sz = compressed_size + HIBERNATE_CHUNK_SIZE;
++	if (pig_sz < compressed_size) {
++		status = 1;
++		goto unmap;
++	}
+ 	if (uvm_pmr_alloc_pig(&pig_start, pig_sz, hib->piglet_pa) == ENOMEM) {
+ 		status = 1;
+ 		goto unmap;

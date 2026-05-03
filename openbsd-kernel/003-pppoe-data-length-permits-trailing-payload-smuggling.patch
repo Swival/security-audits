@@ -1,0 +1,13 @@
+diff --git a/net/if_pppoe.c b/net/if_pppoe.c
+index a5208d2..3ca78a5 100644
+--- a/net/if_pppoe.c
++++ b/net/if_pppoe.c
+@@ -905,6 +905,8 @@ pppoe_data_input(struct mbuf *m)
+ 
+ 	if (m->m_pkthdr.len < plen)
+ 		goto drop;
++	if (m->m_pkthdr.len > plen)
++		m_adj(m, plen - m->m_pkthdr.len);
+ 
+ 	/* fix incoming interface pointer (not the raw ethernet interface anymore) */
+ 	m->m_pkthdr.ph_ifidx = sc->sc_sppp.pp_if.if_index;

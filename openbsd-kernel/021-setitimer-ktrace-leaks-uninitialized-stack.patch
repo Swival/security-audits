@@ -1,0 +1,13 @@
+diff --git a/kern/kern_time.c b/kern/kern_time.c
+index cfca2fa..b12566e 100644
+--- a/kern/kern_time.c
++++ b/kern/kern_time.c
+@@ -665,7 +665,7 @@ sys_setitimer(struct proc *p, void *v, register_t *retval)
+ 		error = copyout(&olditv, SCARG(uap, oitv), sizeof(olditv));
+ #ifdef KTRACE
+ 		if (error == 0 && KTRPOINT(p, KTR_STRUCT))
+-			ktritimerval(p, &aitv);
++			ktritimerval(p, &olditv);
+ #endif
+ 		return error;
+ 	}

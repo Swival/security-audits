@@ -1,0 +1,13 @@
+diff --git a/net/bsd-comp.c b/net/bsd-comp.c
+index 1edb6a6..6cae7f7 100644
+--- a/net/bsd-comp.c
++++ b/net/bsd-comp.c
+@@ -909,7 +909,7 @@ bsd_decompress(void *state, struct mbuf *cmp, struct mbuf **dmpp)
+ 	    break;
+ 	}
+ 
+-	if (incode > max_ent + 2 || incode > db->maxmaxcode
++	if (incode > max_ent + 1 || incode > db->maxmaxcode
+ 	    || (incode > max_ent && oldcode == CLEAR)) {
+ 	    m_freem(mret);
+ 	    if (db->debug) {

@@ -1,0 +1,13 @@
+diff --git a/net/slcompress.c b/net/slcompress.c
+index 12907da..e900282 100644
+--- a/net/slcompress.c
++++ b/net/slcompress.c
+@@ -474,6 +474,8 @@ sl_uncompress_tcp_core(u_char *buf, int buflen, int total_len, u_int type,
+ 	switch (type) {
+ 
+ 	case TYPE_UNCOMPRESSED_TCP:
++		if (buflen < sizeof(struct ip))
++			goto bad;
+ 		ip = (struct ip *) buf;
+ 		if (ip->ip_p >= MAX_STATES)
+ 			goto bad;

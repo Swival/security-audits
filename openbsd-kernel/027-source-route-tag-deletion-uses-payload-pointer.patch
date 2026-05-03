@@ -1,0 +1,15 @@
+diff --git a/netinet/ip_input.c b/netinet/ip_input.c
+index 099aadb..047c668 100644
+--- a/netinet/ip_input.c
++++ b/netinet/ip_input.c
+@@ -1510,9 +1510,9 @@ ip_srcroute(struct mbuf *m0)
+ 		*q++ = *p--;
+ 	}
+ 	/*
+ 	 * Last hop goes to final destination.
+ 	 */
+ 	*q = isr->isr_dst;
+-	m_tag_delete(m0, (struct m_tag *)isr);
++	m_tag_delete(m0, mtag);
+ 	return (m);
+ }

@@ -1,0 +1,69 @@
+diff --git a/netinet/ip_ah.c b/netinet/ip_ah.c
+index 9554aa9..e89172b 100644
+--- a/netinet/ip_ah.c
++++ b/netinet/ip_ah.c
+@@ -605,32 +605,6 @@ ah_input(struct mbuf **mp, struct tdb *tdb, int skip, int protoff,
+ 		goto drop;
+ 	}
+ 
+-	/* Update the counters. */
+-	ibytes = (m->m_pkthdr.len - skip - hl * sizeof(u_int32_t));
+-	tdb->tdb_cur_bytes += ibytes;
+-	tdbstat_add(tdb, tdb_ibytes, ibytes);
+-	ahstat_add(ahs_ibytes, ibytes);
+-
+-	/* Hard expiration. */
+-	if ((tdb->tdb_flags & TDBF_BYTES) &&
+-	    (tdb->tdb_cur_bytes >= tdb->tdb_exp_bytes)) {
+-		ipsecstat_inc(ipsec_exctdb);
+-		pfkeyv2_expire(tdb, SADB_EXT_LIFETIME_HARD);
+-		tdb_delete(tdb);
+-		goto drop;
+-	}
+-
+-	/* Notify on expiration. */
+-	mtx_enter(&tdb->tdb_mtx);
+-	if ((tdb->tdb_flags & TDBF_SOFT_BYTES) &&
+-	    (tdb->tdb_cur_bytes >= tdb->tdb_soft_bytes)) {
+-		tdb->tdb_flags &= ~TDBF_SOFT_BYTES;  /* Turn off checking */
+-		mtx_leave(&tdb->tdb_mtx);
+-		/* may sleep in solock() for the pfkey socket */
+-		pfkeyv2_expire(tdb, SADB_EXT_LIFETIME_SOFT);
+-	} else
+-		mtx_leave(&tdb->tdb_mtx);
+-
+ 	/* Get crypto descriptors. */
+ 	crp = crypto_getreq(1);
+ 	if (crp == NULL) {
+@@ -714,5 +688,31 @@ ah_input(struct mbuf **mp, struct tdb *tdb, int skip, int protoff,
+ 		goto drop;
+ 	}
+ 
++	/* Update the counters. */
++	ibytes = (m->m_pkthdr.len - skip - hl * sizeof(u_int32_t));
++	tdb->tdb_cur_bytes += ibytes;
++	tdbstat_add(tdb, tdb_ibytes, ibytes);
++	ahstat_add(ahs_ibytes, ibytes);
++
++	/* Hard expiration. */
++	if ((tdb->tdb_flags & TDBF_BYTES) &&
++	    (tdb->tdb_cur_bytes >= tdb->tdb_exp_bytes)) {
++		ipsecstat_inc(ipsec_exctdb);
++		pfkeyv2_expire(tdb, SADB_EXT_LIFETIME_HARD);
++		tdb_delete(tdb);
++		goto drop;
++	}
++
++	/* Notify on expiration. */
++	mtx_enter(&tdb->tdb_mtx);
++	if ((tdb->tdb_flags & TDBF_SOFT_BYTES) &&
++	    (tdb->tdb_cur_bytes >= tdb->tdb_soft_bytes)) {
++		tdb->tdb_flags &= ~TDBF_SOFT_BYTES;  /* Turn off checking */
++		mtx_leave(&tdb->tdb_mtx);
++		/* may sleep in solock() for the pfkey socket */
++		pfkeyv2_expire(tdb, SADB_EXT_LIFETIME_SOFT);
++	} else
++		mtx_leave(&tdb->tdb_mtx);
++
+ 	/* Fix the Next Protocol field. */
+ 	ptr[protoff] = ptr[skip];

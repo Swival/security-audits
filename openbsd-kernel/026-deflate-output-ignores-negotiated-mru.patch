@@ -1,0 +1,31 @@
+diff --git a/net/ppp-deflate.c b/net/ppp-deflate.c
+index 7f2b332..a493416 100644
+--- a/net/ppp-deflate.c
++++ b/net/ppp-deflate.c
+@@ -565,6 +565,10 @@ z_decompress(void *arg, struct mbuf *mi, struct mbuf **mop)
+ 	    } else {
+ 		mo->m_len = ospace;
+ 		olen += ospace;
++		if (olen > state->mru + PPP_HDRLEN) {
++		    m_freem(mo_head);
++		    return DECOMP_FATALERROR;
++		}
+ 		MGET(mo->m_next, M_DONTWAIT, MT_DATA);
+ 		mo = mo->m_next;
+ 		if (mo == NULL) {
+@@ -582,11 +586,14 @@ z_decompress(void *arg, struct mbuf *mi, struct mbuf **mop)
+ 	return DECOMP_ERROR;
+     }
+     olen += (mo->m_len = ospace - state->strm.avail_out);
++    if (olen > state->mru + PPP_HDRLEN) {
+ #ifdef DEFLATE_DEBUG
+-    if (olen > state->mru + PPP_HDRLEN)
+ 	printf("ppp_deflate%d: exceeded mru (%d > %d)\n",
+ 	       state->unit, olen, state->mru + PPP_HDRLEN);
+ #endif
++	m_freem(mo_head);
++	return DECOMP_FATALERROR;
++    }
+ 
+     state->stats.unc_bytes += olen;
+     state->stats.unc_packets++;

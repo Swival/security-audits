@@ -1,0 +1,14 @@
+diff --git a/kern/subr_hibernate.c b/kern/subr_hibernate.c
+index a21c330..df5e09d 100644
+--- a/kern/subr_hibernate.c
++++ b/kern/subr_hibernate.c
+@@ -1335,6 +1335,9 @@ hibernate_process_chunk(union hibernate_info *hib,
+ {
+ 	char *pva = (char *)hib->piglet_va;
+ 
++	if (chunk->compressed_size > HIBERNATE_CHUNK_SIZE * 2)
++		panic("hibernate compressed chunk too large");
++
+ 	hibernate_copy_chunk_to_piglet(img_cur,
+ 	 (vaddr_t)(pva + (HIBERNATE_CHUNK_SIZE * 2)), chunk->compressed_size);
+ 	hibernate_inflate_region(hib, chunk->base,

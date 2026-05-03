@@ -1,0 +1,15 @@
+diff --git a/kern/subr_hibernate.c b/kern/subr_hibernate.c
+index a21c330..24a47fa 100644
+--- a/kern/subr_hibernate.c
++++ b/kern/subr_hibernate.c
+@@ -1714,6 +1714,10 @@ hibernate_read_image(union hibernate_info *hib)
+ 	compressed_size = 0;
+ 
+ 	chunks = (struct hibernate_disk_chunk *)chunktable;
++	if (hib->chunk_ctr > HIBERNATE_CHUNK_TABLE_SIZE / sizeof(*chunks)) {
++		status = 1;
++		goto unmap;
++	}
+ 
+ 	for (i = 0; i < hib->chunk_ctr; i++)
+ 		compressed_size += chunks[i].compressed_size;

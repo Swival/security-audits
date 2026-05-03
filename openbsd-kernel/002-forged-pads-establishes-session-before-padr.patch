@@ -1,0 +1,12 @@
+diff --git a/net/if_pppoe.c b/net/if_pppoe.c
+index a5208d2..50893b3 100644
+--- a/net/if_pppoe.c
++++ b/net/if_pppoe.c
+@@ -659,5 +659,7 @@ breakbreak:
+ 	case PPPOE_CODE_PADS:
+ 		if (sc == NULL)
+ 			goto done;
++		if (sc->sc_state != PPPOE_STATE_PADR_SENT)
++			goto done;
+ 
+ 		KERNEL_ASSERT_LOCKED();

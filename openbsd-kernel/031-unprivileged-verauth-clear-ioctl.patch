@@ -1,0 +1,13 @@
+diff --git a/kern/tty_tty.c b/kern/tty_tty.c
+index 8198eaf..398c3b7 100644
+--- a/kern/tty_tty.c
++++ b/kern/tty_tty.c
+@@ -120,6 +120,8 @@ cttyioctl(dev_t dev, u_long cmd, caddr_t addr, int flag, struct proc *p)
+ 		timeout_add_sec(&sess->s_verauthto, secs);
+ 		return 0;
+ 	case TIOCCLRVERAUTH:
++		if ((error = suser(p)))
++			return error;
+ 		sess = p->p_p->ps_pgrp->pg_session;
+ 		timeout_del(&sess->s_verauthto);
+ 		zapverauth(sess);
