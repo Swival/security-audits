@@ -1,0 +1,68 @@
+diff --git a/netinet/ip_esp.c b/netinet/ip_esp.c
+index 2f508b6..161728b 100644
+--- a/netinet/ip_esp.c
++++ b/netinet/ip_esp.c
+@@ -416,31 +416,6 @@ esp_input(struct mbuf **mp, struct tdb *tdb, int skip, int protoff,
+ 		}
+ 	}
+ 
+-	/* Update the counters */
+-	tdb->tdb_cur_bytes += plen;
+-	tdbstat_add(tdb, tdb_ibytes, plen);
+-	espstat_add(esps_ibytes, plen);
+-
+-	/* Hard expiration */
+-	if ((tdb->tdb_flags & TDBF_BYTES) &&
+-	    (tdb->tdb_cur_bytes >= tdb->tdb_exp_bytes))	{
+-		ipsecstat_inc(ipsec_exctdb);
+-		pfkeyv2_expire(tdb, SADB_EXT_LIFETIME_HARD);
+-		tdb_delete(tdb);
+-		goto drop;
+-	}
+-
+-	/* Notify on soft expiration */
+-	mtx_enter(&tdb->tdb_mtx);
+-	if ((tdb->tdb_flags & TDBF_SOFT_BYTES) &&
+-	    (tdb->tdb_cur_bytes >= tdb->tdb_soft_bytes)) {
+-		tdb->tdb_flags &= ~TDBF_SOFT_BYTES;  /* Turn off checking */
+-		mtx_leave(&tdb->tdb_mtx);
+-		/* may sleep in solock() for the pfkey socket */
+-		pfkeyv2_expire(tdb, SADB_EXT_LIFETIME_SOFT);
+-	} else
+-		mtx_leave(&tdb->tdb_mtx);
+-
+ 	/* Get crypto descriptors */
+ 	crp = crypto_getreq(esph && espx ? 2 : 1);
+ 	if (crp == NULL) {
+@@ -576,6 +551,31 @@ esp_input(struct mbuf **mp, struct tdb *tdb, int skip, int protoff,
+ 		}
+ 	}
+ 
++	/* Update the counters */
++	tdb->tdb_cur_bytes += plen;
++	tdbstat_add(tdb, tdb_ibytes, plen);
++	espstat_add(esps_ibytes, plen);
++
++	/* Hard expiration */
++	if ((tdb->tdb_flags & TDBF_BYTES) &&
++	    (tdb->tdb_cur_bytes >= tdb->tdb_exp_bytes))	{
++		ipsecstat_inc(ipsec_exctdb);
++		pfkeyv2_expire(tdb, SADB_EXT_LIFETIME_HARD);
++		tdb_delete(tdb);
++		goto drop;
++	}
++
++	/* Notify on soft expiration */
++	mtx_enter(&tdb->tdb_mtx);
++	if ((tdb->tdb_flags & TDBF_SOFT_BYTES) &&
++	    (tdb->tdb_cur_bytes >= tdb->tdb_soft_bytes)) {
++		tdb->tdb_flags &= ~TDBF_SOFT_BYTES;  /* Turn off checking */
++		mtx_leave(&tdb->tdb_mtx);
++		/* may sleep in solock() for the pfkey socket */
++		pfkeyv2_expire(tdb, SADB_EXT_LIFETIME_SOFT);
++	} else
++		mtx_leave(&tdb->tdb_mtx);
++
+ 	/* Find beginning of ESP header */
+ 	m1 = m_getptr(m, skip, &roff);
+ 	if (m1 == NULL)	{
