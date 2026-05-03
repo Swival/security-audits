@@ -1,0 +1,15 @@
+diff --git a/src/handler/instruct.cpp b/src/handler/instruct.cpp
+index 615eba42..71564211 100644
+--- a/src/handler/instruct.cpp
++++ b/src/handler/instruct.cpp
+@@ -239,6 +239,11 @@ Instruct Instruct::fromResponse(const HttpResponseData &response, bool *ok, QStr
+             return Instruct();
+         }
+ 
++        if (reason.contains('\r') || reason.contains('\n')) {
++            setError(ok, errorMessage, "Grip-Status contains invalid reason phrase");
++            return Instruct();
++        }
++
+         newResponse.reason = reason;
+     }

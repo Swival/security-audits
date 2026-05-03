@@ -1,0 +1,53 @@
+diff --git a/src/connmgr/server.rs b/src/connmgr/server.rs
+index 7c13b9bb..886a7ca4 100644
+--- a/src/connmgr/server.rs
++++ b/src/connmgr/server.rs
+@@ -1998,19 +1998,24 @@ impl Server {
+                         Err(e) => panic!("{}", e),
+                     }
+ 
+-                    let l = match UnixListener::bind(path) {
++                    let (l, socket_mode) = if mode.is_some() || user.is_some() || group.is_some()
++                    {
++                        let old_umask = unsafe { libc::umask(0o777) };
++                        let bind_result = UnixListener::bind(path);
++                        unsafe {
++                            libc::umask(old_umask);
++                        }
++
++                        (bind_result, Some((*mode).unwrap_or(0o777 & !old_umask)))
++                    } else {
++                        (UnixListener::bind(path), None)
++                    };
++
++                    let l = match l {
+                         Ok(l) => l,
+                         Err(e) => return Err(format!("failed to bind {:?}: {}", path, e)),
+                     };
+ 
+-                    if let Some(mode) = mode {
+-                        let perms = fs::Permissions::from_mode(*mode);
+-
+-                        if let Err(e) = fs::set_permissions(path, perms) {
+-                            return Err(format!("failed to set mode on {:?}: {}", path, e));
+-                        }
+-                    }
+-
+                     if let Some(user) = user {
+                         if let Err(e) = set_user(path, user) {
+                             return Err(format!(
+@@ -2029,6 +2034,14 @@ impl Server {
+                         }
+                     }
+ 
++                    if let Some(mode) = socket_mode {
++                        let perms = fs::Permissions::from_mode(mode);
++
++                        if let Err(e) = fs::set_permissions(path, perms) {
++                            return Err(format!("failed to set mode on {:?}: {}", path, e));
++                        }
++                    }
++
+                     let addr = l.local_addr().unwrap();
+ 
+                     info!("listening on {:?}", addr);

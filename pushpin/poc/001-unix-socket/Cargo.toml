@@ -1,0 +1,12 @@
+[package]
+name = "poc-001-unix-socket"
+version = "0.0.0"
+edition = "2021"
+
+[[bin]]
+name = "poc"
+path = "src/main.rs"
+
+[dependencies]
+libc = "0.2"
+

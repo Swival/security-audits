@@ -1,0 +1,17 @@
+diff --git a/src/core/http1/protocol.rs b/src/core/http1/protocol.rs
+index 27c4cb5a..74c68058 100644
+--- a/src/core/http1/protocol.rs
++++ b/src/core/http1/protocol.rs
+@@ -1125,6 +1125,12 @@ impl<'buf, 'headers> ServerProtocol {
+                     Err(_) => return Err(Error::InvalidContentLength),
+                 };
+ 
++                if let Some(prev_len) = content_len {
++                    if prev_len != len {
++                        return Err(Error::InvalidContentLength);
++                    }
++                }
++
+                 content_len = Some(len);
+             } else if h.name.eq_ignore_ascii_case("Transfer-Encoding") {
+                 if h.value == b"chunked" {
