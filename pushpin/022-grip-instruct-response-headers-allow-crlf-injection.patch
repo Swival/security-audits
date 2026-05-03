@@ -1,0 +1,50 @@
+diff --git a/src/handler/instruct.cpp b/src/handler/instruct.cpp
+index 615eba42..1029b8b4 100644
+--- a/src/handler/instruct.cpp
++++ b/src/handler/instruct.cpp
+@@ -83,6 +83,9 @@ static QByteArray unescape(const QByteArray &in) {
+ 
+     return out;
+ }
++static bool hasLineBreak(const QString &s) {
++    return s.contains('\r') || s.contains('\n');
++}
+ 
+ Instruct Instruct::fromResponse(const HttpResponseData &response, bool *ok, QString *errorMessage) {
+     HoldMode holdMode = NoHold;
+@@ -597,6 +600,11 @@ Instruct Instruct::fromResponse(const HttpResponseData &response, bool *ok, QStr
+                             return Instruct();
+                         }
+ 
++                        if (hasLineBreak(name) || hasLineBreak(val)) {
++                            setError(ok, errorMessage, "header contains invalid character");
++                            return Instruct();
++                        }
++
+                         newResponse.headers += HttpHeader(name.toUtf8(), val.toUtf8());
+                     }
+                 } else if (isKeyedObject(vheaders)) {
+@@ -614,6 +622,11 @@ Instruct Instruct::fromResponse(const HttpResponseData &response, bool *ok, QStr
+                                 return Instruct();
+                             }
+ 
++                            if (hasLineBreak(key) || hasLineBreak(val)) {
++                                setError(ok, errorMessage, "header contains invalid character");
++                                return Instruct();
++                            }
++
+                             newResponse.headers += HttpHeader(key.toUtf8(), val.toUtf8());
+                         }
+                     } else // Map
+@@ -631,6 +644,11 @@ Instruct Instruct::fromResponse(const HttpResponseData &response, bool *ok, QStr
+                                 return Instruct();
+                             }
+ 
++                            if (hasLineBreak(key) || hasLineBreak(val)) {
++                                setError(ok, errorMessage, "header contains invalid character");
++                                return Instruct();
++                            }
++
+                             newResponse.headers += HttpHeader(key.toUtf8(), val.toUtf8());
+                         }
+                     }

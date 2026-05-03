@@ -1,0 +1,21 @@
+diff --git a/src/handler/instruct.cpp b/src/handler/instruct.cpp
+index 615eba42..56802971 100644
+--- a/src/handler/instruct.cpp
++++ b/src/handler/instruct.cpp
+@@ -564,8 +564,15 @@ Instruct Instruct::fromResponse(const HttpResponseData &response, bool *ok, QStr
+                 return Instruct();
+             }
+ 
+-            if (!reasonStr.isEmpty())
++            if (!reasonStr.isEmpty()) {
++                if (reasonStr.contains('\r') || reasonStr.contains('\n')) {
++                    setError(ok, errorMessage,
++                             QString("%1 contains 'reason' with invalid value").arg(pn));
++                    return Instruct();
++                }
++
+                 newResponse.reason = reasonStr.toUtf8();
++            }
+ 
+             if (keyedObjectContains(in, "headers")) {
+                 Variant vheaders = keyedObjectGetValue(in, "headers");

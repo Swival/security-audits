@@ -1,0 +1,11 @@
+[package]
+name = "poc-012-content-length"
+version = "0.0.0"
+edition = "2021"
+
+[[bin]]
+name = "poc"
+path = "src/main.rs"
+
+[dependencies]
+httparse = "1.7"

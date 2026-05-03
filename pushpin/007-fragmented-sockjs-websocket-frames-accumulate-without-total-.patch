@@ -1,0 +1,18 @@
+diff --git a/src/proxy/sockjssession.cpp b/src/proxy/sockjssession.cpp
+index 7438f0a0..36150ba3 100644
+--- a/src/proxy/sockjssession.cpp
++++ b/src/proxy/sockjssession.cpp
+@@ -654,8 +654,12 @@ public:
+ 
+                     Frame f = sock->readFrame();
+ 
++                    int size = f.data.size();
++                    for (const Frame &wrappedFrame : inWrappedFrames)
++                        size += wrappedFrame.data.size();
++
+                     // Allow a larger temporary read size due to wrapping
+-                    if (f.data.size() > BUFFER_SIZE * 2) {
++                    if (size > BUFFER_SIZE * 2) {
+                         error = true;
+                         break;
+                     }
