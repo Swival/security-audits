@@ -32,6 +32,7 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | [openbsd-libc](openbsd-libc/)                                 |       21 | OpenBSD C standard library                     |
 | [pcre2](pcre2/)                                               |        4 | Perl-compatible regular expressions library    |
 | [picotls](picotls/)                                           |       11 | TLS 1.3 implementation in C                    |
+| [pqconnect](pqconnect/)                                       |        4 | Post-quantum VPN using McEliece and X25519     |
 | [proftpd](proftpd/)                                           |       17 | FTP server for Unix-like systems               |
 | [quicly](quicly/)                                             |        1 | QUIC protocol implementation in C              |
 | [rust-stdlib](rust-stdlib/)                                   |      151 | Rust standard library and supporting crates    |
