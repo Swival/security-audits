@@ -1,0 +1,13 @@
+diff --git a/netinet6/frag6.c b/netinet6/frag6.c
+index a6692a4..5ff6882 100644
+--- a/netinet6/frag6.c
++++ b/netinet6/frag6.c
+@@ -273,6 +273,8 @@ frag6_input(struct mbuf **mp, int *offp, int proto, int af,
+ 
+ 				/* dequeue the fragment. */
+ 				LIST_REMOVE(af6, ip6af_list);
++				frag6_nfrags--;
++				q6->ip6q_nfrag--;
+ 				pool_put(&ip6af_pool, af6);
+ 
+ 				/* adjust pointer. */

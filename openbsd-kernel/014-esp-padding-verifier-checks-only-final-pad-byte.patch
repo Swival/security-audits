@@ -1,0 +1,31 @@
+diff --git a/netinet/ip_esp.c b/netinet/ip_esp.c
+index 2f508b6..d0cc831 100644
+--- a/netinet/ip_esp.c
++++ b/netinet/ip_esp.c
+@@ -656,13 +656,19 @@ esp_input(struct mbuf **mp, struct tdb *tdb, int skip, int protoff,
+ 		goto drop;
+ 	}
+ 
+-	/* Verify correct decryption by checking the last padding bytes */
+-	if ((lastthree[1] != lastthree[0]) && (lastthree[1] != 0)) {
+-		DPRINTF("decryption failed for packet in SA %s/%08x",
+-		    ipsp_address(&tdb->tdb_dst, buf, sizeof(buf)),
+-		    ntohl(tdb->tdb_spi));
+-		espstat_inc(esps_badenc);
+-		goto drop;
++	/* Verify correct decryption by checking the padding bytes */
++	for (plen = 1; plen <= lastthree[1]; plen++) {
++		uint8_t pad;
++
++		m_copydata(m, m->m_pkthdr.len - lastthree[1] - 3 + plen,
++		    1, &pad);
++		if (pad != plen) {
++			DPRINTF("decryption failed for packet in SA %s/%08x",
++			    ipsp_address(&tdb->tdb_dst, buf, sizeof(buf)),
++			    ntohl(tdb->tdb_spi));
++			espstat_inc(esps_badenc);
++			goto drop;
++		}
+ 	}
+ 
+ 	/* Trim the mbuf chain to remove the padding */

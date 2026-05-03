@@ -1,0 +1,22 @@
+diff --git a/sys/syscall_mi.h b/sys/syscall_mi.h
+index e152f14..7213af9 100644
+--- a/sys/syscall_mi.h
++++ b/sys/syscall_mi.h
+@@ -86,7 +86,7 @@ pin_check(struct proc *p, register_t code)
+ 		goto die;
+ 	}
+ 	if (pin) {
+-		if (code >= pin->pn_npins || pin->pn_pins[code] == 0)
++		if (code < 0 || code >= pin->pn_npins || pin->pn_pins[code] == 0)
+ 			error = ENOSYS;
+ 		else if (pin->pn_pins[code] + pin->pn_start == addr)
+ 			; /* correct location */
+@@ -108,7 +108,7 @@ die:
+ 	uprintf("%s[%d]: pinsyscalls addr %lx code %ld, pinoff 0x%x "
+ 	    "(pin%s %d %lx-%lx %lx) (libcpin%s %d %lx-%lx %lx) error %d\n",
+ 	    p->p_p->ps_comm, p->p_p->ps_pid, addr, code,
+-	    (pin && code < pin->pn_npins) ? pin->pn_pins[code] : -1,
++	    (pin && code >= 0 && code < pin->pn_npins) ? pin->pn_pins[code] : -1,
+ 	    pin == ppin ? "(Y)" : "", ppin->pn_npins,
+ 	    ppin->pn_start, ppin->pn_end, ppin->pn_end - ppin->pn_start,
+ 	    pin == plibcpin ? "(Y)" : "", plibcpin->pn_npins,

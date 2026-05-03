@@ -1,0 +1,14 @@
+diff --git a/netinet6/ip6_input.c b/netinet6/ip6_input.c
+index e6d5126..81aba6d 100644
+--- a/netinet6/ip6_input.c
++++ b/netinet6/ip6_input.c
+@@ -730,7 +730,8 @@ ip6_check_rh0hdr(struct mbuf *m, int *offp)
+ 	int done = 0, lim, off, rh_cnt = 0;
+ 
+ 	off = ((caddr_t)ip6 - m->m_data) + sizeof(struct ip6_hdr);
+-	lim = min(m->m_pkthdr.len, ntohs(ip6->ip6_plen) + sizeof(*ip6));
++	lim = ntohs(ip6->ip6_plen) == 0 ? m->m_pkthdr.len :
++	    min(m->m_pkthdr.len, ntohs(ip6->ip6_plen) + sizeof(*ip6));
+ 	do {
+ 		switch (proto) {
+ 		case IPPROTO_ROUTING:

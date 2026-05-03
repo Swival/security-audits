@@ -1,0 +1,13 @@
+diff --git a/net/bpf_filter.c b/net/bpf_filter.c
+index 005a57a..ff03f01 100644
+--- a/net/bpf_filter.c
++++ b/net/bpf_filter.c
+@@ -78,7 +78,7 @@ bpf_mem_ldw(const void *mem, u_int32_t k, int *err)
+ 
+ 	*err = 1;
+ 
+-	if (k + sizeof(v) > bm->len)
++	if (bm->len < sizeof(v) || k > bm->len - sizeof(v))
+ 		return (0);
+ 
+ 	memcpy(&v, bm->pkt + k, sizeof(v));

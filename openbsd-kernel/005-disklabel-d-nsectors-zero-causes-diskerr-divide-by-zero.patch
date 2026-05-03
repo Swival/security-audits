@@ -1,0 +1,34 @@
+diff --git a/kern/subr_disk.c b/kern/subr_disk.c
+index 0eecefb..d67120e 100644
+--- a/kern/subr_disk.c
++++ b/kern/subr_disk.c
+@@ -178,7 +178,7 @@ checkdisklabel(dev_t dev, void *rlp, struct disklabel *lp, u_int64_t boundstart,
+ 		error = ENOENT;	/* no disk label */
+ 	else if (dlp->d_npartitions > MAXPARTITIONS)
+ 		error = E2BIG;	/* too many partitions */
+-	else if (dlp->d_secpercyl == 0)
++	else if (dlp->d_secpercyl == 0 || dlp->d_nsectors == 0)
+ 		error = EINVAL;	/* invalid label */
+ 	else if (dlp->d_secsize == 0)
+ 		error = ENOSPC;	/* disk too small */
+@@ -250,6 +250,9 @@ checkdisklabel(dev_t dev, void *rlp, struct disklabel *lp, u_int64_t boundstart,
+ 		error = 0;
+ 	}
+ 
++	if (dlp->d_nsectors == 0)
++		return (EINVAL);
++
+ 	/* XXX should verify lots of other fields and whine a lot */
+ 
+ 	/* Initial passed in lp contains the real disk size. */
+@@ -870,8 +873,8 @@ setdisklabel(struct disklabel *olp, struct disklabel *nlp, u_int64_t openmask)
+ 	int i;
+ 
+ 	/* sanity clause */
+-	if (nlp->d_secpercyl == 0 || nlp->d_secsize == 0 ||
+-	    (nlp->d_secsize % DEV_BSIZE) != 0)
++	if (nlp->d_secpercyl == 0 || nlp->d_nsectors == 0 ||
++	    nlp->d_secsize == 0 || (nlp->d_secsize % DEV_BSIZE) != 0)
+ 		return (EINVAL);
+ 
+ 	/* special case to allow disklabel to be invalidated */

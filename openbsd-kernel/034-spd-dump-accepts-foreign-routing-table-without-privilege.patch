@@ -1,0 +1,13 @@
+diff --git a/net/pfkeyv2.c b/net/pfkeyv2.c
+index b680611..ebf5096 100644
+--- a/net/pfkeyv2.c
++++ b/net/pfkeyv2.c
+@@ -2738,6 +2738,8 @@ pfkeyv2_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp,
+ 		break;
+ 
+ 	case NET_KEY_SPD_DUMP:
++		if ((error = suser(curproc)) != 0)
++			return (error);
+ 		NET_LOCK_SHARED();
+ 		error = spd_table_walk(rdomain,
+ 		    pfkeyv2_sysctl_policydumper, &w);

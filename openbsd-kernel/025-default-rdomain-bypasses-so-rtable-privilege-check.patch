@@ -1,0 +1,16 @@
+diff --git a/netinet6/ip6_output.c b/netinet6/ip6_output.c
+index cab02ce..c5027d3 100644
+--- a/netinet6/ip6_output.c
++++ b/netinet6/ip6_output.c
+@@ -1374,9 +1374,8 @@ do { \
+ 			rtid = *mtod(m, u_int *);
+ 			if (inp->inp_rtableid == rtid)
+ 				break;
+-			/* needs privileges to switch when already set */
+-			if (rtableid != rtid && rtableid != 0 &&
+-			    (error = suser(p)) != 0)
++			/* needs privileges to switch away from process rtable */
++			if (rtableid != rtid && (error = suser(p)) != 0)
+ 				break;
+ 			error = in_pcbset_rtableid(inp, rtid);
+ 			break;

@@ -1,0 +1,13 @@
+diff --git a/kern/sysv_sem.c b/kern/sysv_sem.c
+index f13a53b..6eac699 100644
+--- a/kern/sysv_sem.c
++++ b/kern/sysv_sem.c
+@@ -675,7 +675,7 @@ sys_semop(struct proc *p, void *v, register_t *retval)
+ 		/*
+ 		 * Make sure that the semaphore still exists
+ 		 */
+-		if (sema[semid] == NULL ||
++		if ((semaptr = sema[semid]) == NULL ||
+ 		    semaptr->sem_perm.seq != IPCID_TO_SEQ(SCARG(uap, semid))) {
+ 			error = EIDRM;
+ 			goto done2;

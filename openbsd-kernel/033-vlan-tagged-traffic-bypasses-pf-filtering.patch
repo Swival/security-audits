@@ -1,0 +1,16 @@
+diff --git a/net/if_tpmr.c b/net/if_tpmr.c
+index e96f561..577d326 100644
+--- a/net/if_tpmr.c
++++ b/net/if_tpmr.c
+@@ -278,11 +278,6 @@ tpmr_pf(struct ifnet *ifp0, int dir, struct mbuf *m, struct netstack *ns)
+ 	struct ether_header *eh, copy;
+ 	const struct tpmr_pf_ip_family *fam;
+ 
+-#if NVLAN > 0
+-	if (ISSET(m->m_flags, M_VLANTAG))
+-		return (m);
+-#endif
+-
+ 	eh = mtod(m, struct ether_header *);
+ 	switch (ntohs(eh->ether_type)) {
+ 	case ETHERTYPE_IP:

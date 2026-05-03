@@ -1,0 +1,13 @@
+diff --git a/kern/vfs_syscalls.c b/kern/vfs_syscalls.c
+index 137c743..085f8f0 100644
+--- a/kern/vfs_syscalls.c
++++ b/kern/vfs_syscalls.c
+@@ -2317,7 +2317,7 @@ sys_fchflags(struct proc *p, void *v, register_t *retval)
+ 		return (error);
+ 	vp = fp->f_data;
+ 	if (p->p_fd->fd_ofileflags[SCARG(uap, fd)] & UF_PLEDGEOPEN) {
+-		vput(vp);
++		FRELE(fp, p);
+ 		return (EPERM);
+ 	}
+ 	vref(vp);

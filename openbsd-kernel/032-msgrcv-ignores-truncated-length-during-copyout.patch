@@ -1,0 +1,29 @@
+diff --git a/kern/sysv_msg.c b/kern/sysv_msg.c
+index fe07031..92dbfac 100644
+--- a/kern/sysv_msg.c
++++ b/kern/sysv_msg.c
+@@ -618,7 +618,7 @@ int
+ msg_copyout(struct msg *msg, char *ubuf, size_t *len, struct proc *p)
+ {
+ 	struct mbuf *m;
+-	size_t xfer;
++	size_t xfer, mlen;
+ 	int error;
+ 
+ #ifdef DIAGNOSTIC
+@@ -635,10 +635,12 @@ msg_copyout(struct msg *msg, char *ubuf, size_t *len, struct proc *p)
+ 	ubuf += sizeof(long);
+ 	*len = xfer;
+ 
+-	for (m = msg->msg_data; m; m = m->m_next) {
+-		if ((error = copyout(mtod(m, void *), ubuf, m->m_len)))
++	for (m = msg->msg_data; m && xfer > 0; m = m->m_next) {
++		mlen = min(xfer, m->m_len);
++		if ((error = copyout(mtod(m, void *), ubuf, mlen)))
+ 			return (error);
+-		ubuf += m->m_len;
++		ubuf += mlen;
++		xfer -= mlen;
+ 	}
+ 
+ 	return (0);

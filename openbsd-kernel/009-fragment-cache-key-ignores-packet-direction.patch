@@ -1,0 +1,13 @@
+diff --git a/net/pf_norm.c b/net/pf_norm.c
+index 2ec8cb4..c3fa4c7 100644
+--- a/net/pf_norm.c
++++ b/net/pf_norm.c
+@@ -176,6 +176,8 @@ pf_frnode_compare(struct pf_frnode *a, struct pf_frnode *b)
+ 		return (diff);
+ 	if ((diff = a->fn_af - b->fn_af) != 0)
+ 		return (diff);
++	if ((diff = a->fn_direction - b->fn_direction) != 0)
++		return (diff);
+ 	if ((diff = pf_addr_compare(&a->fn_src, &b->fn_src, a->fn_af)) != 0)
+ 		return (diff);
+ 	if ((diff = pf_addr_compare(&a->fn_dst, &b->fn_dst, a->fn_af)) != 0)

@@ -1,0 +1,14 @@
+diff --git a/net/pf_table.c b/net/pf_table.c
+index 45c5533..a342530 100644
+--- a/net/pf_table.c
++++ b/net/pf_table.c
+@@ -299,7 +299,8 @@ pfr_fill_feedback(struct pfr_kentry_all *ke, struct pfr_addr *ad)
+ 	default:
+ 		unhandled_af(ke->pfrke_af);
+ 	}
+-	ad->pfra_weight = ((struct pfr_kentry_cost *)ke)->weight;
++	ad->pfra_weight = (ke->pfrke_type == PFRKE_COST) ?
++	    ((struct pfr_kentry_cost *)ke)->weight : 1;
+ 	ad->pfra_af = ke->pfrke_af;
+ 	ad->pfra_net = ke->pfrke_net;
+ 	if (ke->pfrke_flags & PFRKE_FLAG_NOT)
