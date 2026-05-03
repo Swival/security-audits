@@ -30,6 +30,7 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | [libressl/ssl](libressl/ssl/)                                 |        3 | LibreSSL libssl, the TLS/SSL protocol library  |
 | [nginx](nginx/)                                               |       12 | High-performance HTTP server and reverse proxy |
 | [openbsd-libc](openbsd-libc/)                                 |       21 | OpenBSD C standard library                     |
+| [openbsd-libexec](openbsd-libexec/)                           |       18 | OpenBSD libexec helper programs and daemons    |
 | [pcre2](pcre2/)                                               |        4 | Perl-compatible regular expressions library    |
 | [picotls](picotls/)                                           |       11 | TLS 1.3 implementation in C                    |
 | [pqconnect](pqconnect/)                                       |        4 | Post-quantum VPN using McEliece and X25519     |

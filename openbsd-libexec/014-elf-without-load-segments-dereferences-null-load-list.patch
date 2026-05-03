@@ -1,0 +1,17 @@
+diff --git a/ld.so/library_mquery.c b/ld.so/library_mquery.c
+index 971d975..bbdcf30 100644
+--- a/ld.so/library_mquery.c
++++ b/ld.so/library_mquery.c
+@@ -236,6 +236,12 @@ _dl_tryload_shlib(const char *libname, int type, int flags, int nodelete)
+ 		}
+ 	}
+ 
++	if (lowld == NULL) {
++		_dl_close(libfile);
++		_dl_errno = DL_CANT_LOAD_OBJ;
++		return(0);
++	}
++
+ #define LOFF ((Elf_Addr)lowld->start - lowld->moff)
+ 
+ retry:

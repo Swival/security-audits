@@ -1,0 +1,14 @@
+diff --git a/ld.so/sparc64/rtld_machine.c b/ld.so/sparc64/rtld_machine.c
+index 71b48d6..6cfe587 100644
+--- a/ld.so/sparc64/rtld_machine.c
++++ b/ld.so/sparc64/rtld_machine.c
+@@ -242,6 +242,10 @@ _dl_md_reloc(elf_object_t *object, int rel, int relasz)
+ 
+ 		type = ELF_R_TYPE(relas->r_info);
+ 
++		if (type >= nitems(reloc_target_flags) ||
++		    type >= nitems(reloc_target_bitmask))
++			_dl_die("relocation error %d idx %ld", type, i);
++
+ 		if (type == R_TYPE(NONE) || type == R_TYPE(JMP_SLOT))
+ 			continue;

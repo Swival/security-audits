@@ -1,0 +1,14 @@
+diff --git a/tradcpp/eval.c b/tradcpp/eval.c
+index 6a6bcad..069b03d 100644
+--- a/tradcpp/eval.c
++++ b/tradcpp/eval.c
+@@ -419,6 +419,9 @@ eval_bop(struct place *p, int lv, enum tokens op, int rv)
+ 			complain_fail();
+ 			return 0;
+ 		}
++		if (rv == -1 && lv == INT_MIN) {
++			return 0;
++		}
+ 		return lv % rv;
+
+ 	    default: assert(0); break;

@@ -1,0 +1,14 @@
+diff --git a/talkd/talkd.c b/talkd/talkd.c
+index 79fe6dd..14e6cdb 100644
+--- a/talkd/talkd.c
++++ b/talkd/talkd.c
+@@ -108,8 +108,7 @@ main(int argc, char *argv[])
+ 		request.r_name[sizeof(request.r_name) - 1] = '\0';
+ 		request.r_tty[sizeof(request.r_tty) - 1] = '\0';
+ 
+-		memcpy(&ctl_addr, &request.ctl_addr, sizeof(ctl_addr));
+-		ctl_addr.sa_family = ntohs(request.ctl_addr.sa_family);
++		memcpy(&ctl_addr, &response.addr, sizeof(ctl_addr));
+ 		ctl_addr.sa_len = sizeof(ctl_addr);
+ 		if (ctl_addr.sa_family != AF_INET)
+ 			continue;
