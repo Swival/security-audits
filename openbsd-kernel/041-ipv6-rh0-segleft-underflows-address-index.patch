@@ -1,0 +1,13 @@
+diff --git a/netinet/ip_ah.c b/netinet/ip_ah.c
+index 9554aa9..b726623 100644
+--- a/netinet/ip_ah.c
++++ b/netinet/ip_ah.c
+@@ -457,6 +457,8 @@ ah_massage_headers(struct mbuf **mp, int af, int skip, int alg, int out)
+ 					int i;
+ 
+ 					rh0 = (struct ip6_rthdr0 *)rh;
++					if (rh0->ip6r0_segleft == 0)
++						goto error6;
+ 					addr = (struct in6_addr *)(rh0 + 1);
+ 
+ 					for (i = 0; i < rh0->ip6r0_segleft; i++)

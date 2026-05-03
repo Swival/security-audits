@@ -1,0 +1,18 @@
+diff --git a/netinet/tcp_input.c b/netinet/tcp_input.c
+index c2e6211..10955ff 100644
+--- a/netinet/tcp_input.c
++++ b/netinet/tcp_input.c
+@@ -2262,13 +2262,6 @@ tcp_dooptions(struct tcpcb *tp, u_char *cp, int cnt, struct tcphdr *th,
+ 		tdb = gettdbbysrcdst(rtable_l2(rtableid),
+ 		    0, &src, &dst, IPPROTO_TCP);
+ 
+-		/*
+-		 * We don't have an SA for this peer, so we turn off
+-		 * TF_SIGNATURE on the listen socket
+-		 */
+-		if (tdb == NULL && tp->t_state == TCPS_LISTEN)
+-			tp->t_flags &= ~TF_SIGNATURE;
+-
+ 	}
+ 
+ 	if ((sigp ? TF_SIGNATURE : 0) ^ (tp->t_flags & TF_SIGNATURE)) {

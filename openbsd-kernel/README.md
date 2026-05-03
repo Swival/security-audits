@@ -1,10 +1,10 @@
 # OpenBSD Kernel Audit Findings
 
-Security audit of the OpenBSD kernel: networking stack, packet filter, IPsec and WireGuard, PPP and tunnel drivers, System V IPC, pledge, suspend and hibernate, disklabel handling, and the syscall dispatch path. Each finding includes a detailed write-up and a patch.
+Security audit of the OpenBSD kernel: networking stack, packet filter, IPsec and WireGuard, TCP MD5 signatures, ARP, PPP and tunnel drivers, System V IPC, pledge, suspend and hibernate, disklabel handling, and the syscall dispatch path. Each finding includes a detailed write-up and a patch.
 
 ## Summary
 
-**Total findings: 33** -- High: 18, Medium: 15
+**Total findings: 37** -- High: 21, Medium: 16
 
 ## Findings
 
@@ -38,6 +38,8 @@ Security audit of the OpenBSD kernel: networking stack, packet filter, IPsec and
 | [014](014-esp-padding-verifier-checks-only-final-pad-byte.md) | ESP padding verifier checks only final pad byte | High |
 | [023](023-unauthenticated-ah-packets-consume-sa-byte-lifetime.md) | Unauthenticated AH packets consume SA byte lifetime | Medium |
 | [034](034-spd-dump-accepts-foreign-routing-table-without-privilege.md) | SPD dump accepts foreign routing table without privilege | Medium |
+| [039](039-unauthenticated-esp-bytes-expire-security-association.md) | Unauthenticated ESP bytes expire security association | High |
+| [041](041-ipv6-rh0-segleft-underflows-address-index.md) | IPv6 RH0 segleft underflows address index | High |
 
 ### IPv6 and multicast
 
@@ -52,6 +54,18 @@ Security audit of the OpenBSD kernel: networking stack, packet filter, IPsec and
 |---|---------|----------|
 | [025](025-default-rdomain-bypasses-so-rtable-privilege-check.md) | Default rdomain bypasses SO_RTABLE privilege check | Medium |
 | [027](027-source-route-tag-deletion-uses-payload-pointer.md) | Source-route tag deletion uses payload pointer | High |
+
+### TCP
+
+| # | Finding | Severity |
+|---|---------|----------|
+| [040](040-tcp-md5-signature-check-fails-open-without-sa.md) | TCP MD5 signature check fails open without SA | High |
+
+### ARP
+
+| # | Finding | Severity |
+|---|---------|----------|
+| [042](042-multicast-arp-sender-mac-is-accepted-into-cache.md) | Multicast ARP sender MAC is accepted into cache | Medium |
 
 ### tun and tap
 
