@@ -1,0 +1,26 @@
+diff --git a/asn1/asn_mime.c b/asn1/asn_mime.c
+index d42dd86..dbafa1b 100644
+--- a/asn1/asn_mime.c
++++ b/asn1/asn_mime.c
+@@ -985,9 +985,18 @@ mime_bound_check(char *line, int linelen, char *bound, int blen)
+ 		return 0;
+ 	/* Check for part boundary */
+ 	if (!strncmp(line, "--", 2) && !strncmp(line + 2, bound, blen)) {
+-		if (!strncmp(line + blen + 2, "--", 2))
+-			return 2;
+-		else
++		line += blen + 2;
++		if (!strncmp(line, "--", 2)) {
++			line += 2;
++			while (*line == ' ' || *line == '\t')
++				line++;
++			if (*line == '\r' || *line == '\n' || *line == '\0')
++				return 2;
++			return 0;
++		}
++		while (*line == ' ' || *line == '\t')
++			line++;
++		if (*line == '\r' || *line == '\n' || *line == '\0')
+ 			return 1;
+ 	}
+ 	return 0;

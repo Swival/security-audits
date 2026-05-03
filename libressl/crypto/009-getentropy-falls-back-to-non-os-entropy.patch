@@ -1,0 +1,18 @@
+diff --git a/arc4random/getentropy_hpux.c b/arc4random/getentropy_hpux.c
+index 7188ae5..7fc483a 100644
+--- a/arc4random/getentropy_hpux.c
++++ b/arc4random/getentropy_hpux.c
+@@ -113,12 +113,8 @@ getentropy(void *buf, size_t len)
+ #ifdef FAIL_INSTEAD_OF_TRYING_FALLBACK
+ 	raise(SIGKILL);
+ #endif
+-	ret = getentropy_fallback(buf, len);
+-	if (ret != -1)
+-		return (ret);
+-
+ 	errno = EIO;
+-	return (ret);
++	return (-1);
+ }
+ 
+ static int

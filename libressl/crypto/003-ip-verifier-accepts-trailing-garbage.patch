@@ -1,0 +1,16 @@
+diff --git a/x509/x509_utl.c b/x509/x509_utl.c
+index 2e60834..197c5b9 100644
+--- a/x509/x509_utl.c
++++ b/x509/x509_utl.c
+@@ -1294,8 +1294,9 @@ LCRYPTO_ALIAS(a2i_ipadd);
+ static int
+ ipv4_from_asc(unsigned char *v4, const char *in)
+ {
+-	int a0, a1, a2, a3;
+-	if (sscanf(in, "%d.%d.%d.%d", &a0, &a1, &a2, &a3) != 4)
++	int a0, a1, a2, a3, n;
++	if (sscanf(in, "%d.%d.%d.%d%n", &a0, &a1, &a2, &a3, &n) != 4 ||
++	    in[n] != '\0')
+ 		return 0;
+ 	if ((a0 < 0) || (a0 > 255) || (a1 < 0) || (a1 > 255) ||
+ 	    (a2 < 0) || (a2 > 255) || (a3 < 0) || (a3 > 255))

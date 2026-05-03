@@ -1,0 +1,12 @@
+diff --git a/cms/cms_sd.c b/cms/cms_sd.c
+index abcac83..33244d9 100644
+--- a/cms/cms_sd.c
++++ b/cms/cms_sd.c
+@@ -962,6 +962,8 @@ CMS_SignerInfo_verify_content(CMS_SignerInfo *si, BIO *chain)
+ 	}
+ 
+  err:
++	if (si->pctx == pkctx)
++		si->pctx = NULL;
+ 	EVP_PKEY_CTX_free(pkctx);
+ 	EVP_MD_CTX_free(mctx);

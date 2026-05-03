@@ -1,0 +1,18 @@
+diff --git a/arc4random/getentropy_linux.c b/arc4random/getentropy_linux.c
+index c7c39c2..c869955 100644
+--- a/arc4random/getentropy_linux.c
++++ b/arc4random/getentropy_linux.c
+@@ -168,12 +168,8 @@ getentropy(void *buf, size_t len)
+ #ifdef FAIL_INSTEAD_OF_TRYING_FALLBACK
+ 	raise(SIGKILL);
+ #endif
+-	ret = getentropy_fallback(buf, len);
+-	if (ret != -1)
+-		return (ret);
+-
+ 	errno = EIO;
+-	return (ret);
++	return (-1);
+ }
+ 
+ #if defined(SYS_getrandom) && defined(GRND_NONBLOCK)

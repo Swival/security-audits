@@ -1,0 +1,19 @@
+diff --git a/curve25519/curve25519.c b/curve25519/curve25519.c
+index 0aa3d28..131785e 100644
+--- a/curve25519/curve25519.c
++++ b/curve25519/curve25519.c
+@@ -989,6 +989,14 @@ int x25519_ge_frombytes_vartime(ge_p3 *h, const uint8_t *s) {
+   fe v3;
+   fe vxx;
+   fe check;
++  int i;
++
++  if ((s[31] & 0x7f) == 0x7f) {
++    for (i = 30; i > 0 && s[i] == 0xff; i--)
++      ;
++    if (i == 0 && s[0] >= 0xed)
++      return -1;
++  }
+ 
+   fe_frombytes(h->Y, s);
+   fe_1(h->Z);

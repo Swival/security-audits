@@ -1,0 +1,22 @@
+diff --git a/arc4random/getentropy_solaris.c b/arc4random/getentropy_solaris.c
+index e36426c..e50d131 100644
+--- a/arc4random/getentropy_solaris.c
++++ b/arc4random/getentropy_solaris.c
+@@ -135,16 +135,8 @@ getentropy(void *buf, size_t len)
+ 	 * providing a new failsafe API which works in a chroot or
+ 	 * when file descriptors are exhausted.
+ 	 */
+-#undef FAIL_INSTEAD_OF_TRYING_FALLBACK
+-#ifdef FAIL_INSTEAD_OF_TRYING_FALLBACK
+-	raise(SIGKILL);
+-#endif
+-	ret = getentropy_fallback(buf, len);
+-	if (ret != -1)
+-		return (ret);
+-
+ 	errno = EIO;
+-	return (ret);
++	return (-1);
+ }
+ 
+ static int

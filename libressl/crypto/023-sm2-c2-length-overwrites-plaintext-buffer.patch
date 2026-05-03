@@ -1,0 +1,15 @@
+diff --git a/sm2/sm2_crypt.c b/sm2/sm2_crypt.c
+index 3bc1f21..f85eef6 100644
+--- a/sm2/sm2_crypt.c
++++ b/sm2/sm2_crypt.c
+@@ -507,6 +507,10 @@ SM2_decrypt(const EC_KEY *key, const EVP_MD *digest, const uint8_t *ciphertext,
+ 	C2 = sm2_ctext->C2->data;
+ 	C3 = sm2_ctext->C3->data;
+ 	msg_len = sm2_ctext->C2->length;
++	if ((size_t)msg_len > *ptext_len) {
++		SM2error(SM2_R_INVALID_ENCODING);
++		goto err;
++	}
+ 
+ 	if ((ctx = BN_CTX_new()) == NULL) {
+ 		SM2error(ERR_R_MALLOC_FAILURE);

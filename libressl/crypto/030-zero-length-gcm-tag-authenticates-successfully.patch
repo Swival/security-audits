@@ -1,0 +1,13 @@
+diff --git a/modes/gcm128.c b/modes/gcm128.c
+index a88f589..53f038b 100644
+--- a/modes/gcm128.c
++++ b/modes/gcm128.c
+@@ -568,7 +568,7 @@ CRYPTO_gcm128_finish(GCM128_CONTEXT *ctx, const unsigned char *tag,
+ 	ctx->Xi.u[0] ^= ctx->EK0.u[0];
+ 	ctx->Xi.u[1] ^= ctx->EK0.u[1];
+ 
+-	if (tag == NULL || len > sizeof(ctx->Xi))
++	if (tag == NULL || len == 0 || len > sizeof(ctx->Xi))
+ 		return -1;
+ 
+ 	return timingsafe_memcmp(ctx->Xi.c, tag, len);

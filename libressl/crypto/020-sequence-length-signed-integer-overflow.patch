@@ -1,0 +1,35 @@
+diff --git a/asn1/tasn_enc.c b/asn1/tasn_enc.c
+index a65fb5b..6fec95e 100644
+--- a/asn1/tasn_enc.c
++++ b/asn1/tasn_enc.c
+@@ -56,6 +56,7 @@
+  *
+  */
+ 
++#include <limits.h>
+ #include <stddef.h>
+ #include <string.h>
+ 
+@@ -141,7 +142,7 @@ ASN1_item_ex_i2d(ASN1_VALUE **pval, unsigned char **out, const ASN1_ITEM *it,
+     int tag, int aclass)
+ {
+ 	const ASN1_TEMPLATE *tt = NULL;
+-	int i, seqcontlen, seqlen, ndef = 1;
++	int i, tmplen, seqcontlen, seqlen, ndef = 1;
+ 	const ASN1_EXTERN_FUNCS *ef;
+ 	const ASN1_AUX *aux = it->funcs;
+ 	ASN1_aux_cb *asn1_cb = NULL;
+@@ -237,9 +238,11 @@ ASN1_item_ex_i2d(ASN1_VALUE **pval, unsigned char **out, const ASN1_ITEM *it,
+ 			if (!seqtt)
+ 				return 0;
+ 			pseqval = asn1_get_field_ptr(pval, seqtt);
+-			/* FIXME: check for errors in enhanced version */
+-			seqcontlen += asn1_template_ex_i2d(pseqval, NULL, seqtt,
++			tmplen = asn1_template_ex_i2d(pseqval, NULL, seqtt,
+ 			    -1, aclass);
++			if (tmplen < 0 || seqcontlen > INT_MAX - tmplen)
++				return 0;
++			seqcontlen += tmplen;
+ 		}
+ 
+ 		seqlen = ASN1_object_size(ndef, seqcontlen, tag);

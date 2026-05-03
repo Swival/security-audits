@@ -1,0 +1,19 @@
+diff --git a/arc4random/getentropy_osx.c b/arc4random/getentropy_osx.c
+index db028d1..75d13d0 100644
+--- a/arc4random/getentropy_osx.c
++++ b/arc4random/getentropy_osx.c
+@@ -133,12 +133,9 @@ getentropy(void *buf, size_t len)
+ #ifdef FAIL_INSTEAD_OF_TRYING_FALLBACK
+ 	raise(SIGKILL);
+ #endif
+-	ret = getentropy_fallback(buf, len);
+-	if (ret != -1)
+-		return (ret);
+-
++	(void)getentropy_fallback;
+ 	errno = EIO;
+-	return (ret);
++	return (-1);
+ }
+ 
+ static int

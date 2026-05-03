@@ -1,0 +1,22 @@
+diff --git a/des/des_fcrypt.c b/des/des_fcrypt.c
+index 2dd071f..e5b116c 100644
+--- a/des/des_fcrypt.c
++++ b/des/des_fcrypt.c
+@@ -187,9 +187,15 @@ DES_fcrypt(const char *buf, const char *salt, char *ret)
+ 	 * crypt to "*".  This was found when replacing the crypt in
+ 	 * our shared libraries.  People found that the disabled
+ 	 * accounts effectively had no passwd :-(. */
+-	x = ret[0] = ((salt[0] == '\0') ? 'A' : salt[0]);
++	x = (unsigned char)((salt[0] == '\0') ? 'A' : salt[0]);
++	if (x >= sizeof(con_salt))
++		x = 'A';
++	ret[0] = x;
+ 	Eswap0 = con_salt[x] << 2;
+-	x = ret[1] = ((salt[1] == '\0') ? 'A' : salt[1]);
++	x = (unsigned char)((salt[1] == '\0') ? 'A' : salt[1]);
++	if (x >= sizeof(con_salt))
++		x = 'A';
++	ret[1] = x;
+ 	Eswap1 = con_salt[x] << 6;
+ /* EAY
+ r=strlen(buf);

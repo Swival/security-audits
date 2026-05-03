@@ -1,0 +1,13 @@
+diff --git a/modes/cbc128.c b/modes/cbc128.c
+index 1b6858e..f71467c 100644
+--- a/modes/cbc128.c
++++ b/modes/cbc128.c
+@@ -185,7 +185,7 @@ CRYPTO_cbc128_decrypt(const unsigned char *in, unsigned char *out,
+ 			}
+ 		}
+ 	}
+-	while (len) {
++	while (len >= 16) {
+ 		unsigned char c;
+ 		(*block)(in, tmp.c, key);
+ 		for (n = 0; n < 16 && n < len; ++n) {

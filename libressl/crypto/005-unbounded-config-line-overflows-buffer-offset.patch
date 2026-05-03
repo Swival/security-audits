@@ -1,0 +1,24 @@
+diff --git a/conf/conf_def.c b/conf/conf_def.c
+index fe93916..3fef9ed 100644
+--- a/conf/conf_def.c
++++ b/conf/conf_def.c
+@@ -130,7 +130,7 @@ def_load_bio(CONF *conf, BIO *in, long *line)
+ {
+ /* The macro BUFSIZE conflicts with a system macro in VxWorks */
+ #define CONFBUFSIZE	512
+-	int bufnum = 0, i, ii;
++	size_t bufnum = 0, i, ii;
+ 	BUF_MEM *buff = NULL;
+ 	char *s, *p, *end;
+ 	int again;
+@@ -196,6 +196,10 @@ def_load_bio(CONF *conf, BIO *in, long *line)
+ 		/* we now have a line with trailing \r\n removed */
+ 
+ 		/* i is the number of bytes */
++		if (i > MAX_CONF_VALUE_LENGTH - bufnum) {
++			CONFerror(CONF_R_VARIABLE_EXPANSION_TOO_LONG);
++			goto err;
++		}
+ 		bufnum += i;
+ 
+ 		v = NULL;

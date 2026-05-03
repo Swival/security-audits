@@ -1,0 +1,13 @@
+diff --git a/cms/cms_pwri.c b/cms/cms_pwri.c
+index f64f4ab..29852af 100644
+--- a/cms/cms_pwri.c
++++ b/cms/cms_pwri.c
+@@ -232,7 +232,7 @@ kek_unwrap_key(unsigned char *out, size_t *outlen, const unsigned char *in,
+ 	unsigned char *tmp;
+ 	int outl, rv = 0;
+ 
+-	if (inlen < 2 * blocklen) {
++	if (inlen < 7 || inlen < 2 * blocklen) {
+ 		/* too small */
+ 		return 0;
+ 	}
