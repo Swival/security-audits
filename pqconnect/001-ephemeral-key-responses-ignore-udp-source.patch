@@ -1,0 +1,16 @@
+diff --git a/src/pqconnect/pqcclient.py b/src/pqconnect/pqcclient.py
+index c3ee5c5..c93f77e 100644
+--- a/src/pqconnect/pqcclient.py
++++ b/src/pqconnect/pqcclient.py
+@@ -541,6 +541,11 @@ class PQCClientConnectionHandler(Thread):
+             while True:
+                 try:
+                     data, addr = self._transport.recvfrom(4096)
++                    if addr != (
++                        self._peer.get_external_ip(),
++                        self._peer.get_keyport(),
++                    ):
++                        continue
+                     resp = KeyResponseHandler(data).response()
+                     if not isinstance(resp, EphemeralKeyResponse):
+                         continue

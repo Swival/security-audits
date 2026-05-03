@@ -1,0 +1,16 @@
+diff --git a/src/pqconnect/tundevice.py b/src/pqconnect/tundevice.py
+index ca545ff..07c88dd 100644
+--- a/src/pqconnect/tundevice.py
++++ b/src/pqconnect/tundevice.py
+@@ -410,7 +410,10 @@ class TunDevice:
+         elif pkt == HANDSHAKE_FAIL:
+             if addr[0] in self._ext2peer.keys():
+                 peer = self._ext2peer[addr[0]]
+-                if peer.get_state() in (PeerState.ESTABLISHED, PeerState.NEW):
++                if addr[1] == peer.get_pqcport() and peer.get_state() in (
++                    PeerState.ESTABLISHED,
++                    PeerState.NEW,
++                ):
+                     logger.error("Handshake failed")
+                     peer.error()
+                     self.remove_peer(peer)

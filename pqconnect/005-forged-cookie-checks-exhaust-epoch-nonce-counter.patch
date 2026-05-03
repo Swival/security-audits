@@ -1,0 +1,34 @@
+diff --git a/src/pqconnect/cookie/cookiemanager.py b/src/pqconnect/cookie/cookiemanager.py
+index c3ce2e6..09c5a56 100644
+--- a/src/pqconnect/cookie/cookiemanager.py
++++ b/src/pqconnect/cookie/cookiemanager.py
+@@ -119,7 +119,9 @@ class CookieManager:
+ 
+         self._keystore[ts]["ctr"] += 1
+ 
+-    def get_cookie_key(self, ts: Optional[int] = None) -> tuple[bytes, bytes]:
++    def get_cookie_key(
++        self, ts: Optional[int] = None, increment_nonce: bool = True
++    ) -> tuple[bytes, bytes]:
+         """Returns the key stored for the given timestamp as well as the
+         current nonce. Raises a ValueError if the key does not exist.
+ 
+@@ -134,7 +136,8 @@ class CookieManager:
+             with self._mut:
+                 key = self._keystore[ts]["key"]
+                 nonce = self._keystore[ts]["ctr"].to_bytes(NLEN, "big")
+-                self._increment_nonce(ts)
++                if increment_nonce:
++                    self._increment_nonce(ts)
+ 
+         except KeyError as e:
+             raise ValueError(f"Invalid timestamp") from e
+@@ -169,7 +172,7 @@ class CookieManager:
+ 
+         # Get cookie key and verify + decrypt
+         try:
+-            key, _ = self.get_cookie_key(ts)
++            key, _ = self.get_cookie_key(ts, increment_nonce=False)
+             pt = secret_unbox(key, nonce, tag, ct, ts_bts)
+ 
+         except KeyError as e:
