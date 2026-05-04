@@ -4,7 +4,7 @@ Security audit of quicly, a QUIC protocol implementation in C. Each finding incl
 
 ## Summary
 
-**Total findings: 3** -- High: 1, Medium: 2
+**Total findings: 2** -- High: 1, Medium: 1
 
 ## Findings
 
@@ -19,9 +19,3 @@ Security audit of quicly, a QUIC protocol implementation in C. Each finding incl
 | # | Finding | Severity |
 |---|---------|----------|
 | [002](002-double-slash-request-reads-absolute-files.md) | Double-slash request reads absolute files | High |
-
-### Congestion control
-
-| # | Finding | Severity |
-|---|---------|----------|
-| [003](003-delayed-acks-zero-congestion-increment-divisor.md) | Delayed ACKs zero congestion increment divisor | Medium |
