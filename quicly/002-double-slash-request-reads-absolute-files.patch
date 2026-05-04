@@ -1,0 +1,13 @@
+diff --git a/src/cli.c b/src/cli.c
+index f55ea83..9f78013 100644
+--- a/src/cli.c
++++ b/src/cli.c
+@@ -175,7 +175,7 @@ static void dump_stats(FILE *fp, quicly_conn_t *conn)
+ 
+ static int validate_path(const char *path)
+ {
+-    if (path[0] != '/')
++    if (path[0] != '/' || path[1] == '/')
+         return 0;
+     /* TODO avoid false positives on the client-side */
+     if (strstr(path, "/.") != NULL)
