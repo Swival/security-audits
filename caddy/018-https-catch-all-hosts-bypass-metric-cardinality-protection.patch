@@ -1,0 +1,81 @@
+diff --git a/modules/caddyhttp/metrics.go b/modules/caddyhttp/metrics.go
+index 8d20e01b..4fdd7a51 100644
+--- a/modules/caddyhttp/metrics.go
++++ b/modules/caddyhttp/metrics.go
+@@ -57,7 +57,7 @@ type Metrics struct {
+ 	// CARDINALITY PROTECTION: To prevent unbounded cardinality attacks,
+ 	// only explicitly configured hosts (via host matchers) are allowed
+ 	// by default. Other hosts are aggregated under the "_other" label.
+-	// See AllowCatchAllHosts to change this behavior.
++	// See ObserveCatchallHosts to change this behavior.
+ 	PerHost bool `json:"per_host,omitempty"`
+ 
+ 	// Allow metrics for catch-all hosts (hosts without explicit configuration).
+@@ -65,10 +65,6 @@ type Metrics struct {
+ 	// will get individual metrics labels. All other hosts will be aggregated
+ 	// under the "_other" label to prevent cardinality explosion.
+ 	//
+-	// This is automatically enabled for HTTPS servers (since certificates provide
+-	// some protection against unbounded cardinality), but disabled for HTTP servers
+-	// by default to prevent cardinality attacks from arbitrary Host headers.
+-	//
+ 	// Set to true to allow all hosts to get individual metrics (NOT RECOMMENDED
+ 	// for production environments exposed to the internet).
+ 	ObserveCatchallHosts bool `json:"observe_catchall_hosts,omitempty"`
+@@ -265,8 +261,7 @@ func (m *Metrics) scanConfigForHosts(app *App) {
+ // shouldAllowHostMetrics determines if metrics should be collected for the given host.
+ // This implements the cardinality protection by only allowing metrics for:
+ // 1. Explicitly configured hosts
+-// 2. Catch-all requests on HTTPS servers (if AllowCatchAllHosts is true or auto-enabled)
+-// 3. Catch-all requests on HTTP servers only if explicitly allowed
++// 2. Catch-all requests only if explicitly allowed
+ func (m *Metrics) shouldAllowHostMetrics(host string, isHTTPS bool) bool {
+ 	if !m.PerHost {
+ 		return true // host won't be used in labels anyway
+@@ -280,8 +275,7 @@ func (m *Metrics) shouldAllowHostMetrics(host string, isHTTPS bool) bool {
+ 	}
+ 
+ 	// For catch-all requests (not in allowed hosts)
+-	allowCatchAll := m.ObserveCatchallHosts || (isHTTPS && m.hasHTTPSServer)
+-	return allowCatchAll
++	return m.ObserveCatchallHosts
+ }
+ 
+ // serverNameFromContext extracts the current server name from the context.
+diff --git a/modules/caddyhttp/metrics_test.go b/modules/caddyhttp/metrics_test.go
+index d75b3cae..4e7b14c6 100644
+--- a/modules/caddyhttp/metrics_test.go
++++ b/modules/caddyhttp/metrics_test.go
+@@ -434,7 +434,7 @@ func TestMetricsCardinalityProtection(t *testing.T) {
+ func TestMetricsHTTPSCatchAll(t *testing.T) {
+ 	ctx, _ := caddy.NewContext(caddy.Context{Context: context.Background()})
+ 
+-	// Test that HTTPS requests allow catch-all even when AllowCatchAllHosts is false
++	// Test that HTTPS requests also map unrecognized hosts to "_other" when ObserveCatchallHosts is false
+ 	metrics := &Metrics{
+ 		PerHost:              true,
+ 		ObserveCatchallHosts: false,
+@@ -451,7 +451,7 @@ func TestMetricsHTTPSCatchAll(t *testing.T) {
+ 
+ 	ih := newMetricsInstrumentedRoute(ctx, "test", h, metrics)
+ 
+-	// Test HTTPS request (should be allowed even though not in allowedHosts)
++	// Test HTTPS request (should be mapped to "_other")
+ 	r1 := httptest.NewRequest("GET", "https://unknown.com/", nil)
+ 	r1.Host = "unknown.com"
+ 	r1.TLS = &tls.ConnectionState{} // Mark as TLS/HTTPS
+@@ -465,12 +465,11 @@ func TestMetricsHTTPSCatchAll(t *testing.T) {
+ 	w2 := httptest.NewRecorder()
+ 	ih.ServeHTTP(w2, r2)
+ 
+-	// Check that HTTPS request gets real host, HTTP gets "_other"
++	// Check that both HTTPS and HTTP requests get "_other"
+ 	expected := `
+ 	# HELP caddy_http_requests_total Counter of HTTP(S) requests made.
+ 	# TYPE caddy_http_requests_total counter
+-	caddy_http_requests_total{handler="test",host="_other",server="UNKNOWN"} 1
+-	caddy_http_requests_total{handler="test",host="unknown.com",server="UNKNOWN"} 1
++	caddy_http_requests_total{handler="test",host="_other",server="UNKNOWN"} 2
+ 	`
+ 
+ 	if err := testutil.GatherAndCompare(ctx.GetMetricsRegistry(), strings.NewReader(expected),

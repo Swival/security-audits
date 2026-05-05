@@ -1,0 +1,15 @@
+diff --git a/modules/caddyhttp/matchers.go b/modules/caddyhttp/matchers.go
+index f179b9c1..79689e15 100644
+--- a/modules/caddyhttp/matchers.go
++++ b/modules/caddyhttp/matchers.go
+@@ -635,6 +635,10 @@ func (MatchPath) matchPatternWithEscapeSequence(escapedPath, matchPath string) b
+ 		iPattern++
+ 	}
+
++	if iPattern != len(matchPath) || iPath != len(escapedPath) {
++		return false
++	}
++
+ 	// we can now treat rawpath globs (%*) as regular globs (*)
+ 	matchPath = strings.ReplaceAll(matchPath, "%*", "*")
+

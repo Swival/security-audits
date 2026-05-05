@@ -1,0 +1,14 @@
+diff --git a/modules/caddyhttp/reverseproxy/fastcgi/writer.go b/modules/caddyhttp/reverseproxy/fastcgi/writer.go
+index 225d8f5f..70830e51 100644
+--- a/modules/caddyhttp/reverseproxy/fastcgi/writer.go
++++ b/modules/caddyhttp/reverseproxy/fastcgi/writer.go
+@@ -81,6 +81,9 @@ func (w *streamWriter) writePairs(pairs map[string]string) error {
+ 	// init headers
+ 	w.buf.Write(b)
+ 	for k, v := range pairs {
++		if len(k) > maxWrite-8 {
++			k = k[:maxWrite-8]
++		}
+ 		m := 8 + len(k) + len(v)
+ 		if m > maxWrite {
+ 			// param data size exceed 65535 bytes"
