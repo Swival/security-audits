@@ -1,0 +1,17 @@
+diff --git a/.github/workflows/release-proposal.yml b/.github/workflows/release-proposal.yml
+index 0b9a0913..58f1522b 100644
+--- a/.github/workflows/release-proposal.yml
++++ b/.github/workflows/release-proposal.yml
+@@ -178,9 +178,11 @@ jobs:
+       - name: Create release proposal PR
+         id: create_pr
+         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
++        env:
++          CHANGELOG: ${{ steps.setup.outputs.changelog }}
+         with:
+           script: |
+-            const changelog = `${{ steps.setup.outputs.changelog }}`;
++            const changelog = process.env.CHANGELOG;
+             
+             const pr = await github.rest.pulls.create({
+               owner: context.repo.owner,

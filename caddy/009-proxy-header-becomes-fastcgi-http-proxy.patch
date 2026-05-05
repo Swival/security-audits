@@ -1,0 +1,14 @@
+diff --git a/modules/caddyhttp/reverseproxy/fastcgi/fastcgi.go b/modules/caddyhttp/reverseproxy/fastcgi/fastcgi.go
+index c4279d9a..186a5f02 100644
+--- a/modules/caddyhttp/reverseproxy/fastcgi/fastcgi.go
++++ b/modules/caddyhttp/reverseproxy/fastcgi/fastcgi.go
+@@ -411,6 +411,9 @@ func (t Transport) buildEnv(r *http.Request) (envVars, error) {
+ 
+ 	// Add all HTTP headers to env variables
+ 	for field, val := range r.Header {
++		if strings.EqualFold(field, "Proxy") {
++			continue
++		}
+ 		header := strings.ToUpper(field)
+ 		header = headerNameReplacer.Replace(header)
+ 		env["HTTP_"+header] = strings.Join(val, ", ")
