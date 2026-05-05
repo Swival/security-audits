@@ -54,7 +54,7 @@ These audits are shared as-is. Some findings have already been reported upstream
 
 Additional codebases have been audited where the tool surfaced serious vulnerabilities. Those results are not published here. The findings have been shared privately with the affected maintainers, and will only be made public once fixes have shipped.
 
-No private models, internal tools, or non-public data were involved in producing any of these findings. Everything here was generated with Swival running against publicly available source code, using GPT-5.4, GPT-5.5 and Qwen-3.6-27B, all of which anyone can access.
+No private models, internal tools, or non-public data were involved in producing any of these findings. Everything here was automatically generated with Swival running against publicly available source code, using GPT-5.4, GPT-5.5 and Qwen-3.6-27B, all of which anyone can access.
 
 Anyone with the same setup has had, and still has, the ability to reproduce the same analysis and reach the same conclusions. For that reason, the issues described in this repository should be assumed to be already known to anyone who cares to look, including parties whose interests may not align with the upstream maintainers.
 
