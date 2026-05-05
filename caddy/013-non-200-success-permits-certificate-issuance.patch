@@ -1,0 +1,15 @@
+diff --git a/modules/caddytls/ondemand.go b/modules/caddytls/ondemand.go
+index 0970234c..a83f4f66 100644
+--- a/modules/caddytls/ondemand.go
++++ b/modules/caddytls/ondemand.go
+@@ -161,8 +161,8 @@ func (p PermissionByHTTP) CertificateAllowed(ctx context.Context, name string) e
+ 		)
+ 	}
+ 
+-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+-		return fmt.Errorf("%s: %w %s - non-2xx status code %d", name, ErrPermissionDenied, askEndpoint, resp.StatusCode)
++	if resp.StatusCode != http.StatusOK {
++		return fmt.Errorf("%s: %w %s - non-200 status code %d", name, ErrPermissionDenied, askEndpoint, resp.StatusCode)
+ 	}
+ 
+ 	return nil

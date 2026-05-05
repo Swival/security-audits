@@ -1,0 +1,13 @@
+diff --git a/modules/caddytls/automation.go b/modules/caddytls/automation.go
+index 5b7a4ed5..672012ca 100644
+--- a/modules/caddytls/automation.go
++++ b/modules/caddytls/automation.go
+@@ -300,7 +300,7 @@ func (ap *AutomationPolicy) makeCertMagicConfig(tlsApp *TLS, issuers []certmagic
+ 		// prevent issuance from Issuers (when Managers don't provide a certificate) if there's no
+ 		// permission module configured
+ 		noProtections := ap.isWildcardOrDefault() && !ap.onlyInternalIssuer() && (tlsApp.Automation == nil || tlsApp.Automation.OnDemand == nil || tlsApp.Automation.OnDemand.permission == nil)
+-		failClosed := noProtections && !ap.hadExplicitManagers // don't allow on-demand issuance (other than implicit managers) if no managers have been explicitly configured
++		failClosed := noProtections // don't allow on-demand issuance when no permission module is configured
+ 		if noProtections {
+ 			if !ap.hadExplicitManagers {
+ 				// no managers, no explicitly-configured permission module, this is a config error

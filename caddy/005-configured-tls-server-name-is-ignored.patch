@@ -1,0 +1,13 @@
+diff --git a/modules/caddytls/capools.go b/modules/caddytls/capools.go
+index c275f7d6..ef40f088 100644
+--- a/modules/caddytls/capools.go
++++ b/modules/caddytls/capools.go
+@@ -618,7 +618,7 @@ func (t *TLSConfig) makeTLSClientConfig(ctx caddy.Context) (*tls.Config, error)
+ 	}
+ 
+ 	// override for the server name used verify the TLS handshake
+-	cfg.ServerName = repl.ReplaceKnown(cfg.ServerName, "")
++	cfg.ServerName = repl.ReplaceKnown(t.ServerName, "")
+ 
+ 	// throw all security out the window
+ 	cfg.InsecureSkipVerify = t.InsecureSkipVerify

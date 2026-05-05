@@ -1,0 +1,43 @@
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+index 2cddde61..bc92a5d2 100644
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -80,6 +80,7 @@ jobs:
+         id: verify
+         env:
+           signing_keys: ${{ secrets.SIGNING_KEYS }}
++          version_tag: ${{ steps.vars.outputs.version_tag }}
+         run: |
+           # Read the string into an array, splitting by IFS
+           IFS=";" read -ra keys_collection <<< "$signing_keys"
+@@ -104,17 +105,17 @@ jobs:
+ 
+           git config set --global gpg.ssh.allowedSignersFile "${{ runner.temp }}/allowed_signers"
+ 
+-          echo "Verifying the tag: ${{ steps.vars.outputs.version_tag }}"
++          echo "Verifying the tag: $version_tag"
+           
+           # Verify the tag is signed
+-          if ! git verify-tag -v "${{ steps.vars.outputs.version_tag }}" 2>&1; then
++          if ! git verify-tag -v "$version_tag" 2>&1; then
+             echo "❌ Tag verification failed!"
+             echo "passed=false" >> $GITHUB_OUTPUT
+-            git push --delete origin "${{ steps.vars.outputs.version_tag }}"
++            git push --delete origin "$version_tag"
+             exit 1
+           fi
+           # Run it again to capture the output
+-          git verify-tag -v "${{ steps.vars.outputs.version_tag }}" 2>&1 | tee /tmp/verify-output.txt;
++          git verify-tag -v "$version_tag" 2>&1 | tee /tmp/verify-output.txt;
+ 
+           # SSH verification output typically includes the key fingerprint
+           # Use GNU grep with Perl regex for cleaner extraction (Linux environment)
+@@ -134,7 +135,7 @@ jobs:
+             echo "Somehow could not extract SSH key fingerprint from git verify-tag output"
+             echo "Cancelling flow and deleting tag"
+             echo "passed=false" >> $GITHUB_OUTPUT
+-            git push --delete origin "${{ steps.vars.outputs.version_tag }}"
++            git push --delete origin "$version_tag"
+             exit 1
+           fi
+

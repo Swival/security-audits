@@ -1,0 +1,28 @@
+diff --git a/modules/caddyhttp/reverseproxy/healthchecks.go b/modules/caddyhttp/reverseproxy/healthchecks.go
+index 73604f91..7180e4d5 100644
+--- a/modules/caddyhttp/reverseproxy/healthchecks.go
++++ b/modules/caddyhttp/reverseproxy/healthchecks.go
+@@ -67,6 +67,8 @@ type HealthChecks struct {
+ 	Passive *PassiveHealthChecks `json:"passive,omitempty"`
+ }
+ 
++const defaultActiveHealthCheckMaxSize = 1 << 20
++
+ // ActiveHealthChecks holds configuration related to active
+ // health checks (that is, health checks which occur in a
+ // background goroutine independently).
+@@ -517,10 +519,11 @@ func (h *Handler) doActiveHealthCheck(dialInfo DialInfo, hostAddr string, networ
+ 		markUnhealthy()
+ 		return nil
+ 	}
+-	var body io.Reader = resp.Body
+-	if h.HealthChecks.Active.MaxSize > 0 {
+-		body = io.LimitReader(body, h.HealthChecks.Active.MaxSize)
++	maxSize := h.HealthChecks.Active.MaxSize
++	if maxSize <= 0 {
++		maxSize = defaultActiveHealthCheckMaxSize
+ 	}
++	body := io.LimitReader(resp.Body, maxSize)
+ 	defer func() {
+ 		// drain any remaining body so connection could be re-used
+ 		_, _ = io.Copy(io.Discard, body)
