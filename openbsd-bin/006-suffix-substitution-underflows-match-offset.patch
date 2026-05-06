@@ -1,0 +1,16 @@
+diff --git a/make/varmodifiers.c b/make/varmodifiers.c
+index 2c2e352..72fd274 100644
+--- a/make/varmodifiers.c
++++ b/make/varmodifiers.c
+@@ -495,8 +495,9 @@ VarSubstitute(struct Name *word, bool addSpace, Buffer buf,
+ 	     * characters from the end of the word) and see if it does. Note
+ 	     * that because the $ will be left at the end of the lhs, we have
+ 	     * to use strncmp.	*/
+-	    cp = word->s + (wordLen - pattern->leftLen);
+-	    if (cp >= word->s &&
++	    cp = wordLen >= pattern->leftLen ?
++		word->s + (wordLen - pattern->leftLen) : NULL;
++	    if (cp != NULL &&
+ 		strncmp(cp, pattern->lhs, pattern->leftLen) == 0) {
+ 		/* Match found. If we will place characters in the buffer,
+ 		 * add a space before hand as indicated by addSpace, then

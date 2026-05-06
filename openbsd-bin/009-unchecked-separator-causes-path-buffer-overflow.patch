@@ -1,0 +1,23 @@
+diff --git a/make/targequiv.c b/make/targequiv.c
+index 48ba4bc..d0bc4da 100644
+--- a/make/targequiv.c
++++ b/make/targequiv.c
+@@ -220,8 +220,17 @@ parse_reduce(size_t i, const char *src)
+ 			}
+ 			buffer[i++] = *src++;
+ 		}
+-		if (src[0] == '/') 
++		if (src[0] == '/') {
++			if (i > bufsize - 2) {
++				bufsize *= 2;
++				buffer = erealloc(buffer, bufsize);
++			}
+ 			buffer[i++] = *src++;
++		}
++	}
++	if (i > bufsize - 1) {
++		bufsize *= 2;
++		buffer = erealloc(buffer, bufsize);
+ 	}
+ 	buffer[i++] = 0;
+ 	return i;
