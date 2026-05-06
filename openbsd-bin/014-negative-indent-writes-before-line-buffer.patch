@@ -1,0 +1,14 @@
+diff --git a/lpr/filters/lpf.c b/lpr/filters/lpf.c
+index 8c5ec68..7e6f305 100644
+--- a/lpr/filters/lpf.c
++++ b/lpr/filters/lpf.c
+@@ -86,7 +86,8 @@ main(int argc, char **argv)
+ 			length = atoi(optarg);
+ 			break;
+ 		case 'i':
+-			indent = atoi(optarg);
++			if ((indent = atoi(optarg)) < 0)
++				indent = 0;
+ 			break;
+ 		case 'r':	/* map nl->cr-nl */
+ 			onlcr = 1;

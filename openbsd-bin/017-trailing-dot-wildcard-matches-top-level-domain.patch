@@ -1,0 +1,15 @@
+diff --git a/libtls/tls_verify.c b/libtls/tls_verify.c
+index de95ab8..d441058 100644
+--- a/libtls/tls_verify.c
++++ b/libtls/tls_verify.c
+@@ -56,8 +56,8 @@ tls_match_name(const char *cert_name, const char *name)
+ 		if (cert_domain[1] == '.')
+ 			return -1;
+ 		next_dot = strchr(&cert_domain[1], '.');
+-		/* Disallow "*.bar" */
+-		if (next_dot == NULL)
++		/* Disallow "*.bar" and "*.bar." */
++		if (next_dot == NULL || next_dot[1] == '\0')
+ 			return -1;
+ 		/* Disallow "*.bar.." */
+ 		if (next_dot[1] == '.')
