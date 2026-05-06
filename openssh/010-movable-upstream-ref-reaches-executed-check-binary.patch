@@ -1,0 +1,24 @@
+diff --git a/mlkem768.sh b/mlkem768.sh
+index bec372a..3093f75 100755
+--- a/mlkem768.sh
++++ b/mlkem768.sh
+@@ -4,7 +4,7 @@
+ #
+ 
+ #WANT_LIBCRUX_REVISION="origin/main"
+-WANT_LIBCRUX_REVISION="core-models-v0.0.4"
++WANT_LIBCRUX_REVISION="026a87ab6d88ad3626b9fbbf3710d1e0483c1849"
+ 
+ BASE="libcrux/libcrux-ml-kem/extracts/c_header_only/generated"
+ FILES="
+@@ -27,8 +27,9 @@ cd libcrux
+ test `git diff | wc -l` -ne 0 && die "tree has unstaged changes"
+ git fetch
+ git checkout -B extract 1>&2
+-git reset --hard $WANT_LIBCRUX_REVISION 1>&2
++git reset --hard "$WANT_LIBCRUX_REVISION" 1>&2
+ LIBCRUX_REVISION=`git rev-parse HEAD`
++test "$LIBCRUX_REVISION" = "$WANT_LIBCRUX_REVISION" || die "libcrux revision mismatch"
+ set +x
+ 
+ cd $START

@@ -34,6 +34,7 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | [openbsd-kernel](openbsd-kernel/)                             |       37 | OpenBSD kernel                                 |
 | [openbsd-libc](openbsd-libc/)                                 |       21 | OpenBSD C standard library                     |
 | [openbsd-libexec](openbsd-libexec/)                           |       17 | OpenBSD libexec helper programs and daemons    |
+| [openssh](openssh/)                                           |       13 | Portable SSH client, server, agent, and tools  |
 | [pcre2](pcre2/)                                               |        4 | Perl-compatible regular expressions library    |
 | [picotls](picotls/)                                           |       11 | TLS 1.3 implementation in C                    |
 | [pqconnect](pqconnect/)                                       |        4 | Post-quantum VPN using McEliece and X25519     |
