@@ -1,0 +1,14 @@
+diff --git a/lpr/lpd/recvjob.c b/lpr/lpd/recvjob.c
+index 787da15..feb1865 100644
+--- a/lpr/lpd/recvjob.c
++++ b/lpr/lpd/recvjob.c
+@@ -168,6 +168,9 @@ readjob(void)
+ 			 * something different than what gethostbyaddr()
+ 			 * returns
+ 			 */
++			if (strlen(cp) < 6 ||
++			    strlen(from) >= sizeof(line) + line - cp - 6)
++				frecverr("readjob: %s: illegal path name", cp);
+ 			strlcpy(cp + 6, from, sizeof(line) + line - cp - 6);
+ 			if (strchr(cp, '/'))
+ 				frecverr("readjob: %s: illegal path name", cp);

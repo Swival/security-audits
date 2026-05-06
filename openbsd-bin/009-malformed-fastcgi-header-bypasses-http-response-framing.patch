@@ -1,0 +1,41 @@
+diff --git a/httpd/server_fcgi.c b/httpd/server_fcgi.c
+index 5c4a8d3..b1a4666 100644
+--- a/httpd/server_fcgi.c
++++ b/httpd/server_fcgi.c
+@@ -520,6 +520,7 @@ server_fcgi_read(struct bufferevent *bev, void *arg)
+ 	struct client			*clt = (struct client *) arg;
+ 	struct fcgi_record_header	*h;
+ 	size_t				 len;
++	int				 ret;
+ 	char				*ptr;
+ 
+ 	do {
+@@ -575,8 +576,13 @@ server_fcgi_read(struct bufferevent *bev, void *arg)
+ 			case FCGI_STDOUT:
+ 				++clt->clt_chunk;
+ 				if (!clt->clt_fcgi.headersdone) {
+-					clt->clt_fcgi.headersdone =
+-					    server_fcgi_getheaders(clt);
++					ret = server_fcgi_getheaders(clt);
++					if (ret == -1) {
++						server_abort_http(clt, 500,
++						    "malformed fcgi headers");
++						return;
++					}
++					clt->clt_fcgi.headersdone = ret;
+ 					if (!EVBUFFER_LENGTH(clt->clt_srvevb))
+ 						break;
+ 				}
+@@ -826,8 +832,10 @@ server_fcgi_getheaders(struct client *clt)
+ 	while ((line = evbuffer_getline(evb)) != NULL && *line != '\0') {
+ 		key = line;
+ 
+-		if ((value = strchr(key, ':')) == NULL)
+-			break;
++		if ((value = strchr(key, ':')) == NULL) {
++			free(line);
++			return (-1);
++		}
+ 
+ 		*value++ = '\0';
+ 		value += strspn(value, " \t");

@@ -1,0 +1,13 @@
+diff --git a/libelf/gelf_rel.c b/libelf/gelf_rel.c
+index 8058630..a52710b 100644
+--- a/libelf/gelf_rel.c
++++ b/libelf/gelf_rel.c
+@@ -72,7 +72,7 @@ gelf_getrel(Elf_Data *ed, int ndx, GElf_Rel *dst)
+ 
+ 	assert(ndx >= 0);
+ 
+-	if (msz * (size_t) ndx >= d->d_data.d_size) {
++	if ((size_t) ndx >= d->d_data.d_size / msz) {
+ 		LIBELF_SET_ERROR(ARGUMENT, 0);
+ 		return (NULL);
+ 	}

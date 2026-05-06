@@ -1,0 +1,15 @@
+diff --git a/ftp-proxy/ftp-proxy.c b/ftp-proxy/ftp-proxy.c
+index efb52ac..1f33b64 100644
+--- a/ftp-proxy/ftp-proxy.c
++++ b/ftp-proxy/ftp-proxy.c
+@@ -142,10 +142,6 @@ client_error(struct bufferevent *bufev, short what, void *arg)
+ int
+ client_parse(struct session *s)
+ {
+-	/* Reset any previous command. */
+-	s->cmd = CMD_NONE;
+-	s->port = 0;
+-
+ 	/* Commands we are looking for are at least 4 chars long. */
+ 	if (linelen < 4)
+ 		return (1);

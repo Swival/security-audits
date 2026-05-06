@@ -1,0 +1,22 @@
+diff --git a/dhcrelay/packet.c b/dhcrelay/packet.c
+index fabdf1d..4d11967 100644
+--- a/dhcrelay/packet.c
++++ b/dhcrelay/packet.c
+@@ -272,14 +272,14 @@ decode_udp_ip_header(unsigned char *buf, size_t buflen,
+ 	if (buflen < offset + ntohs(ip->ip_len))
+ 		return (-1);
+ 
+-	/* Assure that the UDP header is within the buffer. */
+-	if (buflen < offset + ip_len + sizeof(*udp))
++	/* Assure that the UDP header is within the IP packet. */
++	if (ntohs(ip->ip_len) < ip_len + sizeof(*udp))
+ 		return (-1);
+ 	udp = (struct udphdr *)(buf + offset + ip_len);
+ 	udp_packets_seen++;
+ 
+-	/* Assure that the entire UDP packet is within the buffer. */
+-	if (buflen < offset + ip_len + ntohs(udp->uh_ulen))
++	/* Assure that the entire UDP packet is within the IP packet. */
++	if (ntohs(ip->ip_len) < ip_len + ntohs(udp->uh_ulen))
+ 		return (-1);
+ 	data = buf + offset + ip_len + sizeof(*udp);
