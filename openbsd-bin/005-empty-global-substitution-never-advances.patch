@@ -1,0 +1,19 @@
+diff --git a/make/varmodifiers.c b/make/varmodifiers.c
+index 2c2e352..2a5c5c5 100644
+--- a/make/varmodifiers.c
++++ b/make/varmodifiers.c
+@@ -1023,8 +1023,12 @@ common_get_patternarg(const char **p, SymTable *ctxt, bool err, int endc,
+ 				break;
+ 			}
+ 			if (*s == endc || *s == ':') {
+-				*p = s;
+-				return pattern;
++				if (!dosubst || pattern->leftLen != 0 ||
++				    (pattern->flags & (VAR_SUB_GLOBAL |
++				    VAR_MATCH_START | VAR_MATCH_END)) != VAR_SUB_GLOBAL) {
++					*p = s;
++					return pattern;
++				}
+ 			}
+ 		}
+ 	}

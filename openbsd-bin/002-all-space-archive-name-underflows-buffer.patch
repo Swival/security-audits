@@ -1,0 +1,14 @@
+diff --git a/make/arch.c b/make/arch.c
+index 9fb18db..d268f81 100644
+--- a/make/arch.c
++++ b/make/arch.c
+@@ -430,7 +430,8 @@ read_archive(const char *archive, const char *earchive)
+ 			(void)memcpy(memberName, arHeader.ar_name,
+ 			    AR_NAME_SIZE);
+ 			/* Find real end of name (strip extraneous ' ')  */
+-			for (cp = memberName + AR_NAME_SIZE - 1; *cp == ' ';)
++			for (cp = memberName + AR_NAME_SIZE - 1;
++			    cp > memberName && *cp == ' ';)
+ 				cp--;
+ 			cp[1] = '\0';
+

@@ -1,10 +1,12 @@
 # OpenBSD Userland Audit Findings
 
-Security audit of OpenBSD userland programs and libraries: the `httpd` web server, the `doas` privilege escalation tool, the `smtpd` mail daemon, the `lpd` print spooler, the `ftp-proxy` and `dhcrelay` network services, and the `libtls` and `libelf` libraries that ship with the base system. Each finding includes a detailed write-up and a patch.
+Security audit of OpenBSD userland programs and libraries: the `httpd` web server, the `doas` privilege escalation tool, the `smtpd` mail daemon, the `lpd` print spooler, the `ftp-proxy` and `dhcrelay` network services, the `make` build tool, the `m4` macro processor, and the `libtls` and `libelf` libraries that ship with the base system. Each finding includes a detailed write-up and a patch.
 
 ## Summary
 
-**Total findings: 25** -- High: 9, Medium: 12, Low: 4
+**Total findings: 34** -- High: 9, Medium: 21, Low: 4
+
+Findings are numbered per component, so a couple of numbers are reused across the different tables below.
 
 ## Findings
 
@@ -72,3 +74,22 @@ Security audit of OpenBSD userland programs and libraries: the `httpd` web serve
 | # | Finding | Severity |
 |---|---------|----------|
 | [016](016-udp-payload-may-extend-past-ip-packet.md) | UDP payload may extend past IP packet | Medium |
+
+### make
+
+| # | Finding | Severity |
+|---|---------|----------|
+| [002](002-all-space-archive-name-underflows-buffer.md) | All-space archive name underflows buffer | Medium |
+| [003](003-unterminated-svr4-long-name-returned.md) | Unterminated SVR4 long name returned | Medium |
+| [004](004-cyclic-suffix-rules-cause-unbounded-implicit-source-expansio.md) | Cyclic suffix rules cause unbounded implicit-source expansion | Medium |
+| [005](005-empty-global-substitution-never-advances.md) | Empty global substitution never advances | Medium |
+| [006](006-suffix-substitution-underflows-match-offset.md) | Suffix substitution underflows match offset | Medium |
+| [009](009-unchecked-separator-causes-path-buffer-overflow.md) | Unchecked separator causes path buffer overflow | Medium |
+
+### m4
+
+| # | Finding | Severity |
+|---|---------|----------|
+| [001](001-substr-offset-causes-out-of-bounds-read.md) | `substr` offset causes out-of-bounds read | Medium |
+| [007](007-undefine-frees-live-macro-definition.md) | `undefine` frees live macro definition | Medium |
+| [008](008-popdef-frees-live-macro-definition.md) | `popdef` frees live macro definition | Medium |

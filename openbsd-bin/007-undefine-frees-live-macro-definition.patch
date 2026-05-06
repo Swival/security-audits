@@ -1,0 +1,13 @@
+diff --git a/m4/look.c b/m4/look.c
+index 3d23e80..26acdc1 100644
+--- a/m4/look.c
++++ b/m4/look.c
+@@ -186,7 +186,7 @@ macro_undefine(const char *name)
+ 		for (r = n->d; r != NULL; r = r2) {
+ 			r2 = r->next;
+ 			if (r->defn != null)
+-				free(r->defn);
++				free_definition(r->defn);
+ 			free(r);
+ 		}
+ 		n->d = NULL;

@@ -1,0 +1,15 @@
+diff --git a/make/suff.c b/make/suff.c
+index e9cab43..5f1d589 100644
+--- a/make/suff.c
++++ b/make/suff.c
+@@ -655,6 +655,10 @@ SuffAddSrc(
+ 
+ 	targ = ls->s;
+ 
++	for (s2 = targ; s2 != NULL; s2 = s2->parent)
++		if (s2->suff == s && strcmp(s2->prefix, targ->prefix) == 0)
++			return;
++
+ 	s2 = emalloc(sizeof(Src));
+ 	s2->file = Str_concat(targ->prefix, s->name, 0);
+ 	s2->prefix = targ->prefix;
