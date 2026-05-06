@@ -1,0 +1,32 @@
+diff --git a/libelf/libelf_ar_util.c b/libelf/libelf_ar_util.c
+index 83ff9cc..c054509 100644
+--- a/libelf/libelf_ar_util.c
++++ b/libelf/libelf_ar_util.c
+@@ -142,6 +142,16 @@ _libelf_ar_get_translated_name(const struct ar_hdr *arh, Elf *ar)
+ 			return (NULL);
+ 		}
+ 
++		/*
++		 * The file name follows the archive header.
++		 */
++		q = (const unsigned char *) (arh + 1);
++		r = ar->e_rawfile + ar->e_rawsize;
++		if (q > r || len > (size_t) (r - q)) {
++			LIBELF_SET_ERROR(ARCHIVE, 0);
++			return (NULL);
++		}
++
+ 		/*
+ 		 * Allocate space for the file name plus a
+ 		 * trailing NUL.
+@@ -151,11 +161,6 @@ _libelf_ar_get_translated_name(const struct ar_hdr *arh, Elf *ar)
+ 			return (NULL);
+ 		}
+ 
+-		/*
+-		 * The file name follows the archive header.
+-		 */
+-		q = (const unsigned char *) (arh + 1);
+-
+ 		(void) strncpy(s, (const char *) q, len);
+ 		s[len] = '\0';

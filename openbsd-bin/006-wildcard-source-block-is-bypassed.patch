@@ -1,0 +1,14 @@
+diff --git a/smtpd/mta.c b/smtpd/mta.c
+index 8022d23..de14cad 100644
+--- a/smtpd/mta.c
++++ b/smtpd/mta.c
+@@ -2598,6 +2598,10 @@ mta_is_blocked(struct mta_source *src, char *dom)
+ 	if (SPLAY_FIND(mta_block_tree, &blocks, &key))
+ 		return (1);
+ 
++	key.domain = NULL;
++	if (dom && SPLAY_FIND(mta_block_tree, &blocks, &key))
++		return (1);
++
+ 	return (0);
+ }

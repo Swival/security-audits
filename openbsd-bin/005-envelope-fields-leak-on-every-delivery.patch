@@ -1,0 +1,12 @@
+diff --git a/smtpd/mda.c b/smtpd/mda.c
+index c9ba83c..5cf8449 100644
+--- a/smtpd/mda.c
++++ b/smtpd/mda.c
+@@ -821,6 +821,8 @@ mda_envelope_free(struct mda_envelope *e)
+ 	free(e->dest);
+ 	free(e->rcpt);
+ 	free(e->user);
++	free(e->dispatcher);
++	free(e->mda_subaddress);
+ 	free(e->mda_exec);
+ 	free(e);

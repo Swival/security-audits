@@ -1,0 +1,23 @@
+diff --git a/doas/doas.c b/doas/doas.c
+index 3999b2e..a63af7b 100644
+--- a/doas/doas.c
++++ b/doas/doas.c
+@@ -405,13 +405,14 @@ main(int argc, char **argv)
+ 
+ 	parseconfig("/etc/doas.conf", 1);
+ 
+-	/* cmdline is used only for logging, no need to abort on truncate */
+-	(void)strlcpy(cmdline, argv[0], sizeof(cmdline));
++	/* cmdline is used for audit logging; reject anything truncated. */
++	if (strlcpy(cmdline, argv[0], sizeof(cmdline)) >= sizeof(cmdline))
++		errx(1, "command line too long");
+ 	for (i = 1; i < argc; i++) {
+ 		if (strlcat(cmdline, " ", sizeof(cmdline)) >= sizeof(cmdline))
+-			break;
++			errx(1, "command line too long");
+ 		if (strlcat(cmdline, argv[i], sizeof(cmdline)) >= sizeof(cmdline))
+-			break;
++			errx(1, "command line too long");
+ 	}
+ 
+ 	cmd = argv[0];

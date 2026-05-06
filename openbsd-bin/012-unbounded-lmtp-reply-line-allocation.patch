@@ -1,0 +1,42 @@
+diff --git a/smtpd/mail.lmtp.c b/smtpd/mail.lmtp.c
+index dc46d12..688ac81 100644
+--- a/smtpd/mail.lmtp.c
++++ b/smtpd/mail.lmtp.c
+@@ -27,6 +27,8 @@
+ #include <sysexits.h>
+ #include <unistd.h>
+ 
++#define LMTP_LINE_MAX	512
++
+ enum phase {
+ 	PHASE_BANNER,
+ 	PHASE_HELO,
+@@ -228,9 +230,8 @@ lmtp_engine(int fd_read, struct session *session)
+ 	int fd_write = 0;
+ 	FILE *file_read = 0;
+ 	FILE *file_write = 0;
+-	char *line = NULL;
+-	size_t linesize = 0;
+-	ssize_t linelen;
++	char line[LMTP_LINE_MAX + 1];
++	size_t linelen;
+ 	enum phase phase = PHASE_BANNER;
+ 
+ 	if ((fd_write = dup(fd_read)) == -1)
+@@ -245,12 +246,15 @@ lmtp_engine(int fd_read, struct session *session)
+ 	do {
+ 		fflush(file_write);
+ 
+-		if ((linelen = getline(&line, &linesize, file_read)) == -1) {
++		if (fgets(line, sizeof line, file_read) == NULL) {
+ 			if (ferror(file_read))
+-				err(EX_TEMPFAIL, "getline");
++				err(EX_TEMPFAIL, "fgets");
+ 			else
+ 				errx(EX_TEMPFAIL, "unexpected EOF from LMTP server");
+ 		}
++		linelen = strlen(line);
++		if (linelen == LMTP_LINE_MAX && line[linelen - 1] != '\n')
++			errx(EX_TEMPFAIL, "LMTP server sent a line that is too long");
+ 		line[strcspn(line, "\n")] = '\0';
+ 		line[strcspn(line, "\r")] = '\0';

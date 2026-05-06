@@ -1,0 +1,12 @@
+diff --git a/libelf/libelf_ar.c b/libelf/libelf_ar.c
+index 273111a..181198c 100644
+--- a/libelf/libelf_ar.c
++++ b/libelf/libelf_ar.c
+@@ -345,7 +345,7 @@ _libelf_ar_process_bsd_symtab(Elf *e, size_t *count)
+ 	 */
+ 	GET_LONG(p, arraysize);
+ 
+-	if (arraysize < 0 || p0 + arraysize >= end ||
++	if (arraysize < 0 || p + arraysize + sizeof(long) > end ||
+ 	    ((size_t) arraysize % entrysize != 0))
+ 		goto symtaberror;

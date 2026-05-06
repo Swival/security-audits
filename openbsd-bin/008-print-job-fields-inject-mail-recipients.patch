@@ -1,0 +1,23 @@
+diff --git a/lpr/lpd/printjob.c b/lpr/lpd/printjob.c
+index 9b8579e..b214165 100644
+--- a/lpr/lpd/printjob.c
++++ b/lpr/lpd/printjob.c
+@@ -1116,8 +1116,17 @@ sendmail(char *user, int bombed)
+ 	struct stat stb;
+ 	FILE *fp;
+ 
+-	if (user[0] == '-' || user[0] == '/' || !isprint((unsigned char)user[0]))
++	if (user[0] == '\0' || user[0] == '-' || user[0] == '/' ||
++	    fromhost[0] == '\0')
+ 		return;
++	for (cp = user; *cp != '\0'; cp++)
++		if (!isalnum((unsigned char)*cp) && *cp != '_' &&
++		    *cp != '-' && *cp != '.')
++			return;
++	for (cp = fromhost; *cp != '\0'; cp++)
++		if (!isalnum((unsigned char)*cp) && *cp != '-' &&
++		    *cp != '.')
++			return;
+ 	pipe(p);
+ 	if ((s = dofork(DORETURN)) == 0) {		/* child */
+ 		dup2(p[0], 0);

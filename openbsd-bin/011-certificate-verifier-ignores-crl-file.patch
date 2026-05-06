@@ -1,0 +1,37 @@
+diff --git a/smtpd/ca.c b/smtpd/ca.c
+index b41d655..247a1ef 100644
+--- a/smtpd/ca.c
++++ b/smtpd/ca.c
+@@ -19,6 +19,7 @@
+ 
+ #include <openssl/err.h>
+ #include <openssl/pem.h>
++#include <openssl/x509_vfy.h>
+ #include <pwd.h>
+ #include <signal.h>
+ #include <string.h>
+@@ -131,6 +132,7 @@ int
+ ca_X509_verify(void *certificate, void *chain, const char *CAfile,
+     const char *CRLfile, const char **errstr)
+ {
++	X509_LOOKUP    *lookup = NULL;
+ 	X509_STORE     *store = NULL;
+ 	X509_STORE_CTX *xsc = NULL;
+ 	int		ret = 0;
+@@ -145,6 +147,17 @@ ca_X509_verify(void *certificate, void *chain, const char *CAfile,
+ 	}
+ 	X509_STORE_set_default_paths(store);
+ 
++	if (CRLfile != NULL) {
++		if ((lookup = X509_STORE_add_lookup(store, X509_LOOKUP_file())) == NULL)
++			goto end;
++		if (!X509_load_crl_file(lookup, CRLfile, X509_FILETYPE_PEM)) {
++			log_warn("warn: unable to load CRL file %s", CRLfile);
++			goto end;
++		}
++		X509_STORE_set_flags(store,
++		    X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL);
++	}
++
+ 	if ((xsc = X509_STORE_CTX_new()) == NULL)
+ 		goto end;

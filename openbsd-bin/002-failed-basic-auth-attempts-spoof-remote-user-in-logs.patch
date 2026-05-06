@@ -1,0 +1,22 @@
+diff --git a/httpd/server_http.c b/httpd/server_http.c
+index b01e018..32649ab 100644
+--- a/httpd/server_http.c
++++ b/httpd/server_http.c
+@@ -153,8 +153,6 @@ server_http_authenticate(struct server_config *srv_conf, struct client *clt)
+ 
+ 	clt_user = decoded;
+ 	*clt_pass++ = '\0';
+-	if ((clt->clt_remote_user = strdup(clt_user)) == NULL)
+-		goto done;
+ 
+ 	if ((fp = fopen(auth->auth_htpasswd, "r")) == NULL)
+ 		goto done;
+@@ -179,6 +177,8 @@ server_http_authenticate(struct server_config *srv_conf, struct client *clt)
+ 
+ 		if (crypt_checkpass(clt_pass, pass) == 0) {
+ 			explicit_bzero(line, linelen);
++			if ((clt->clt_remote_user = strdup(clt_user)) == NULL)
++				goto done;
+ 			ret = 0;
+ 			break;
+ 		}

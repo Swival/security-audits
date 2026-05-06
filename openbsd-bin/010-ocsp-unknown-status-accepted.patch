@@ -1,0 +1,14 @@
+diff --git a/libtls/tls_ocsp.c b/libtls/tls_ocsp.c
+index b8d855c..94c7bd1 100644
+--- a/libtls/tls_ocsp.c
++++ b/libtls/tls_ocsp.c
+@@ -273,8 +273,7 @@ tls_ocsp_verify_response(struct tls *ctx, OCSP_RESPONSE *resp)
+ 		goto err;
+ 
+ 	/* finally can look at status */
+-	if (cert_status != V_OCSP_CERTSTATUS_GOOD && cert_status !=
+-	    V_OCSP_CERTSTATUS_UNKNOWN) {
++	if (cert_status != V_OCSP_CERTSTATUS_GOOD) {
+ 		tls_set_errorx(ctx, TLS_ERROR_UNKNOWN,
+ 		    "ocsp verify failed: revoked cert - %s",
+ 		    OCSP_crl_reason_str(crl_reason));
