@@ -1,0 +1,18 @@
+diff --git a/ed25519.c b/ed25519.c
+index 2ba4b84..9e1c25c 100644
+--- a/ed25519.c
++++ b/ed25519.c
+@@ -1995,9 +1995,13 @@ int crypto_sign_ed25519_open(
+   unsigned char rcheck[32];
+   ge25519 get1, get2;
+   sc25519 schram, scs;
++  int i;
+ 
+   if (smlen < 64) goto badsig;
+   if (sm[63] & 224) goto badsig;
++  for (i = 31;i >= 0 && sm[32 + i] == sc25519_m[i];--i)
++    ;
++  if (i < 0 || sm[32 + i] > sc25519_m[i]) goto badsig;
+   if (ge25519_unpackneg_vartime(&get1,pk)) goto badsig;
+ 
+   memmove(pkcopy,pk,32);

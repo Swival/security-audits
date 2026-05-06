@@ -1,0 +1,15 @@
+diff --git a/scp.c b/scp.c
+index 2ec3d49..43a421f 100644
+--- a/scp.c
++++ b/scp.c
+@@ -1990,6 +1990,10 @@ throughlocal_sftp(struct sftp_conn *from, struct sftp_conn *to,
+ 			goto out;
+ 		}
+ 
++		/* Special handling for destination of '..' */
++		if (strcmp(filename, "..") == 0)
++			filename = "."; /* Copy to dest, not dest/.. */
++
+ 		if (targetisdir)
+ 			abs_dst = sftp_path_append(target, filename);
+ 		else

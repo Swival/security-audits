@@ -1,0 +1,27 @@
+diff --git a/channels.c b/channels.c
+index 712e816..834269d 100644
+--- a/channels.c
++++ b/channels.c
+@@ -4208,9 +4208,11 @@ remote_open_match(struct permission *allowed_open, struct Forward *fwd)
+ 	int ret;
+ 	char *lhost;
+
+-	/* XXX add ACLs for streamlocal */
+-	if (fwd->listen_path != NULL)
+-		return 1;
++	if (fwd->listen_path != NULL) {
++		if (allowed_open->listen_path == NULL)
++			return 0;
++		return strcmp(allowed_open->listen_path, fwd->listen_path) == 0;
++	}
+
+ 	if (fwd->listen_host == NULL || allowed_open->listen_host == NULL)
+ 		return 0;
+@@ -4272,7 +4274,6 @@ channel_setup_remote_fwd_listener(struct ssh *ssh, struct Forward *fwd,
+ 	if (!check_rfwd_permission(ssh, fwd)) {
+ 		ssh_packet_send_debug(ssh, "port forwarding refused");
+ 		if (fwd->listen_path != NULL)
+-			/* XXX always allowed, see remote_open_match() */
+ 			logit("Received request from %.100s port %d to "
+ 			    "remote forward to path \"%.100s\", "
+ 			    "but the request was denied.",

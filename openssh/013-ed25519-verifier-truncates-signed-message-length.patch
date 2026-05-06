@@ -1,0 +1,15 @@
+diff --git a/ed25519-openssl.c b/ed25519-openssl.c
+index 32fc1c1..36ec1df 100644
+--- a/ed25519-openssl.c
++++ b/ed25519-openssl.c
+@@ -158,6 +158,10 @@ crypto_sign_ed25519_open(unsigned char *m, unsigned long long *mlen,
+ 		debug3_f("signed message bad length: %llu", smlen);
+ 		return -1;
+ 	}
++	if (smlen - crypto_sign_ed25519_BYTES > SIZE_MAX) {
++		debug3_f("signed message too long: %llu", smlen);
++		return -1;
++	}
+ 	/* Signature is first crypto_sign_ed25519_BYTES, message follows */
+ 	msg = sm + crypto_sign_ed25519_BYTES;
+ 	msglen = smlen - crypto_sign_ed25519_BYTES;

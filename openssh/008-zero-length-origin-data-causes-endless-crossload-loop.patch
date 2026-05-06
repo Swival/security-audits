@@ -1,0 +1,22 @@
+diff --git a/sftp-client.c b/sftp-client.c
+index 1313248..2e3354c 100644
+--- a/sftp-client.c
++++ b/sftp-client.c
+@@ -2556,12 +2556,14 @@ sftp_crossload(struct sftp_conn *from, struct sftp_conn *to,
+ 		case SSH2_FXP_DATA:
+ 			if ((r = sshbuf_get_string(msg, &data, &len)) != 0)
+ 				fatal_fr(r, "parse data");
+-			debug3("Received data %llu -> %llu",
+-			    (unsigned long long)req->offset,
+-			    (unsigned long long)req->offset + len - 1);
+ 			if (len > req->len)
+ 				fatal("Received more data than asked for "
+ 				    "%zu > %zu", len, req->len);
++			if (len == 0)
++				fatal("Received zero-length data");
++			debug3("Received data %llu -> %llu",
++			    (unsigned long long)req->offset,
++			    (unsigned long long)req->offset + len - 1);
+ 
+ 			/* Write this chunk out to the destination */
+ 			sshbuf_reset(msg);

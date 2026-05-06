@@ -1,0 +1,13 @@
+diff --git a/sftp-client.c b/sftp-client.c
+index 1313248..26fa827 100644
+--- a/sftp-client.c
++++ b/sftp-client.c
+@@ -1724,6 +1724,8 @@ sftp_download(struct sftp_conn *conn, const char *remote_path,
+ 			if (len > req->len)
+ 				fatal("Received more data than asked for "
+ 				    "%zu > %zu", len, req->len);
++			if (len == 0)
++				fatal("Received zero-length data");
+ 			lmodified = 1;
+ 			if ((lseek(local_fd, req->offset, SEEK_SET) == -1 ||
+ 			    atomicio(vwrite, local_fd, data, len) != len) &&
