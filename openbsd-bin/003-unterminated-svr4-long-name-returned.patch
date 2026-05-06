@@ -1,0 +1,16 @@
+diff --git a/make/arch.c b/make/arch.c
+index 9fb18db..ab6a261 100644
+--- a/make/arch.c
++++ b/make/arch.c
+@@ -669,6 +669,11 @@ ArchSVR4Entry(struct SVR4namelist *l, const char *name, size_t size, FILE *arch)
+ 			    name, l->fnamesize);
+ 		return NULL;
+ 	}
++	if (memchr(l->fnametab + entry, '\0', l->fnamesize - entry) == NULL) {
++		if (DEBUG(ARCH))
++			printf("SVR4 entry offset /%s has no terminator\n", name);
++		return NULL;
++	}
+ 
+ 	if (DEBUG(ARCH))
+ 		printf("Replaced /%s with %s\n", name, l->fnametab + entry);

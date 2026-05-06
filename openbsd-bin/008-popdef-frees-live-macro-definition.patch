@@ -1,0 +1,13 @@
+diff --git a/m4/look.c b/m4/look.c
+index 3d23e80..adb72b4 100644
+--- a/m4/look.c
++++ b/m4/look.c
+@@ -203,7 +203,7 @@ macro_popdef(const char *name)
+ 		if (r != NULL) {
+ 			n->d = r->next;
+ 			if (r->defn != null)
+-				free(r->defn);
++				free_definition(r->defn);
+ 			free(r);
+ 		}
+ 	}
