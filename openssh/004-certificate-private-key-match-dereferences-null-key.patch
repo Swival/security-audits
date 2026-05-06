@@ -1,0 +1,24 @@
+diff --git a/sshconnect2.c b/sshconnect2.c
+index f34ceb7..4816f67 100644
+--- a/sshconnect2.c
++++ b/sshconnect2.c
+@@ -1269,7 +1269,8 @@ identity_sign(struct identity *id, u_char **sigp, size_t *lenp,
+ 	 * PKCS#11 tokens may not support all signature algorithms,
+ 	 * so check what we get back.
+ 	 */
+-	if ((id->key->flags & SSHKEY_FLAG_EXT) != 0 &&
++	if (id->key != NULL &&
++	    (id->key->flags & SSHKEY_FLAG_EXT) != 0 &&
+ 	    (r = sshkey_check_sigtype(*sigp, *lenp, alg)) != 0) {
+ 		debug_fr(r, "sshkey_check_sigtype");
+ 		goto out;
+@@ -1433,7 +1434,8 @@ sign_and_send_pubkey(struct ssh *ssh, Identity *id)
+ 		    !fallback_sigtype) {
+ 			if (sign_id->agent_fd != -1)
+ 				loc = "agent ";
+-			else if ((sign_id->key->flags & SSHKEY_FLAG_EXT) != 0)
++			else if (sign_id->key != NULL &&
++			    (sign_id->key->flags & SSHKEY_FLAG_EXT) != 0)
+ 				loc = "token ";
+ 			logit("%skey %s %s returned incorrect signature type",
+ 			    loc, sshkey_type(id->key), fp);

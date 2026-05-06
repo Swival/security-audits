@@ -1,0 +1,23 @@
+diff --git a/ssh-agent.c b/ssh-agent.c
+index f83dd03..fb0b866 100644
+--- a/ssh-agent.c
++++ b/ssh-agent.c
+@@ -1457,13 +1457,11 @@ process_lock_agent(SocketEntry *e, int lock)
+ 	size_t pwlen;
+ 
+ 	debug2_f("entering");
+-	/*
+-	 * This is deliberately fatal: the user has requested that we lock,
+-	 * but we can't parse their request properly. The only safe thing to
+-	 * do is abort.
+-	 */
+-	if ((r = sshbuf_get_cstring(e->request, &passwd, &pwlen)) != 0)
+-		fatal_fr(r, "parse");
++	if ((r = sshbuf_get_cstring(e->request, &passwd, &pwlen)) != 0) {
++		error_fr(r, "parse");
++		send_status(e, 0);
++		return;
++	}
+ 	if (pwlen == 0) {
+ 		debug("empty password not supported");
+ 	} else if (locked && !lock) {
