@@ -1,6 +1,6 @@
 # OpenSSH Audit Findings
 
-Security audit of OpenSSH, the portable SSH suite (client, server, agent, scp and sftp tools). Each finding includes a detailed write-up and a patch.
+Security audit of OpenBSD's OpenSSH suite (client, server, agent, scp and sftp tools). Each finding includes a detailed write-up and a patch.
 
 ## Summary
 
