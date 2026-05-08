@@ -1,0 +1,15 @@
+diff --git a/usr.sbin/sasyncd/net.c b/usr.sbin/sasyncd/net.c
+index 2d49190..0d4d26c 100644
+--- a/usr.sbin/sasyncd/net.c
++++ b/usr.sbin/sasyncd/net.c
+@@ -720,6 +720,10 @@ net_read(struct syncpeer *p, u_int32_t *msgtype, u_int32_t *msglen)
+ 	memcpy(&v, blob + offset, sizeof v);
+ 	padlen = ntohl(v);
+ 	offset += sizeof v;
++	if (padlen > *msglen) {
++		free(blob);
++		return NULL;
++	}
+ 
+ 	rhash = blob + offset;
+ 	iv    = rhash + sizeof hash;

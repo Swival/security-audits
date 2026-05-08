@@ -1,0 +1,29 @@
+diff --git a/usr.sbin/bgpd/bgpd.c b/usr.sbin/bgpd/bgpd.c
+index f1dc136..b536b81 100644
+--- a/usr.sbin/bgpd/bgpd.c
++++ b/usr.sbin/bgpd/bgpd.c
+@@ -1375,8 +1375,11 @@ bgpd_rtr_conn_setup(struct rtr_config *r)
+ 	}
+ 
+ 	if (pfkey_establish(&ce->auth_state, &r->auth,
+-	    &r->local_addr, &r->remote_addr) == -1)
++	    &r->local_addr, &r->remote_addr) == -1) {
+ 		log_warnx("rtr %s: pfkey setup failed", r->descr);
++		free(ce);
++		return;
++	}
+ 
+ 	ce->id = r->id;
+ 	ce->fd = socket(aid2af(r->remote_addr.aid),
+@@ -1409,8 +1412,10 @@ bgpd_rtr_conn_setup(struct rtr_config *r)
+ 		goto fail;
+ 	}
+ 
+-	if (tcp_md5_set(ce->fd, &r->auth, &r->remote_addr) == -1)
++	if (tcp_md5_set(ce->fd, &r->auth, &r->remote_addr) == -1) {
+ 		log_warn("rtr %s: setting md5sig", r->descr);
++		goto fail;
++	}
+ 
+ 	if ((sa = addr2sa(&r->local_addr, 0, &len)) != NULL) {
+ 		if (bind(ce->fd, sa, len) == -1) {

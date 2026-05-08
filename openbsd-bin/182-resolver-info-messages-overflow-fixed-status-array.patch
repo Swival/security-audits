@@ -1,0 +1,14 @@
+diff --git a/usr.sbin/unwindctl/unwindctl.c b/usr.sbin/unwindctl/unwindctl.c
+index 2735c33..f878b2e 100644
+--- a/usr.sbin/unwindctl/unwindctl.c
++++ b/usr.sbin/unwindctl/unwindctl.c
+@@ -257,7 +257,8 @@ show_status_msg(struct imsg *imsg)
+ 
+ 	switch (imsg->hdr.type) {
+ 	case IMSG_CTL_RESOLVER_INFO:
+-		memcpy(&info[info_cnt++], imsg->data, sizeof(info[0]));
++		if (info_cnt < UW_RES_NONE)
++			memcpy(&info[info_cnt++], imsg->data, sizeof(info[0]));
+ 		break;
+ 	case IMSG_CTL_END:
+ 		if (fwd_line[0] != '\0')

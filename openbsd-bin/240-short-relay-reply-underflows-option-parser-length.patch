@@ -1,0 +1,16 @@
+diff --git a/usr.sbin/dhcrelay6/dhcrelay6.c b/usr.sbin/dhcrelay6/dhcrelay6.c
+index f566486..5c8b924 100644
+--- a/usr.sbin/dhcrelay6/dhcrelay6.c
++++ b/usr.sbin/dhcrelay6/dhcrelay6.c
+@@ -590,6 +590,11 @@ relay6_poprelaymsg(struct packet_ctx *pc, struct interface_info **intf,
+ 
+ 	*intf = NULL;
+ 
++	if (*plen < sizeof(*dsr)) {
++		log_debug("invalid relay-message size");
++		return -1;
++	}
++
+ 	/* Sanity check: this is a relay message of the right type. */
+ 	if (dsr->dsr_msgtype != DHCP6_MT_RELAYREPL) {
+ 		log_debug("Invalid relay-message (%s) to pop",

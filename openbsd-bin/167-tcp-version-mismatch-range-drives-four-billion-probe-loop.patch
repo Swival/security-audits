@@ -1,0 +1,30 @@
+diff --git a/usr.bin/rpcinfo/rpcinfo.c b/usr.bin/rpcinfo/rpcinfo.c
+index 124b894..000ce39 100644
+--- a/usr.bin/rpcinfo/rpcinfo.c
++++ b/usr.bin/rpcinfo/rpcinfo.c
+@@ -56,6 +56,7 @@
+ 
+ #define	MIN_VERS	((u_long) 0)
+ #define	MAX_VERS	((u_long) 4294967295UL)
++#define	MAX_VERS_PROBES	100
+ 
+ void	udpping(u_short portflag, int argc, char **argv);
+ void	tcpping(u_short portflag, int argc, char **argv);
+@@ -420,6 +421,8 @@ tcpping(u_short portnum, int argc, char **argv)
+ 		clnt_destroy(client);
+ 		(void) close(sock);
+ 		sock = RPC_ANYSOCK; /* Re-initialize it for later */
++		if (maxvers >= minvers && maxvers - minvers >= MAX_VERS_PROBES)
++			errx(1, "too many versions; specify a version");
+ 		for (vers = minvers; vers <= maxvers; vers++) {
+ 			addr.sin_port = htons(portnum);
+ 			if ((client = clnttcp_create(&addr, prognum, vers,
+@@ -438,6 +441,8 @@ tcpping(u_short portnum, int argc, char **argv)
+ 			clnt_destroy(client);
+ 			(void) close(sock);
+ 			sock = RPC_ANYSOCK;
++			if (vers == maxvers)
++				break;
+ 		}
+ 	} else {
+ 		getul(argv[2], &vers);		/* XXX */

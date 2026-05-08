@@ -1,0 +1,12 @@
+diff --git a/usr.sbin/ypserv/yppush/yppush_svc.c b/usr.sbin/ypserv/yppush/yppush_svc.c
+index b0ed5cb..1b687de 100644
+--- a/usr.sbin/ypserv/yppush/yppush_svc.c
++++ b/usr.sbin/ypserv/yppush/yppush_svc.c
+@@ -89,7 +89,6 @@ yppush_xfrrespprog_1(struct svc_req *rqstp, SVCXPRT *transp)
+ 	default:
+ 		svcerr_noproc(transp);
+ 		_rpcsvcdirty = 0;
+-		exit(1);
+ 		return;
+ 	}
+ 	(void) memset(&argument, 0, sizeof(argument));

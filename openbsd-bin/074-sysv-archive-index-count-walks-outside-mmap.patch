@@ -1,0 +1,53 @@
+diff --git a/usr.bin/nm/nm.c b/usr.bin/nm/nm.c
+index 41b2540..ec7ddd9 100644
+--- a/usr.bin/nm/nm.c
++++ b/usr.bin/nm/nm.c
+@@ -363,9 +363,10 @@ int
+ show_symtab(off_t off, u_long len, const char *name, FILE *fp)
+ {
+ 	struct ar_hdr ar_head;
+-	int *symtab, *ps;
+-	char *strtab, *p;
+-	int num, rval = 0;
++	u_int32_t *symtab, *ps;
++	char *strtab, *p, *end, *eos;
++	u_int32_t num;
++	int rval = 0;
+ 	int namelen;
+ 	off_t restore;
+ 
+@@ -383,9 +384,25 @@ show_symtab(off_t off, u_long len, const char *name, FILE *fp)
+ 	}
+ 
+ 	printf("\nArchive index:\n");
++	if (len < sizeof(*symtab)) {
++		warnx("%s: bad archive index", name);
++		rval = 1;
++		goto out;
++	}
+ 	num = betoh32(*symtab);
++	if (num > (len - sizeof(*symtab)) / sizeof(*symtab)) {
++		warnx("%s: bad archive index", name);
++		rval = 1;
++		goto out;
++	}
++	end = (char *)symtab + len;
+ 	strtab = (char *)(symtab + num + 1);
+-	for (ps = symtab + 1; num--; ps++, strtab += strlen(strtab) + 1) {
++	for (ps = symtab + 1; num > 0; num--, ps++, strtab = eos + 1) {
++		if ((eos = memchr(strtab, '\0', end - strtab)) == NULL) {
++			warnx("%s: bad archive index", name);
++			rval = 1;
++			break;
++		}
+ 		if (fseeko(fp, betoh32(*ps), SEEK_SET)) {
+ 			warn("%s: fseeko", name);
+ 			rval = 1;
+@@ -408,6 +425,7 @@ show_symtab(off_t off, u_long len, const char *name, FILE *fp)
+ 		printf("%s in %s\n", strtab, p);
+ 	}
+ 
++out:
+ 	fseeko(fp, restore, SEEK_SET);
+ 
+ 	free(p);

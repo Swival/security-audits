@@ -1,0 +1,16 @@
+diff --git a/usr.sbin/ripd/auth.c b/usr.sbin/ripd/auth.c
+index e48b880..0b0830e 100644
+--- a/usr.sbin/ripd/auth.c
++++ b/usr.sbin/ripd/auth.c
+@@ -83,6 +83,12 @@ auth_validate(u_int8_t **buf, u_int16_t *len, struct iface *iface,
+ 	u_int8_t		*auth_data;
+ 	u_int8_t		*b = *buf;
+ 
++	if (*len < RIP_HDR_LEN + RIP_ENTRY_LEN) {
++		log_debug("auth_validate: bad packet size, interface %s",
++		    iface->name);
++		return (-1);
++	}
++
+ 	*buf += RIP_HDR_LEN;
+ 	*len -= RIP_HDR_LEN;

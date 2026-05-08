@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/eigrpd/rde_dual.c b/usr.sbin/eigrpd/rde_dual.c
+index e12bf38..beb0022 100644
+--- a/usr.sbin/eigrpd/rde_dual.c
++++ b/usr.sbin/eigrpd/rde_dual.c
+@@ -357,6 +357,9 @@ eigrp_real_bandwidth(uint32_t bandwidth)
+ 	 * apply the scaling factor before the division and only then truncate.
+ 	 * this is to keep consistent with what cisco does.
+ 	 */
++	if (bandwidth == 0)
++		return (MIN_BANDWIDTH);
++
+ 	return ((EIGRP_SCALING_FACTOR * (uint32_t)10000000) / bandwidth);
+ }

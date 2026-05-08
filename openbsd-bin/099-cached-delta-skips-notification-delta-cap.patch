@@ -1,0 +1,14 @@
+diff --git a/usr.sbin/rpki-client/rrdp_notification.c b/usr.sbin/rpki-client/rrdp_notification.c
+index 755c205..050c034 100644
+--- a/usr.sbin/rpki-client/rrdp_notification.c
++++ b/usr.sbin/rpki-client/rrdp_notification.c
+@@ -194,7 +194,8 @@ start_notification_elem(struct notification_xml *nxml, const char **attr)
+ 		    "notification attributes");
+ 
+ 	/* Limit deltas to the ones which matter for us. */
+-	if (nxml->min_serial == 0 && nxml->serial > MAX_RRDP_DELTAS)
++	if (nxml->serial > MAX_RRDP_DELTAS &&
++	    nxml->min_serial < nxml->serial - MAX_RRDP_DELTAS)
+ 		nxml->min_serial = nxml->serial - MAX_RRDP_DELTAS;
+ 
+ 	nxml->scope = NOTIFICATION_SCOPE_NOTIFICATION;

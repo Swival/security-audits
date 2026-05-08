@@ -1,0 +1,20 @@
+diff --git a/usr.sbin/ldomctl/mdstore.c b/usr.sbin/ldomctl/mdstore.c
+index 3592fca..febbd51 100644
+--- a/usr.sbin/ldomctl/mdstore.c
++++ b/usr.sbin/ldomctl/mdstore.c
+@@ -208,10 +208,14 @@ void
+ mdstore_rx_data(struct ldc_conn *lc, uint64_t svc_handle, void *data,
+     size_t len)
+ {
+-	struct mdstore_list_resp *mr = data;
++	struct mdstore_list_resp *mr;
+ 	struct mdstore_set *set;
+ 	int idx;
+ 
++	if (len < 28)
++		errx(1, "Short mdstore message");
++
++	mr = data;
+ 	if (mr->result != MDST_SUCCESS) {
+ 		switch (mr->result) {
+ 		case MDST_SET_EXISTS_ERR:

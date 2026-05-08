@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/bgpd/util.c b/usr.sbin/bgpd/util.c
+index 6f8e6e6..8c447dc 100644
+--- a/usr.sbin/bgpd/util.c
++++ b/usr.sbin/bgpd/util.c
+@@ -95,7 +95,7 @@ log_evpnaddr(const struct bgpd_addr *addr, struct sockaddr *sa,
+ 
+ 	switch (addr->evpn.type) {
+ 	case EVPN_ROUTE_TYPE_2:
+-		memcpy(&vni, addr->labelstack, addr->labellen);
++		memcpy(&vni, addr->labelstack, 3);
+ 		snprintf(buf, sizeof(buf), "[2]:[%s]:[%s]:[%d]:[48]:[%s]",
+ 		    log_rd(addr->rd), log_esi(addr->evpn.esi), htonl(vni) >> 8,
+ 		    log_mac(addr->evpn.mac));

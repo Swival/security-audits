@@ -1,0 +1,25 @@
+diff --git a/lib/libkeynote/keynote-verify.c b/lib/libkeynote/keynote-verify.c
+index 288d738..210c71b 100644
+--- a/lib/libkeynote/keynote-verify.c
++++ b/lib/libkeynote/keynote-verify.c
+@@ -25,6 +25,7 @@
+ #include <ctype.h>
+ #include <fcntl.h>
+ #include <getopt.h>
++#include <limits.h>
+ #include <regex.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -320,6 +321,12 @@ keynote_verify(int argc, char *argv[])
+ 	    exit(1);
+ 	}
+ 
++	if (sb.st_size < 0 || sb.st_size > INT_MAX - 1)
++	{
++	    fprintf(stderr, "Assertion file <%s> too large.\n", argv[argc]);
++	    exit(1);
++	}
++
+ 	if (sb.st_size > cl - 1)
+ 	{
+ 	    free(buf);

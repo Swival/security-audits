@@ -1,0 +1,13 @@
+diff --git a/usr.bin/ul/ul.c b/usr.bin/ul/ul.c
+index 7803df1..f4c88cd 100644
+--- a/usr.bin/ul/ul.c
++++ b/usr.bin/ul/ul.c
+@@ -208,7 +208,7 @@ mfilter(FILE *f)
+ 			/* Advance beyond the end. */
+ 			if (w == 0) {
+ 				w = obuf[col - 1].c_pos;
+-				while (w < wt) {
++				while (w < wt && col < MAXBUF) {
+ 					obuf[col].c_width = 1;
+ 					obuf[col++].c_pos = ++w;
+ 				}

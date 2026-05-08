@@ -1,0 +1,16 @@
+diff --git a/usr.bin/rsync/blocks.c b/usr.bin/rsync/blocks.c
+index d1d9b19..5b77268 100644
+--- a/usr.bin/rsync/blocks.c
++++ b/usr.bin/rsync/blocks.c
+@@ -414,7 +414,10 @@ blk_recv(struct sess *sess, int fd, const char *path)
+ 		}
+ 		b->chksum_short = i;
+ 
+-		assert(s->csum <= sizeof(b->chksum_long));
++		if (s->csum > sizeof(b->chksum_long)) {
++			ERRX1("inappropriate checksum length");
++			goto out;
++		}
+ 		if (!io_read_buf(sess,
+ 		    fd, b->chksum_long, s->csum)) {
+ 			ERRX1("io_read_buf");

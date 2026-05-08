@@ -1,0 +1,16 @@
+diff --git a/usr.bin/openssl/crl.c b/usr.bin/openssl/crl.c
+index e64038d..441b21c 100644
+--- a/usr.bin/openssl/crl.c
++++ b/usr.bin/openssl/crl.c
+@@ -327,9 +327,10 @@ crl_main(int argc, char **argv)
+ 		EVP_PKEY_free(pkey);
+ 		if (i < 0)
+ 			goto end;
+-		if (i == 0)
++		if (i == 0) {
+ 			BIO_printf(bio_err, "verify failure\n");
+-		else
++			goto end;
++		} else
+ 			BIO_printf(bio_err, "verify OK\n");
+ 	}
