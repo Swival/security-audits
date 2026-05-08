@@ -2,7 +2,7 @@
 
 ## Classification
 
-High severity out-of-bounds write / memory corruption in a libsndio client process.
+Medium severity out-of-bounds write / memory corruption in a libsndio client process.
 
 Confidence: certain.
 
