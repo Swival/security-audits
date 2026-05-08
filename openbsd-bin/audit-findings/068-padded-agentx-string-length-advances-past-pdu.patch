@@ -1,0 +1,14 @@
+diff --git a/usr.sbin/snmpd/ax.c b/usr.sbin/snmpd/ax.c
+index eb9f060..1da2596 100644
+--- a/usr.sbin/snmpd/ax.c
++++ b/usr.sbin/snmpd/ax.c
+@@ -1410,6 +1410,9 @@ ax_pdutoostring(struct ax_pdu_header *header,
+ 	buf += 4;
+ 	if (ostring->aos_slen > rawlen)
+ 		goto fail;
++	if (ostring->aos_slen % 4 != 0 && rawlen - ostring->aos_slen <
++	    4 - (ostring->aos_slen % 4))
++		goto fail;
+ 	if ((ostring->aos_string = malloc(ostring->aos_slen + 1)) == NULL)
+ 		return -1;
+ 	memcpy(ostring->aos_string, buf, ostring->aos_slen);

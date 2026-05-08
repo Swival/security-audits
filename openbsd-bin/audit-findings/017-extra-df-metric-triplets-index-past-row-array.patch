@@ -1,0 +1,13 @@
+diff --git a/usr.bin/snmp/snmpc.c b/usr.bin/snmp/snmpc.c
+index 5f4596e..d40cf05 100644
+--- a/usr.bin/snmp/snmpc.c
++++ b/usr.bin/snmp/snmpc.c
+@@ -972,7 +972,7 @@ snmpc_df(int argc, char *argv[])
+ 					err(1, "Can't print response");
+ 			}
+ 		}
+-		for (j = 0; varbind != NULL; i++) {
++		for (j = 0; varbind != NULL && i < rows; i++) {
+ 			if (ober_scanf_elements(varbind, "{oi}{oi}{oi}",
+ 			    &(reqoid[0]), &units, &(reqoid[1]), &size,
+ 			    &(reqoid[2]), &used, &varbind) == -1) {

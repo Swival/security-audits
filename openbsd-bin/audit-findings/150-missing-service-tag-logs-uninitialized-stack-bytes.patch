@@ -1,0 +1,12 @@
+diff --git a/usr.sbin/npppd/pppoe/pppoed.c b/usr.sbin/npppd/pppoe/pppoed.c
+index e8d2242..2742d1f 100644
+--- a/usr.sbin/npppd/pppoe/pppoed.c
++++ b/usr.sbin/npppd/pppoe/pppoed.c
+@@ -873,6 +873,7 @@ pppoed_recv_PADI(pppoed_listener *_this, uint8_t shost[ETHER_ADDR_LEN],
+ 
+ 	tlv_hostuniq = NULL;
+ 	tlv_service_name = NULL;
++	sn[0] = '\0';
+ 
+ 	service_name = "";
+ 	if (_this->conf->service_name != NULL)

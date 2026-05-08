@@ -1,0 +1,14 @@
+diff --git a/usr.bin/ctfdump/ctfdump.c b/usr.bin/ctfdump/ctfdump.c
+index 58a7907..709c7cf 100644
+--- a/usr.bin/ctfdump/ctfdump.c
++++ b/usr.bin/ctfdump/ctfdump.c
+@@ -286,7 +286,8 @@ isctf(const char *p, size_t filesize)
+ 		return 0;
+ 
+ 	dlen = cth.cth_stroff + cth.cth_strlen;
+-	if (dlen > filesize && !(cth.cth_flags & CTF_F_COMPRESS)) {
++	if (dlen > filesize - sizeof(struct ctf_header) &&
++	    !(cth.cth_flags & CTF_F_COMPRESS)) {
+ 		warnx("bogus file size");
+ 		return 0;
+ 	}

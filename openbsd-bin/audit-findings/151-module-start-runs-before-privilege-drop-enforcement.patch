@@ -1,0 +1,34 @@
+diff --git a/usr.sbin/radiusd/radiusd_module.c b/usr.sbin/radiusd/radiusd_module.c
+index 0c1a09d..efda1d2 100644
+--- a/usr.sbin/radiusd/radiusd_module.c
++++ b/usr.sbin/radiusd/radiusd_module.c
+@@ -427,21 +427,15 @@ module_imsg_handler(struct module_base *base, struct imsg *imsg)
+ 		break;
+ 	    }
+ 	case IMSG_RADIUSD_MODULE_START:
+-		if (module_start_module != NULL) {
+-			module_start_module(base->ctx);
+-			if (!base->priv_dropped) {
+-				syslog(LOG_ERR, "Module tried to start with "
+-				    "root privileges");
+-				abort();
+-			}
+-		} else {
+-			if (!base->priv_dropped) {
+-				syslog(LOG_ERR, "Module tried to start with "
+-				    "root privileges");
+-				abort();
+-			}
+-			module_send_message(base, IMSG_OK, NULL);
++		if (!base->priv_dropped) {
++			syslog(LOG_ERR, "Module tried to start with "
++			    "root privileges");
++			abort();
+ 		}
++		if (module_start_module != NULL)
++			module_start_module(base->ctx);
++		else
++			module_send_message(base, IMSG_OK, NULL);
+ 		break;
+ 	case IMSG_RADIUSD_MODULE_STOP:
+ 		module_stop(base);

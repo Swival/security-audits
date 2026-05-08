@@ -1,0 +1,13 @@
+diff --git a/sbin/unwind/libunbound/sldns/parse.c b/sbin/unwind/libunbound/sldns/parse.c
+index 8ea0846..7f049a9 100644
+--- a/sbin/unwind/libunbound/sldns/parse.c
++++ b/sbin/unwind/libunbound/sldns/parse.c
+@@ -502,7 +502,7 @@ sldns_bget_keyword_data(sldns_buffer *b, const char *keyword, const char *k_del,
+        if(!fkeyword)
+                return -1; /* out of memory */
+ 
+-       i = sldns_bget_token(b, fkeyword, k_del, data_limit);
++       i = sldns_bget_token(b, fkeyword, k_del, LDNS_MAX_KEYWORDLEN);
+        if(i==0 || i==-1) {
+                free(fkeyword);
+                return -1; /* nothing read */

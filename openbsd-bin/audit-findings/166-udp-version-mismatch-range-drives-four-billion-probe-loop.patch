@@ -1,0 +1,21 @@
+diff --git a/usr.bin/rpcinfo/rpcinfo.c b/usr.bin/rpcinfo/rpcinfo.c
+index 124b894..bbb2b92 100644
+--- a/usr.bin/rpcinfo/rpcinfo.c
++++ b/usr.bin/rpcinfo/rpcinfo.c
+@@ -56,6 +56,7 @@
+ 
+ #define	MIN_VERS	((u_long) 0)
+ #define	MAX_VERS	((u_long) 4294967295UL)
++#define	MAX_VERS_RANGE	256
+ 
+ void	udpping(u_short portflag, int argc, char **argv);
+ void	tcpping(u_short portflag, int argc, char **argv);
+@@ -294,6 +295,8 @@ udpping(u_short portnum, int argc, char **argv)
+ 			exit(1);
+ 		}
+ 		clnt_destroy(client);
++		if (maxvers < minvers || maxvers - minvers >= MAX_VERS_RANGE)
++			errx(1, "version range too large; specify a version");
+ 		for (vers = minvers; vers <= maxvers; vers++) {
+ 			addr.sin_port = htons(portnum);
+ 			to.tv_sec = 5;

@@ -1,0 +1,17 @@
+diff --git a/usr.bin/ssh/ssh-pkcs11.c b/usr.bin/ssh/ssh-pkcs11.c
+index e2bd8de..832bab2 100644
+--- a/usr.bin/ssh/ssh-pkcs11.c
++++ b/usr.bin/ssh/ssh-pkcs11.c
+@@ -1126,6 +1126,12 @@ pkcs11_fetch_ed25519_pubkey(struct pkcs11_provider *p, CK_ULONG slotidx,
+ 		error("invalid attribute length");
+ 		return (NULL);
+ 	}
++	if (key_attr[0].ulValueLen > 1024 ||
++	    key_attr[1].ulValueLen > ED25519_PK_SZ + 2 ||
++	    key_attr[2].ulValueLen > sizeof(id1)) {
++		error("invalid attribute length");
++		return (NULL);
++	}
+ 
+ 	/* allocate buffers for attributes */
+ 	for (i = 0; i < 3; i++) {

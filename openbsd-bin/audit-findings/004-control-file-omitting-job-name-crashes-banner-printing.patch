@@ -1,0 +1,37 @@
+diff --git a/usr.sbin/lpd/printer.c b/usr.sbin/lpd/printer.c
+index ca9d5c0..a1b66af 100644
+--- a/usr.sbin/lpd/printer.c
++++ b/usr.sbin/lpd/printer.c
+@@ -550,6 +550,7 @@ printjob(const char *cfname, int retry)
+ static void
+ printbanner(struct job *job)
+ {
++	const char *name = job->name ? job->name : " ";
+ 	time_t t;
+ 
+         time(&t);
+@@ -563,7 +564,7 @@ printbanner(struct job *job)
+ 		}
+ 		prn_puts(job->literal);
+ 		prn_puts("  Job: ");
+-		prn_puts(job->name);
++		prn_puts(name);
+ 		prn_puts("  Date: ");
+ 		prn_puts(ctime(&t));
+ 		prn_puts("\n");
+@@ -571,13 +572,13 @@ printbanner(struct job *job)
+ 		prn_puts("\n\n\n");
+ 		lp_banner(prn->pfd, job->literal, lp->lp_pw);
+ 		prn_puts("\n\n");
+-		lp_banner(prn->pfd, job->name, lp->lp_pw);
++		lp_banner(prn->pfd, name, lp->lp_pw);
+ 		if (job->class) {
+ 			prn_puts("\n\n\n");
+ 			lp_banner(prn->pfd, job->class, lp->lp_pw);
+ 		}
+ 		prn_puts("\n\n\n\n\t\t\t\t\tJob:  ");
+-		prn_puts(job->name);
++		prn_puts(name);
+ 		prn_puts("\n\t\t\t\t\tDate: ");
+ 		prn_puts(ctime(&t));
+ 		prn_puts("\n");

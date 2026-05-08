@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/snmpd/smi.c b/usr.sbin/snmpd/smi.c
+index 0385b32..35022eb 100644
+--- a/usr.sbin/snmpd/smi.c
++++ b/usr.sbin/snmpd/smi.c
+@@ -403,6 +403,8 @@ smi_print_element_legacy(struct ber_element *root)
+ 			goto fail;
+ 		if (root->be_class == BER_CLASS_APPLICATION &&
+ 		    root->be_type == SNMP_T_IPADDR) {
++			if (root->be_len != sizeof(struct in_addr))
++				goto fail;
+ 			if (asprintf(&str, "%s",
+ 			    inet_ntoa(*(struct in_addr *)buf)) == -1)
+ 				goto fail;

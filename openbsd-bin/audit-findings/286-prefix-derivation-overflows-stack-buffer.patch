@@ -1,0 +1,13 @@
+diff --git a/usr.bin/spell/spellprog.c b/usr.bin/spell/spellprog.c
+index f84ebae..e52c5c9 100644
+--- a/usr.bin/spell/spellprog.c
++++ b/usr.bin/spell/spellprog.c
+@@ -632,6 +632,8 @@ trypref(char *ep, char *a, int lev)
+ 	pp = space;
+ 	deriv[lev+1] = pp;
+ 	while ((cp = lookuppref(&bp, ep))) {
++		if (strlen(cp) + 2 > sizeof(space) - (pp - space))
++			return (0);
+ 		*pp++ = '+';
+ 		while ((*pp = *cp++))
+ 			pp++;

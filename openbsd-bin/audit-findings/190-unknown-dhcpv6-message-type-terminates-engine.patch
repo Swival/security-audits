@@ -1,0 +1,16 @@
+diff --git a/sbin/dhcp6leased/engine.c b/sbin/dhcp6leased/engine.c
+index b818b32..33c07ec 100644
+--- a/sbin/dhcp6leased/engine.c
++++ b/sbin/dhcp6leased/engine.c
+@@ -958,9 +958,9 @@ parse_dhcp(struct dhcp6leased_iface *iface, struct imsg_dhcp *dhcp)
+ 		    __func__, dhcp_message_type2str(hdr.msg_type));
+ 		goto out;
+ 	default:
+-		fatalx("%s: %s unhandled",
++		log_warnx("%s: Ignoring unknown message type (%s) from server",
+ 		    __func__, dhcp_message_type2str(hdr.msg_type));
+-		break;
++		goto out;
+ 	}
+  out:
+ 	return;

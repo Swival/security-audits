@@ -1,0 +1,24 @@
+diff --git a/usr.bin/rsync/ids.c b/usr.bin/rsync/ids.c
+index 1eef94b..6102f1d 100644
+--- a/usr.bin/rsync/ids.c
++++ b/usr.bin/rsync/ids.c
+@@ -25,6 +25,8 @@
+ 
+ #include "extern.h"
+ 
++#define MAX_IDENTS	UINT16_MAX
++
+ /*
+  * Free a list of struct ident previously allocated with idents_add().
+  * Does nothing if the pointer is NULL.
+@@ -277,6 +279,10 @@ idents_recv(struct sess *sess,
+ 			return 0;
+ 		} else if (id == 0)
+ 			break;
++		else if (*idsz >= MAX_IDENTS) {
++			ERRX("too many identifiers");
++			return 0;
++		}
+ 
+ 		pp = reallocarray(*ids,
+ 			*idsz + 1, sizeof(struct ident));

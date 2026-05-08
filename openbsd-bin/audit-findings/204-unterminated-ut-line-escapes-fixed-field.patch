@@ -1,0 +1,19 @@
+diff --git a/usr.bin/last/last.c b/usr.bin/last/last.c
+index 6839922..12fc4e3 100644
+--- a/usr.bin/last/last.c
++++ b/usr.bin/last/last.c
+@@ -427,11 +427,12 @@ want(struct utmp *bp, int check)
+ 		 */
+ 		if ((strncmp(bp->ut_line, "console", strlen("console")) != 0) &&
+ 		    (strncmp(bp->ut_line, "tty", strlen("tty")) != 0)) {
+-			char *s;
++			char *s, *end = bp->ut_line + UT_LINESIZE;
+ 			for (s = bp->ut_line;
+-			     *s != '\0' && !isdigit((unsigned char)*s); s++)
++			     s < end && *s != '\0' && !isdigit((unsigned char)*s); s++)
+ 				;
+-			*s = '\0';
++			if (s < end)
++				*s = '\0';
+ 		}
+ 	}

@@ -1,0 +1,26 @@
+diff --git a/usr.bin/ssh/libcrux_mlkem768_sha3.h b/usr.bin/ssh/libcrux_mlkem768_sha3.h
+index 1e3dc45..51b268a 100644
+--- a/usr.bin/ssh/libcrux_mlkem768_sha3.h
++++ b/usr.bin/ssh/libcrux_mlkem768_sha3.h
+@@ -5046,7 +5046,9 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_squeeze_85_c7(
+       size_t blocks = out_len / (size_t)136U;
+       for (size_t i = (size_t)0U; i < blocks; i++) {
+         size_t i0 = i;
+-        libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
++        if (i0 > (size_t)0U) {
++          libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
++        }
+         libcrux_sha3_simd_portable_squeeze_13_5b(
+             &self->inner, out, i0 * (size_t)136U, (size_t)136U);
+       }
+@@ -5344,7 +5346,9 @@ static KRML_MUSTINLINE void libcrux_sha3_generic_keccak_xof_squeeze_85_49(
+       size_t blocks = out_len / (size_t)168U;
+       for (size_t i = (size_t)0U; i < blocks; i++) {
+         size_t i0 = i;
+-        libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
++        if (i0 > (size_t)0U) {
++          libcrux_sha3_generic_keccak_keccakf1600_80_04(&self->inner);
++        }
+         libcrux_sha3_simd_portable_squeeze_13_3a(
+             &self->inner, out, i0 * (size_t)168U, (size_t)168U);
+       }

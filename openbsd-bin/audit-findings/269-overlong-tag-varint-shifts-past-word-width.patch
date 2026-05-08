@@ -1,0 +1,13 @@
+diff --git a/lib/libevent/event_tagging.c b/lib/libevent/event_tagging.c
+index 4716a7e..e942c96 100644
+--- a/lib/libevent/event_tagging.c
++++ b/lib/libevent/event_tagging.c
+@@ -128,6 +128,9 @@ decode_tag_internal(ev_uint32_t *ptag, struct evbuffer *evbuf, int dodrain)
+ 
+ 	while (count++ < len) {
+ 		ev_uint8_t lower = *data++;
++
++		if (shift > 28)
++			return (-1);
+ 		number |= (lower & 0x7f) << shift;
+ 		shift += 7;

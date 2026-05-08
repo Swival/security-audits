@@ -1,0 +1,16 @@
+diff --git a/usr.sbin/rpki-client/http.c b/usr.sbin/rpki-client/http.c
+index 4f0e778..9ed240a 100644
+--- a/usr.sbin/rpki-client/http.c
++++ b/usr.sbin/rpki-client/http.c
+@@ -1546,7 +1546,10 @@ http_read(struct http_connection *conn)
+ 		goto again;
+ 
+ read_more:
+-	assert(conn->bufpos < conn->bufsz);
++	if (conn->bufpos == conn->bufsz) {
++		warnx("%s: HTTP response line too long", conn_info(conn));
++		return http_failed(conn);
++	}
+ 	s = tls_read(conn->tls, conn->buf + conn->bufpos,
+ 	    conn->bufsz - conn->bufpos);
+ 	if (s == -1) {
