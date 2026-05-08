@@ -2,7 +2,7 @@
 
 ## Classification
 
-High severity out-of-bounds write / stack memory corruption.
+Medium severity out-of-bounds write / stack memory corruption.
 
 ## Affected Locations
 

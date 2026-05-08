@@ -2,7 +2,7 @@
 
 ## Classification
 
-High severity out-of-bounds write.
+Medium severity out-of-bounds write.
 
 ## Affected Locations
 

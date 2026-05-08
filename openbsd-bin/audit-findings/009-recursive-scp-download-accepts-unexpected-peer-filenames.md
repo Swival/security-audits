@@ -2,7 +2,7 @@
 
 ## Classification
 
-Policy bypass, medium severity. Confidence: certain.
+Policy bypass, high severity. Confidence: certain.
 
 ## Affected Locations
 

@@ -2,7 +2,7 @@
 
 ## Classification
 
-Cryptographic flaw, high severity. Confidence: certain.
+Cryptographic flaw, medium severity. Confidence: certain.
 
 ## Affected Locations
 
