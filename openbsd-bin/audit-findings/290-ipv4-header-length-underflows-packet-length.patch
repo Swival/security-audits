@@ -1,0 +1,15 @@
+diff --git a/usr.sbin/eigrpd/packet.c b/usr.sbin/eigrpd/packet.c
+index dcf97cb..a3d6a9e 100644
+--- a/usr.sbin/eigrpd/packet.c
++++ b/usr.sbin/eigrpd/packet.c
+@@ -562,6 +562,10 @@ recv_packet(int fd, short event, void *bula)
+ 			    ntohs(ip_hdr.ip_len));
+ 			return;
+ 		}
++		if ((ip_hdr.ip_hl << 2) > len) {
++			log_debug("%s: bad packet size", __func__);
++			return;
++		}
+ 		buf += ip_hdr.ip_hl << 2;
+ 		len -= ip_hdr.ip_hl << 2;
+ 		dest.v4 = ip_hdr.ip_dst;

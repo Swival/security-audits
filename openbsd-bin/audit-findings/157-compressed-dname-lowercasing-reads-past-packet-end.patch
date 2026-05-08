@@ -1,0 +1,13 @@
+diff --git a/sbin/unwind/libunbound/util/data/dname.c b/sbin/unwind/libunbound/util/data/dname.c
+index 5370aa6..787e6d3 100644
+--- a/sbin/unwind/libunbound/util/data/dname.c
++++ b/sbin/unwind/libunbound/util/data/dname.c
+@@ -157,6 +157,8 @@ pkt_dname_tolower(sldns_buffer* pkt, uint8_t* dname)
+ 	lablen = *dname++;
+ 	while(lablen) {
+ 		if(LABEL_IS_PTR(lablen)) {
++			if(dname >= sldns_buffer_end(pkt))
++				return;
+ 			if((size_t)PTR_OFFSET(lablen, *dname) 
+ 				>= sldns_buffer_limit(pkt))
+ 				return;

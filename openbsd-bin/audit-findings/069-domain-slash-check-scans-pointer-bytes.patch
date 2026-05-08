@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/ypbind/ypbind.c b/usr.sbin/ypbind/ypbind.c
+index d8ca66d..ce2674e 100644
+--- a/usr.sbin/ypbind/ypbind.c
++++ b/usr.sbin/ypbind/ypbind.c
+@@ -136,7 +136,7 @@ ypbindproc_domain_2x(SVCXPRT *transp, domainname *argp, CLIENT *clnt)
+ 	time_t now;
+ 	int count = 0;
+ 
+-	if (strchr((char *)argp, '/'))
++	if (strchr(*argp, '/'))
+ 		return NULL;
+ 
+ 	memset(&res, 0, sizeof(res));

@@ -1,0 +1,15 @@
+diff --git a/usr.bin/nm/elf.c b/usr.bin/nm/elf.c
+index 6bf7f3b..373274e 100644
+--- a/usr.bin/nm/elf.c
++++ b/usr.bin/nm/elf.c
+@@ -429,7 +429,9 @@ elf_symloadx(const char *name, FILE *fp, off_t foff, Elf_Ehdr *eh,
+ 	int i;
+ 
+ 	for (i = 0; i < eh->e_shnum; i++) {
+-		if (shdr[i].sh_name >= shstrsize) {
++		if (shdr[i].sh_name >= shstrsize ||
++		    memchr(shstr + shdr[i].sh_name, '\0',
++		    shstrsize - shdr[i].sh_name) == NULL) {
+ 			warnx("%s: corrupt file", name);
+ 			return (1);
+ 		}

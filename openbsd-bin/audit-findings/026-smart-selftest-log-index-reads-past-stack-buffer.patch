@@ -1,0 +1,13 @@
+diff --git a/sbin/atactl/atactl.c b/sbin/atactl/atactl.c
+index 2a47fc3..f2dc75b 100644
+--- a/sbin/atactl/atactl.c
++++ b/sbin/atactl/atactl.c
+@@ -1527,6 +1527,8 @@ device_smart_readlog(int argc, char *argv[])
+ 			printf("No log entries\n");
+ 			return;
+ 		}
++		if (data->index > 21)
++			errx(1, "Invalid self-test log index");
+ 
+ 		/* circular buffer of 21 entries */
+ 		i = data->index - 1;

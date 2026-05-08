@@ -1,0 +1,17 @@
+diff --git a/sbin/iked/proc.c b/sbin/iked/proc.c
+index ecff708..beab1d5 100644
+--- a/sbin/iked/proc.c
++++ b/sbin/iked/proc.c
+@@ -276,6 +276,12 @@ proc_accept(struct privsep *ps, int fd, enum privsep_procid dst,
+ 	struct privsep_pipes	*pp = ps->ps_pp;
+ 	struct imsgev		*iev;
+ 
++	if (dst < 0 || dst >= PROC_MAX || n >= ps->ps_instances[dst]) {
++		log_warnx("%s: invalid process descriptor", __func__);
++		close(fd);
++		return;
++	}
++
+ 	if (ps->ps_ievs[dst] == NULL) {
+ #if DEBUG > 1
+ 		log_debug("%s: %s src %d %d to dst %d %d not connected",

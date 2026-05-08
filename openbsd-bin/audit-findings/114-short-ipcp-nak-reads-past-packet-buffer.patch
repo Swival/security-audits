@@ -1,0 +1,12 @@
+diff --git a/usr.sbin/pppd/ipcp.c b/usr.sbin/pppd/ipcp.c
+index d359cc7..ed057ec 100644
+--- a/usr.sbin/pppd/ipcp.c
++++ b/usr.sbin/pppd/ipcp.c
+@@ -525,6 +525,7 @@ ipcp_nakci(fsm *f, u_char *p, int len)
+ 
+ #define NAKCIVJ(opt, neg, code) \
+     if (go->neg && \
++	len >= 2 && \
+ 	((cilen = p[1]) == CILEN_COMPRESS || cilen == CILEN_VJ) && \
+ 	len >= cilen && \
+ 	p[0] == opt) { \

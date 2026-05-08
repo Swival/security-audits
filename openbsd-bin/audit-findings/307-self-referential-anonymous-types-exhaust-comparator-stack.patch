@@ -1,0 +1,60 @@
+diff --git a/usr.bin/ctfconv/parse.c b/usr.bin/ctfconv/parse.c
+index ef483f9..e40c4f6 100644
+--- a/usr.bin/ctfconv/parse.c
++++ b/usr.bin/ctfconv/parse.c
+@@ -317,12 +317,25 @@ it_free(struct itype *it)
+ 	pfree(&it_pool, it);
+ }
+ 
++struct itcmp {
++	struct itype	*itc_a;
++	struct itype	*itc_b;
++	struct itcmp	*itc_next;
++};
++
+ /*
+  * Return 0 if ``a'' matches ``b''.
+  */
+-int
+-it_cmp(struct itype *a, struct itype *b)
++static int
++it_cmp_recur(struct itype *a, struct itype *b, struct itcmp *seen)
+ {
++	struct itcmp *itc, cur;
++
++	for (itc = seen; itc != NULL; itc = itc->itc_next) {
++		if (itc->itc_a == a && itc->itc_b == b)
++			return 0;
++	}
++
+ 	if (a->it_type > b->it_type)
+ 		return 1;
+ 	if (a->it_type < b->it_type)
+@@ -357,8 +370,12 @@ it_cmp(struct itype *a, struct itype *b)
+ 		return (a->it_flags & ITF_ANON) ? -1 : 1;
+ 
+ 	/* Match by reference */
+-	if ((a->it_refp != NULL) && (b->it_refp != NULL))
+-		return it_cmp(a->it_refp, b->it_refp);
++	if ((a->it_refp != NULL) && (b->it_refp != NULL)) {
++		cur.itc_a = a;
++		cur.itc_b = b;
++		cur.itc_next = seen;
++		return it_cmp_recur(a->it_refp, b->it_refp, &cur);
++	}
+ 	if (a->it_refp == NULL)
+ 		return -1;
+ 	if (b->it_refp == NULL)
+@@ -367,6 +384,12 @@ it_cmp(struct itype *a, struct itype *b)
+ 	return 0;
+ }
+ 
++int
++it_cmp(struct itype *a, struct itype *b)
++{
++	return it_cmp_recur(a, b, NULL);
++}
++
+ int
+ it_name_cmp(struct itype *a, struct itype *b)
+ {

@@ -1,0 +1,16 @@
+diff --git a/usr.sbin/npppd/npppd/pap.c b/usr.sbin/npppd/npppd/pap.c
+index f234f23..b56fb42 100644
+--- a/usr.sbin/npppd/npppd/pap.c
++++ b/usr.sbin/npppd/npppd/pap.c
+@@ -160,6 +160,11 @@ pap_input(pap *_this, u_char *pktp, int lpktp)
+ 		    "not started.");
+ 		return -1;
+ 	}
++	if (lpktp < 4) {
++		pap_log(_this, LOG_ERR, "%s: Received broken packet.",
++		    __func__);
++		return -1;
++	}
+ 	pktp1 = pktp;
+ 
+ 	GETCHAR(code, pktp1);

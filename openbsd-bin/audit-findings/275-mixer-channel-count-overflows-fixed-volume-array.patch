@@ -1,0 +1,14 @@
+diff --git a/lib/libsndio/sioctl_sun.c b/lib/libsndio/sioctl_sun.c
+index 886c820..5932d9d 100644
+--- a/lib/libsndio/sioctl_sun.c
++++ b/lib/libsndio/sioctl_sun.c
+@@ -120,6 +120,9 @@ initvol(struct sioctl_sun_hdl *hdl, struct volume *vol, char *cn, char *dn)
+ 			break;
+ 		if (strcmp(cls.label.name, cn) == 0 &&
+ 		    strcmp(dev.label.name, dn) == 0) {
++			if (dev.un.v.num_channels >
++			    (int)(sizeof(vol->level_val) / sizeof(vol->level_val[0])))
++				continue;
+ 			vol->nch = dev.un.v.num_channels;
+ 			vol->level_idx = dev.index;
+ 			vol->mute_idx = initmute(hdl, &dev);

@@ -1,0 +1,14 @@
+diff --git a/usr.sbin/npppd/pptp/pptp_ctrl.c b/usr.sbin/npppd/pptp/pptp_ctrl.c
+index 7bf1ab7..5473c59 100644
+--- a/usr.sbin/npppd/pptp/pptp_ctrl.c
++++ b/usr.sbin/npppd/pptp/pptp_ctrl.c
+@@ -430,6 +430,10 @@ pptp_ctrl_io_event(int fd, short evmask, void *ctx)
+ 				break;	/* read again */
+ 
+ 			hdrlen = pkt[0] << 8 | pkt[1];
++			if (hdrlen < sizeof(struct pptp_ctrl_header)) {
++				pptp_ctrl_fini(_this);
++				goto fail;
++			}
+ 			if (lpkt < hdrlen)
+ 				break;	/* read again */

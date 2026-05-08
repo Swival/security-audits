@@ -1,0 +1,16 @@
+diff --git a/usr.bin/tic/dump_entry.c b/usr.bin/tic/dump_entry.c
+index 474fd3f..02d3c57 100644
+--- a/usr.bin/tic/dump_entry.c
++++ b/usr.bin/tic/dump_entry.c
+@@ -1210,9 +1210,9 @@ fmt_entry(TERMTYPE2 *tterm,
+     } else if (tversion == V_AIX) {
+ 	if (VALID_STRING(acs_chars)) {
+ 	    bool box_ok = TRUE;
+-	    const char *acstrans = "lqkxjmwuvtn";
++	    const char acstrans[] = "lqkxjmwuvtn";
+ 	    const char *cp;
+-	    char *tp, *sp, boxchars[11];
++	    char *tp, *sp, boxchars[sizeof(acstrans)];
+ 
+ 	    tp = boxchars;
+ 	    for (cp = acstrans; *cp; cp++) {

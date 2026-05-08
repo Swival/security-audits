@@ -1,0 +1,13 @@
+diff --git a/usr.bin/login/login.c b/usr.bin/login/login.c
+index 3f2155e..37a0036 100644
+--- a/usr.bin/login/login.c
++++ b/usr.bin/login/login.c
+@@ -454,7 +454,7 @@ main(int argc, char *argv[])
+ 		 * Turn off the fflag if we have an invalid user
+ 		 * or we are not root and we are trying to change uids.
+ 		 */
+-		if (!pwd || (uid && uid != pwd->pw_uid))
++		if (!pwd || rootlogin || (uid && uid != pwd->pw_uid))
+ 			fflag = 0;
+ 
+ 		if (pwd && pwd->pw_uid == 0)

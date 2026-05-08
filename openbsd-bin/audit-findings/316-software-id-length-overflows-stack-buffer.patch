@@ -1,0 +1,18 @@
+diff --git a/usr.sbin/mopd/common/dl.c b/usr.sbin/mopd/common/dl.c
+index 59d9ce2..4db62b3 100644
+--- a/usr.sbin/mopd/common/dl.c
++++ b/usr.sbin/mopd/common/dl.c
+@@ -141,8 +141,11 @@ mopDumpDL(FILE *fd, u_char *pkt, int trans)
+ 		program[0] = 0;
+ 		tmpc = mopGetChar(pkt, &idx);	/* Software ID Len */
+ 		for (i = 0; i < tmpc; i++) {
+-			program[i] = mopGetChar(pkt, &idx);
+-			program[i + 1] = '\0';
++			c = mopGetChar(pkt, &idx);
++			if (i < sizeof(program) - 1) {
++				program[i] = c;
++				program[i + 1] = '\0';
++			}
+ 		}
+ 
+ 		fprintf(fd, "Software     :   %02x '%s'\n", tmpc, program);

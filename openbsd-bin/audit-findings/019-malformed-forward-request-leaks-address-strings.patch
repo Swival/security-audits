@@ -1,0 +1,22 @@
+diff --git a/usr.bin/ssh/mux.c b/usr.bin/ssh/mux.c
+index db4ac80..3942d4c 100644
+--- a/usr.bin/ssh/mux.c
++++ b/usr.bin/ssh/mux.c
+@@ -718,7 +718,7 @@ mux_master_process_open_fwd(struct ssh *ssh, u_int rid,
+ {
+ 	struct Forward fwd;
+ 	char *fwd_desc = NULL;
+-	char *listen_addr, *connect_addr;
++	char *listen_addr = NULL, *connect_addr = NULL;
+ 	u_int ftype;
+ 	u_int lport, cport;
+ 	int r, i, ret = 0, freefwd = 1;
+@@ -734,6 +734,8 @@ mux_master_process_open_fwd(struct ssh *ssh, u_int rid,
+ 	    (lport != (u_int)PORT_STREAMLOCAL && lport > 65535) ||
+ 	    (cport != (u_int)PORT_STREAMLOCAL && cport > 65535)) {
+ 		error_f("malformed message");
++		free(listen_addr);
++		free(connect_addr);
+ 		ret = -1;
+ 		goto out;
+ 	}

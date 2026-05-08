@@ -1,0 +1,17 @@
+diff --git a/usr.sbin/relayd/proc.c b/usr.sbin/relayd/proc.c
+index 361f05a..f0f1d54 100644
+--- a/usr.sbin/relayd/proc.c
++++ b/usr.sbin/relayd/proc.c
+@@ -249,6 +249,12 @@ proc_accept(struct privsep *ps, int fd, enum privsep_procid dst,
+ 	struct privsep_pipes	*pp = ps->ps_pp;
+ 	struct imsgev		*iev;
+ 
++	if (dst < 0 || dst >= PROC_MAX || n >= ps->ps_instances[dst]) {
++		log_warnx("%s: invalid descriptor destination", __func__);
++		close(fd);
++		return;
++	}
++
+ 	if (ps->ps_ievs[dst] == NULL) {
+ #if DEBUG > 1
+ 		log_debug("%s: %s src %d %d to dst %d %d not connected",
