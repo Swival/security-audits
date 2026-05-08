@@ -31,6 +31,7 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | [libressl/ssl](libressl/ssl/)                                 |        3 | LibreSSL libssl, the TLS/SSL protocol library  |
 | [nginx](nginx/)                                               |       12 | High-performance HTTP server and reverse proxy |
 | [openbsd-bin](openbsd-bin/)                                   |       34 | OpenBSD userland programs and libraries        |
+| [openbsd-bin (extended)](openbsd-bin/audit-findings/)          |      305 | OpenBSD userland programs and libraries (extended audit) |
 | [openbsd-kernel](openbsd-kernel/)                             |       37 | OpenBSD kernel                                 |
 | [openbsd-libc](openbsd-libc/)                                 |       21 | OpenBSD C standard library                     |
 | [openbsd-libexec](openbsd-libexec/)                           |       17 | OpenBSD libexec helper programs and daemons    |
