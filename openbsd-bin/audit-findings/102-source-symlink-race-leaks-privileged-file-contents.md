@@ -2,7 +2,7 @@
 
 ## Classification
 
-High severity information disclosure.
+Medium severity information disclosure.
 
 ## Affected Locations
 

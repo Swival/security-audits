@@ -2,7 +2,7 @@
 
 ## Classification
 
-Out-of-bounds write, high severity. Confidence: certain.
+Out-of-bounds write, medium severity. Confidence: certain.
 
 ## Affected Locations
 

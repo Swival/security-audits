@@ -2,7 +2,7 @@
 
 ## Classification
 
-Memory corruption, high severity.
+Memory corruption, medium severity.
 
 ## Affected Locations
 
