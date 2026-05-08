@@ -1,0 +1,13 @@
+diff --git a/usr.bin/deroff/deroff.c b/usr.bin/deroff/deroff.c
+index 2486fb4..e93657b 100644
+--- a/usr.bin/deroff/deroff.c
++++ b/usr.bin/deroff/deroff.c
+@@ -425,7 +425,7 @@ getfname(void)
+ 	while (C == ' ')
+ 		;	/* nothing */
+ 
+-	for (p = fname ; p - fname < sizeof(fname) && (*p = c) != '\n' &&
++	for (p = fname ; p - fname < sizeof(fname) - 1 && (*p = c) != '\n' &&
+ 	    c != ' ' && c != '\t' && c != '\\'; ++p)
+ 		C;
+ 	*p = '\0';

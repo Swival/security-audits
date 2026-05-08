@@ -1,0 +1,23 @@
+diff --git a/lib/libkeynote/environment.c b/lib/libkeynote/environment.c
+index 8307ee4..f171b8f 100644
+--- a/lib/libkeynote/environment.c
++++ b/lib/libkeynote/environment.c
+@@ -878,14 +878,17 @@ kn_read_asserts(char *buffer, int bufferlen, int *numassertions)
+      */
+     if (valid)
+     {
+-	/* This one's easy, we can just use strdup() */
+-	if ((buf[*numassertions] = strdup(ptr)) == NULL) {
++	buf[*numassertions] = calloc((buffer + bufferlen) - ptr + 1,
++	                              sizeof(char));
++	if (buf[*numassertions] == NULL) {
+ 	    for (flag = 0; flag < *numassertions; flag++)
+ 	      free(buf[flag]);
+ 	    free(buf);
+ 	    keynote_errno = ERROR_MEMORY;
+ 	    return NULL;
+ 	}
++
++	memcpy(buf[*numassertions], ptr, (buffer + bufferlen) - ptr);
+ 	(*numassertions)++;
+     }

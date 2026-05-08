@@ -1,0 +1,13 @@
+diff --git a/usr.bin/deroff/deroff.c b/usr.bin/deroff/deroff.c
+index 2486fb4..b46325a 100644
+--- a/usr.bin/deroff/deroff.c
++++ b/usr.bin/deroff/deroff.c
+@@ -1170,7 +1170,7 @@ so(void)
+ 	if (!iflag) {
+ 		getfname();
+ 		if (fname[0]) {
+-			if (++filesp - &files[0] > MAXFILES)
++			if (++filesp - &files[0] >= MAXFILES)
+ 				err(1, "too many nested files (max %d)",
+ 				    MAXFILES);
+ 			infile = *filesp = opn(fname);

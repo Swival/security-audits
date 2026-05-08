@@ -1,0 +1,69 @@
+diff --git a/usr.bin/talk/invite.c b/usr.bin/talk/invite.c
+index fe023dd..63f6ff1 100644
+--- a/usr.bin/talk/invite.c
++++ b/usr.bin/talk/invite.c
+@@ -97,11 +97,33 @@ invite_remote(void)
+ 	message("Waiting for your party to respond");
+ 	signal(SIGALRM, re_invite);
+ 	(void) setjmp(invitebuf);
+-	while ((new_sockt = accept(sockt, &rp, &rplen)) == -1) {
+-		if (errno == EINTR || errno == EWOULDBLOCK ||
+-		    errno == ECONNABORTED)
+-			continue;
+-		quit("Unable to connect with your party", 1);
++	for (;;) {
++		rplen = sizeof(struct sockaddr);
++		while ((new_sockt = accept(sockt, &rp, &rplen)) == -1) {
++			if (errno == EINTR || errno == EWOULDBLOCK ||
++			    errno == ECONNABORTED)
++				continue;
++			quit("Unable to connect with your party", 1);
++		}
++		/*
++		 * Check to see if the other guy is coming from the machine
++		 * we expect.
++		 */
++		if (his_machine_addr.s_addr ==
++		    ((struct sockaddr_in *)&rp)->sin_addr.s_addr)
++			break;
++		rphost = gethostbyaddr((char *) &((struct sockaddr_in
++		    *)&rp)->sin_addr, sizeof(struct in_addr), AF_INET);
++		if (rphost)
++			snprintf(rname, STRING_LENGTH,
++			    "Ignoring talk request from %s@%s", msg.r_name,
++			    rphost->h_name);
++		else
++			snprintf(rname, STRING_LENGTH,
++			    "Ignoring talk request from %s@%s", msg.r_name,
++			    inet_ntoa(((struct sockaddr_in *)&rp)->sin_addr));
++		message(rname);
++		close(new_sockt);
+ 	}
+ 	close(sockt);
+ 	sockt = new_sockt;
+@@ -115,25 +137,6 @@ invite_remote(void)
+ 	msg.id_num = htonl(remote_id);
+ 	ctl_transact(his_machine_addr, msg, DELETE, &response);
+ 	invitation_waiting = 0;
+-
+-	/*
+-	 * Check to see if the other guy is coming from the machine
+-	 * we expect.
+-	 */
+-	if (his_machine_addr.s_addr !=
+-	    ((struct sockaddr_in *)&rp)->sin_addr.s_addr) {
+-		rphost = gethostbyaddr((char *) &((struct sockaddr_in
+-		    *)&rp)->sin_addr, sizeof(struct in_addr), AF_INET);
+-		if (rphost)
+-			snprintf(rname, STRING_LENGTH,
+-			    "Answering talk request from %s@%s", msg.r_name,
+-			    rphost->h_name);
+-		else
+-			snprintf(rname, STRING_LENGTH,
+-			    "Answering talk request from %s@%s", msg.r_name,
+-			    inet_ntoa(((struct sockaddr_in *)&rp)->sin_addr));
+-		message(rname);
+-	}
+ }
+ 
+ /*

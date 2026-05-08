@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/ypserv/ypserv/ypserv_proc.c b/usr.sbin/ypserv/ypserv/ypserv_proc.c
+index ed72977..2427466 100644
+--- a/usr.sbin/ypserv/ypserv/ypserv_proc.c
++++ b/usr.sbin/ypserv/ypserv/ypserv_proc.c
+@@ -247,7 +247,7 @@ ypproc_xfr_2_svc(ypreq_xfr *argp, struct svc_req *rqstp)
+ 	YPLOG("       ipadd=%s, port=%d, map=%s", inet_ntoa(caller->sin_addr),
+ 	    argp->port, argp->map_parms.map);
+ 
+-	if (strchr(argp->map_parms.domain, '/') ||
++	if (!ok || strchr(argp->map_parms.domain, '/') ||
+ 	    strchr(argp->map_parms.map, '/') ||
+ 	    ntohs(caller->sin_port) >= IPPORT_RESERVED) {
+ 		svcerr_auth(rqstp->rq_xprt, AUTH_FAILED);

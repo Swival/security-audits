@@ -1,0 +1,23 @@
+diff --git a/usr.sbin/npppd/npppd/control.c b/usr.sbin/npppd/npppd/control.c
+index 61d8a9d..80b74d7 100644
+--- a/usr.sbin/npppd/npppd/control.c
++++ b/usr.sbin/npppd/npppd/control.c
+@@ -321,6 +321,17 @@ control_dispatch_imsg(int fd, short event, void *arg)
+ 			struct npppd_disconnect_request  *req;
+ 			struct npppd_disconnect_response  res;
+
++			if (imsg.hdr.len < IMSG_HEADER_SIZE + sizeof(*req)) {
++				imsg_compose(&c->iev.ibuf, IMSG_CTL_FAIL, 0, 0,
++				    -1, NULL, 0);
++				break;
++			}
+ 			req = (struct npppd_disconnect_request *)imsg.data;
++			if (req->count < 0 ||
++			    imsg.hdr.len != IMSG_HEADER_SIZE + sizeof(*req) +
++			    req->count * sizeof(u_int)) {
++				imsg_compose(&c->iev.ibuf, IMSG_CTL_FAIL, 0, 0,
++				    -1, NULL, 0);
++				break;
++			}
+ 			retval = npppd_ctl_disconnect(c->ctx,
+ 			    req->ppp_id, req->count);

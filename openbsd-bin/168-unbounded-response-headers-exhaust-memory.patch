@@ -1,0 +1,25 @@
+diff --git a/usr.sbin/acme-client/http.c b/usr.sbin/acme-client/http.c
+index 1d745ce..c93c6c0 100644
+--- a/usr.sbin/acme-client/http.c
++++ b/usr.sbin/acme-client/http.c
+@@ -62,6 +62,8 @@ struct	http {
+ 	struct tls	  *ctx;    /* TLS context */
+ };
+ 
++#define	HTTP_HEAD_MAX	(64 * 1024)
++
+ struct tls_config *tlscfg;
+ 
+ static ssize_t
+@@ -595,6 +597,11 @@ http_head_read(const struct http *http, struct httpxfer *trans, size_t *sz)
+ 			return NULL;
+ 		else if (ssz == 0)
+ 			break;
++		if (trans->hbufsz > HTTP_HEAD_MAX ||
++		    (size_t)ssz > HTTP_HEAD_MAX - trans->hbufsz) {
++			warnx("%s: header too large", http->src.ip);
++			return NULL;
++		}
+ 		pp = recallocarray(trans->hbuf,
+ 		    trans->hbufsz, trans->hbufsz + ssz, 1);
+ 		if (pp == NULL) {

@@ -1,0 +1,16 @@
+diff --git a/sbin/isakmpd/ike_quick_mode.c b/sbin/isakmpd/ike_quick_mode.c
+index 354ccc5..0da46f5 100644
+--- a/sbin/isakmpd/ike_quick_mode.c
++++ b/sbin/isakmpd/ike_quick_mode.c
+@@ -1513,6 +1513,11 @@ responder_recv_HASH_SA_NONCE(struct message *msg)
+ 		goto cleanup;
+ 	}
+ 	hash_len = GET_ISAKMP_GEN_LENGTH(hash);
++	if (hash_len != ISAKMP_GEN_SZ + hash_get(isa->hash)->hashsize) {
++		message_drop(msg, ISAKMP_NOTIFY_INVALID_HASH_INFORMATION, 0,
++		    1, 0);
++		goto cleanup;
++	}
+ 	my_hash = malloc(hash_len - ISAKMP_GEN_SZ);
+ 	if (!my_hash) {
+ 		log_error("responder_recv_HASH_SA_NONCE: malloc (%lu) failed",

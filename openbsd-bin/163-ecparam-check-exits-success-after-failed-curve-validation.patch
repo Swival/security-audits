@@ -1,0 +1,11 @@
+diff --git a/usr.bin/openssl/ecparam.c b/usr.bin/openssl/ecparam.c
+index 285f5d5..9887fbf 100644
+--- a/usr.bin/openssl/ecparam.c
++++ b/usr.bin/openssl/ecparam.c
+@@ -386,6 +386,7 @@ ecparam_main(int argc, char **argv)
+ 		if (!EC_GROUP_check(group, NULL)) {
+ 			BIO_printf(bio_err, "failed\n");
+ 			ERR_print_errors(bio_err);
++			goto end;
+ 		} else
+ 			BIO_printf(bio_err, "ok\n");

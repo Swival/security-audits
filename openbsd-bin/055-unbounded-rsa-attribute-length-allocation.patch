@@ -1,0 +1,15 @@
+diff --git a/usr.bin/ssh/ssh-pkcs11.c b/usr.bin/ssh/ssh-pkcs11.c
+index e2bd8de..cb686f7 100644
+--- a/usr.bin/ssh/ssh-pkcs11.c
++++ b/usr.bin/ssh/ssh-pkcs11.c
+@@ -1012,7 +1012,9 @@ pkcs11_fetch_rsa_pubkey(struct pkcs11_provider *p, CK_ULONG slotidx,
+ 	 * XXX assumes CKA_ID is always first.
+ 	 */
+ 	if (key_attr[1].ulValueLen == 0 ||
+-	    key_attr[2].ulValueLen == 0) {
++	    key_attr[2].ulValueLen == 0 ||
++	    key_attr[1].ulValueLen > SSHBUF_MAX_BIGNUM ||
++	    key_attr[2].ulValueLen > SSHBUF_MAX_BIGNUM) {
+ 		error("invalid attribute length");
+ 		return (NULL);
+ 	}

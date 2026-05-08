@@ -1,0 +1,16 @@
+diff --git a/usr.sbin/radiusd/radiusd_eap2mschap.c b/usr.sbin/radiusd/radiusd_eap2mschap.c
+index 53b6ccf..644799e 100644
+--- a/usr.sbin/radiusd/radiusd_eap2mschap.c
++++ b/usr.sbin/radiusd/radiusd_eap2mschap.c
+@@ -472,8 +472,10 @@ eap_recv_mschap(struct eap2mschap *self, struct access_req *req,
+ 			goto failmsg;
+ 		resp = (struct eap_mschap_response *)chap;
+ 		if (eapsiz < sizeof(struct eap_mschap_response) ||
+-		    htons(resp->chap.length) <
++		    ntohs(resp->chap.length) <
+ 		    sizeof(struct eap_mschap_response) -
++		    offsetof(struct eap_mschap_response, chap) ||
++		    ntohs(resp->chap.length) > eapsiz -
+ 		    offsetof(struct eap_mschap_response, chap)) {
+ 			log_warnx("q=%u EAP state=%s Received EAP message has "
+ 			    "wrong in size: received length %zu eap.length=%u "

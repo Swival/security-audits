@@ -1,0 +1,20 @@
+diff --git a/usr.sbin/ypserv/ypserv/ypserv_db.c b/usr.sbin/ypserv/ypserv/ypserv_db.c
+index 47dcd95..d05ff08 100644
+--- a/usr.sbin/ypserv/ypserv/ypserv_db.c
++++ b/usr.sbin/ypserv/ypserv/ypserv_db.c
+@@ -238,11 +238,13 @@ ypdb_open_db(domainname domain, mapname map, ypstat *status,
+ 
+ 	/* Check for illegal charcaters */
+ 
+-	if (strchr(domain, '/')) {
++	if (strchr(domain, '/') || strcmp(domain, ".") == 0 ||
++	    strcmp(domain, "..") == 0) {
+ 		*status = YP_NODOM;
+ 		return (NULL);
+ 	}
+-	if (strchr(map, '/')) {
++	if (strchr(map, '/') || strcmp(map, ".") == 0 ||
++	    strcmp(map, "..") == 0) {
+ 		*status = YP_NOMAP;
+ 		return (NULL);
+ 	}

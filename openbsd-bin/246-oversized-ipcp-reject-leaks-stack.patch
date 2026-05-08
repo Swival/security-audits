@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/npppd/npppd/ipcp.c b/usr.sbin/npppd/npppd/ipcp.c
+index f2f16ef..7682d67 100644
+--- a/usr.sbin/npppd/npppd/ipcp.c
++++ b/usr.sbin/npppd/npppd/ipcp.c
+@@ -333,7 +333,7 @@ fail:
+ 	switch (rcode) {
+ 	case CONFREJ:
+ 		IPCP_DBG((f, LOG_DEBUG, "SendConfRej"));
+-		memmove(pktp0, rejbuf0, lrej);
++		memmove(pktp0, rejbuf, lrej);
+ 		*lpktp = lrej;
+ 		break;
+ 	case CONFNAK:

@@ -1,0 +1,12 @@
+diff --git a/usr.sbin/mtrace/mtrace.c b/usr.sbin/mtrace/mtrace.c
+index 5fa9bf7..aee0786 100644
+--- a/usr.sbin/mtrace/mtrace.c
++++ b/usr.sbin/mtrace/mtrace.c
+@@ -654,6 +654,8 @@ passive_mode(void)
+ 	    }
+ 
+ 	    len = (igmpdatalen - QLEN)/RLEN;
++	    if (len > MAXHOPS)
++		continue;
+ 
+ 	    break;

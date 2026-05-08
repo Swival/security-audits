@@ -1,0 +1,26 @@
+diff --git a/usr.bin/ssh/packet.c b/usr.bin/ssh/packet.c
+index 4a3a9ca..2d3de74 100644
+--- a/usr.bin/ssh/packet.c
++++ b/usr.bin/ssh/packet.c
+@@ -873,6 +873,7 @@ static int
+ uncompress_buffer(struct ssh *ssh, struct sshbuf *in, struct sshbuf *out)
+ {
+ 	u_char buf[4096];
++	size_t len;
+ 	int r, status;
+ 
+ 	if (ssh->state->compression_in_started != 1)
+@@ -892,8 +893,11 @@ uncompress_buffer(struct ssh *ssh, struct sshbuf *in, struct sshbuf *out)
+ 		    Z_SYNC_FLUSH);
+ 		switch (status) {
+ 		case Z_OK:
+-			if ((r = sshbuf_put(out, buf, sizeof(buf) -
+-			    ssh->state->compression_in_stream.avail_out)) != 0)
++			len = sizeof(buf) -
++			    ssh->state->compression_in_stream.avail_out;
++			if (sshbuf_len(out) > PACKET_MAX_SIZE - len)
++				return SSH_ERR_INVALID_FORMAT;
++			if ((r = sshbuf_put(out, buf, len)) != 0)
+ 				return r;
+ 			break;
+ 		case Z_BUF_ERROR:

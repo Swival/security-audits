@@ -1,0 +1,25 @@
+diff --git a/usr.bin/uudecode/uudecode.c b/usr.bin/uudecode/uudecode.c
+index 22c8d01..6af1a72 100644
+--- a/usr.bin/uudecode/uudecode.c
++++ b/usr.bin/uudecode/uudecode.c
+@@ -258,8 +258,19 @@ decode2(void)
+ 		if (p != NULL)
+ 			q = p + 1;
+ 	}
+-	if (!oflag)
++	if (!oflag) {
++		if (sflag) {
++			n = strlen(q);
++			if (*q == '/' || strcmp(q, "..") == 0 ||
++			    strncmp(q, "../", 3) == 0 ||
++			    strstr(q, "/../") != NULL ||
++			    (n > 2 && strcmp(q + n - 3, "/..") == 0)) {
++				warnx("%s: bad output filename", infile);
++				return (1);
++			}
++		}
+ 		outfile = q;
++	}
+ 
+ 	/* POSIX says "/dev/stdout" is a 'magic cookie' not a special file. */
+ 	if (pflag || strcmp(outfile, "/dev/stdout") == 0)

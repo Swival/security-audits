@@ -1,0 +1,37 @@
+diff --git a/lib/libagentx/agentx.c b/lib/libagentx/agentx.c
+index eba2add..963f30d 100644
+--- a/lib/libagentx/agentx.c
++++ b/lib/libagentx/agentx.c
+@@ -2612,7 +2612,15 @@ agentx_get_start(struct agentx_context *axc, struct ax_pdu *pdu)
+ 		else if (axg->axg_maxrep == 0)
+ 			break;
+ 		else
+-			j = (axg->axg_maxrep * i) + axg->axg_nonrep;
++			j = (axg->axg_maxrep * (i - axg->axg_nonrep)) +
++			    axg->axg_nonrep;
++		if (j >= axg->axg_nvarbind) {
++			agentx_log_axg_warn(axg, "Couldn't parse request");
++			free(logmsg);
++			agentx_get_free(axg);
++			agentx_reset(ax);
++			return;
++		}
+ 		bcopy(&(srl->ap_sr[i].asr_start),
+ 		    &(axg->axg_varbind[j].axv_vb.avb_oid),
+ 		    sizeof(srl->ap_sr[i].asr_start));
+@@ -2660,7 +2668,14 @@ agentx_get_start(struct agentx_context *axc, struct ax_pdu *pdu)
+ 		else if (axg->axg_maxrep == 0)
+ 			break;
+ 		else
+-			j = (axg->axg_maxrep * i) + axg->axg_nonrep;
++			j = (axg->axg_maxrep * (i - axg->axg_nonrep)) +
++			    axg->axg_nonrep;
++		if (j >= axg->axg_nvarbind) {
++			agentx_log_axg_warn(axg, "Couldn't parse request");
++			agentx_get_free(axg);
++			agentx_reset(ax);
++			return;
++		}
+ 		agentx_varbind_start(&(axg->axg_varbind[j]));
+ 	}
+ }

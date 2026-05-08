@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/slowcgi/slowcgi.c b/usr.sbin/slowcgi/slowcgi.c
+index 9a0f8b5..2752fad 100644
+--- a/usr.sbin/slowcgi/slowcgi.c
++++ b/usr.sbin/slowcgi/slowcgi.c
+@@ -800,7 +800,7 @@ parse_stdin(uint8_t *buf, uint16_t n, struct request *c, uint16_t id)
+ {
+ 	struct fcgi_stdin	*node;
+ 
+-	if (c->id != id) {
++	if (!c->request_started || c->id != id) {
+ 		lwarnx("unexpected id, ignoring");
+ 		return;
+ 	}

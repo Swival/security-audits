@@ -1,0 +1,13 @@
+diff --git a/usr.bin/cdio/mmc.c b/usr.bin/cdio/mmc.c
+index 06b47ab..2fcf191 100644
+--- a/usr.bin/cdio/mmc.c
++++ b/usr.bin/cdio/mmc.c
+@@ -560,6 +560,8 @@ mode_select_write(unsigned char buf[])
+ 	 * describe it.
+ 	 */
+ 	scb->byte2 = 0x10;
++	if (buf[0] != 0 || buf[1] > 0x44)
++		return (-1);
+ 	scb->length[1] = 2 + buf[1] + 256 * buf[0];
+ 	scr.timeout = 4000;
+ 	scr.senselen = SENSEBUFLEN;

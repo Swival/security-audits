@@ -1,0 +1,48 @@
+diff --git a/bin/mv/mv.c b/bin/mv/mv.c
+index c16b804..61d7cbe 100644
+--- a/bin/mv/mv.c
++++ b/bin/mv/mv.c
+@@ -262,24 +262,39 @@ int
+ fastcopy(char *from, char *to, struct stat *sbp)
+ {
+ 	struct timespec ts[2];
++	struct stat fsb;
+ 	static u_int32_t blen;
+ 	static char *bp;
+ 	int nread, from_fd, to_fd;
+ 	int badchown = 0, serrno = 0;
+ 
++	if ((from_fd = open(from, O_RDONLY | O_NONBLOCK | O_NOFOLLOW)) == -1) {
++		warn("%s", from);
++		return (1);
++	}
++	if (fstat(from_fd, &fsb)) {
++		warn("%s", from);
++		(void)close(from_fd);
++		return (1);
++	}
++	if (!S_ISREG(fsb.st_mode) || fsb.st_dev != sbp->st_dev ||
++	    fsb.st_ino != sbp->st_ino) {
++		warnx("%s: changed", from);
++		(void)close(from_fd);
++		return (1);
++	}
++	*sbp = fsb;
++
+ 	if (!blen) {
+ 		blen = sbp->st_blksize;
+ 		if ((bp = malloc(blen)) == NULL) {
+ 			warn(NULL);
+ 			blen = 0;
++			(void)close(from_fd);
+ 			return (1);
+ 		}
+ 	}
+ 
+-	if ((from_fd = open(from, O_RDONLY)) == -1) {
+-		warn("%s", from);
+-		return (1);
+-	}
+ 	if ((to_fd = open(to, O_CREAT | O_TRUNC | O_WRONLY, 0600)) == -1) {
+ 		warn("%s", to);
+ 		(void)close(from_fd);
