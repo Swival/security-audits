@@ -1,0 +1,26 @@
+diff --git a/usr.sbin/dhcpd/db.c b/usr.sbin/dhcpd/db.c
+index 295e522..39119e4 100644
+--- a/usr.sbin/dhcpd/db.c
++++ b/usr.sbin/dhcpd/db.c
+@@ -127,7 +127,9 @@ write_lease(struct lease *lease)
+ 	if (lease->client_hostname) {
+ 		for (i = 0; lease->client_hostname[i]; i++)
+ 			if (lease->client_hostname[i] < 33 ||
+-			    lease->client_hostname[i] > 126)
++			    lease->client_hostname[i] > 126 ||
++			    lease->client_hostname[i] == '"' ||
++			    lease->client_hostname[i] == '\\')
+ 				goto bad_client_hostname;
+ 		if (fprintf(db_file, "\n\tclient-hostname \"%s\";",
+ 		    lease->client_hostname) == -1)
+@@ -138,7 +140,9 @@ bad_client_hostname:
+ 	if (lease->hostname) {
+ 		for (i = 0; lease->hostname[i]; i++)
+ 			if (lease->hostname[i] < 33 ||
+-			    lease->hostname[i] > 126)
++			    lease->hostname[i] > 126 ||
++			    lease->hostname[i] == '"' ||
++			    lease->hostname[i] == '\\')
+ 				goto bad_hostname;
+ 		if (fprintf(db_file, "\n\thostname \"%s\";",
+ 		    lease->hostname) == -1)

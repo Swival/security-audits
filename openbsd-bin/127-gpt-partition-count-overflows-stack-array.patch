@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/installboot/efi_installboot.c b/usr.sbin/installboot/efi_installboot.c
+index 2118898..be6d5c9 100644
+--- a/usr.sbin/installboot/efi_installboot.c
++++ b/usr.sbin/installboot/efi_installboot.c
+@@ -536,6 +536,8 @@ findgptefisys(int devfd, struct disklabel *dl, int *gpartp,
+ 	ghpartsize = letoh32(gh.gh_part_size);
+ 	ghpartspersec = dl->d_secsize / ghpartsize;
+ 	ghpartnum = letoh32(gh.gh_part_num);
++	if (ghpartnum > NGPTPARTITIONS)
++		return (-1);
+ 	if ((secbuf = malloc(dl->d_secsize)) == NULL)
+ 		err(1, NULL);
+ 	for (i = 0; i < (ghpartnum + ghpartspersec - 1) / ghpartspersec; i++) {

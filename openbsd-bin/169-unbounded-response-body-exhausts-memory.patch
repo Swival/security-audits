@@ -1,0 +1,25 @@
+diff --git a/usr.sbin/acme-client/http.c b/usr.sbin/acme-client/http.c
+index 1d745ce..e4214ac 100644
+--- a/usr.sbin/acme-client/http.c
++++ b/usr.sbin/acme-client/http.c
+@@ -62,6 +62,8 @@ struct	http {
+ 	struct tls	  *ctx;    /* TLS context */
+ };
+ 
++#define HTTP_BODY_MAX	((size_t)1024 * 1024)
++
+ struct tls_config *tlscfg;
+ 
+ static ssize_t
+@@ -401,6 +403,11 @@ http_body_read(const struct http *http, struct httpxfer *trans, size_t *sz)
+ 			return NULL;
+ 		else if (ssz == 0)
+ 			break;
++		if ((size_t)ssz > HTTP_BODY_MAX ||
++		    trans->bbufsz > HTTP_BODY_MAX - (size_t)ssz) {
++			warnx("%s: HTTP body too large", http->src.ip);
++			return NULL;
++		}
+ 		pp = recallocarray(trans->bbuf,
+ 		    trans->bbufsz, trans->bbufsz + ssz, 1);
+ 		if (pp == NULL) {

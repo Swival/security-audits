@@ -1,0 +1,13 @@
+diff --git a/sbin/isakmpd/crypto.c b/sbin/isakmpd/crypto.c
+index e415461..3d5a87f 100644
+--- a/sbin/isakmpd/crypto.c
++++ b/sbin/isakmpd/crypto.c
+@@ -298,6 +298,8 @@ crypto_decrypt(struct keystate *ks, u_int8_t *buf, u_int16_t len)
+ {
+ 	LOG_DBG_BUF((LOG_CRYPTO, 70, "crypto_decrypt: before decryption", buf,
+ 	    len));
++	if (len < ks->xf->blocksize || len % ks->xf->blocksize)
++		return;
+ 	/*
+ 	 * XXX There is controversy about the correctness of updating the IV
+ 	 * like this.

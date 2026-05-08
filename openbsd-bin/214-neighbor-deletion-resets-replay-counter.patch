@@ -1,0 +1,14 @@
+diff --git a/usr.sbin/ospfd/neighbor.c b/usr.sbin/ospfd/neighbor.c
+index 83712fe..766ce87 100644
+--- a/usr.sbin/ospfd/neighbor.c
++++ b/usr.sbin/ospfd/neighbor.c
+@@ -610,9 +610,6 @@ nbr_act_delete(struct nbr *nbr)
+ 	/* stop timers */
+ 	nbr_stop_itimer(nbr);
+ 
+-	/* XXX reset crypt_seq_num will allow replay attacks. */
+-	nbr->crypt_seq_num = 0;
+-
+ 	/* schedule kill timer */
+ 	timerclear(&tv);
+ 	tv.tv_sec = DEFAULT_NBR_TMOUT;

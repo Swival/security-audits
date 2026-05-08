@@ -1,0 +1,15 @@
+diff --git a/usr.sbin/rpc.bootparamd/bootparamd.c b/usr.sbin/rpc.bootparamd/bootparamd.c
+index cead376..e12c1bd 100644
+--- a/usr.sbin/rpc.bootparamd/bootparamd.c
++++ b/usr.sbin/rpc.bootparamd/bootparamd.c
+@@ -232,8 +232,8 @@ bootparamproc_getfile_1_svc(bp_getfile_arg *getfile, struct svc_req *rqstp)
+ 		res.server_address.address_type = IP_ADDR_TYPE;
+ 	} else if (error == ENOENT && !strcmp(getfile->file_id, "dump")) {
+ 		/* Special for dump, answer with null strings. */
+-		res.server_name[0] = '\0';
+-		res.server_path[0] = '\0';
++		res.server_name = "";
++		res.server_path = "";
+ 		bzero(&res.server_address.bp_address_u.ip_addr, 4);
+ 	} else {
+ failed:

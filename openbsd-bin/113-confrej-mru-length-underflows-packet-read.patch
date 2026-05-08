@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/npppd/npppd/lcp.c b/usr.sbin/npppd/npppd/lcp.c
+index e132670..321274e 100644
+--- a/usr.sbin/npppd/npppd/lcp.c
++++ b/usr.sbin/npppd/npppd/lcp.c
+@@ -810,6 +810,8 @@ lcp_rejci(fsm *f, u_char *inp, int inlen)
+ 			inp += 4;
+ 			break;
+ 		case PPP_LCP_MRU:
++			if (len != 4)
++				goto fail;
+ 			LCP_OPT_REJECTED(mru);
+ 			GETSHORT(mru, inp);
+ 			break;

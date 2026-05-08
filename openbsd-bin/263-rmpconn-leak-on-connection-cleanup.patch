@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/rbootd/utils.c b/usr.sbin/rbootd/utils.c
+index dc38cc1..b4a32ae 100644
+--- a/usr.sbin/rbootd/utils.c
++++ b/usr.sbin/rbootd/utils.c
+@@ -391,7 +391,7 @@ FreeConn(RMPCONN *rtmp)
+ 	}
+ 
+ 	if (LastFree == NULL)		/* cache for next time */
+-		rtmp = LastFree;
++		LastFree = rtmp;
+ 	else				/* already one cached; free this one */
+ 		free((char *)rtmp);
+ }

@@ -1,0 +1,22 @@
+diff --git a/usr.sbin/ldomd/var-config.c b/usr.sbin/ldomd/var-config.c
+index b3cabb0..a8b4858 100644
+--- a/usr.sbin/ldomd/var-config.c
++++ b/usr.sbin/ldomd/var-config.c
+@@ -22,6 +22,7 @@
+ #include <assert.h>
+ #include <err.h>
+ #include <fcntl.h>
++#include <stddef.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -125,6 +126,9 @@ var_config_rx_data(struct ldc_conn *lc, uint64_t svc_handle, void *data,
+ 	struct var_config_set_req *vr = data;
+ 	struct var_config_resp vx;
+ 
++	if (len < offsetof(struct var_config_set_req, name))
++		return;
++
+ 	switch (vr->cmd) {
+ 	case VAR_CONFIG_SET_REQ:
+ 		vx.msg_type = DS_DATA;

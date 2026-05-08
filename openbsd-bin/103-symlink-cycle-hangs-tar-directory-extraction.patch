@@ -1,0 +1,41 @@
+diff --git a/bin/pax/file_subs.c b/bin/pax/file_subs.c
+index c679edf..bb1b722 100644
+--- a/bin/pax/file_subs.c
++++ b/bin/pax/file_subs.c
+@@ -46,6 +46,10 @@
+ #include "pax.h"
+ #include "extern.h"
+ 
++#ifndef SYMLOOP_MAX
++#define SYMLOOP_MAX 32
++#endif
++
+ static int fset_ids(char *, int, uid_t, gid_t);
+ static int unlnk_exist(char *, int);
+ static int chk_path(char *, uid_t, gid_t, int);
+@@ -356,7 +360,7 @@ node_creat(ARCHD *arcn)
+ 	struct stat sb;
+ 	char target[PATH_MAX];
+ 	char *nm = arcn->name;
+-	int len, defer_pmode = 0;
++	int len, symlinks, defer_pmode = 0;
+ 
+ 	/*
+ 	 * create node based on type, if that fails try to unlink the node and
+@@ -375,8 +379,16 @@ node_creat(ARCHD *arcn)
+ 			 * directory.
+ 			 */
+ 			if (op_mode == OP_TAR && Lflag) {
++				symlinks = 0;
+ 				while (lstat(nm, &sb) == 0 &&
+ 				    S_ISLNK(sb.st_mode)) {
++					if (++symlinks > SYMLOOP_MAX) {
++						errno = ELOOP;
++						syswarn(0, errno,
++						   "cannot follow symlink %s in chain for %s",
++						    nm, arcn->name);
++						return(-1);
++					}
+ 					len = readlink(nm, target,
+ 					    sizeof target - 1);
+ 					if (len == -1) {

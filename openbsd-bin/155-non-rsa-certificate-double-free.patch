@@ -1,0 +1,12 @@
+diff --git a/sbin/isakmpd/x509.c b/sbin/isakmpd/x509.c
+index 7ebe09d..a6783f8 100644
+--- a/sbin/isakmpd/x509.c
++++ b/sbin/isakmpd/x509.c
+@@ -1284,7 +1284,6 @@ x509_cert_get_key(void *scert, void *keyp)
+ 	/* Check if we got the right key type.  */
+ 	if (EVP_PKEY_id(key) != EVP_PKEY_RSA) {
+ 		log_print("x509_cert_get_key: public key is not a RSA key");
+-		X509_free(cert);
+ 		return 0;
+ 	}
+ 	*(RSA **)keyp = RSAPublicKey_dup(EVP_PKEY_get0_RSA(key));

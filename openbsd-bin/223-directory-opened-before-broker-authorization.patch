@@ -1,0 +1,18 @@
+diff --git a/sbin/isakmpd/monitor.c b/sbin/isakmpd/monitor.c
+index 87b50ab..2a018a9 100644
+--- a/sbin/isakmpd/monitor.c
++++ b/sbin/isakmpd/monitor.c
+@@ -837,6 +837,14 @@ m_priv_req_readdir(void)
+ 	if (strlen(path) != len)
+ 		log_fatal("m_priv_req_readdir: invalid pathname");
+ 
++	if (m_priv_local_sanitize_path(path, sizeof path, O_RDONLY) != 0) {
++		serrno = EACCES;
++		ret = -1;
++		must_write(&ret, sizeof ret);
++		must_write(&serrno, sizeof serrno);
++		return;
++	}
++
+ 	off = strlen(path);
+ 	size = sizeof path - off;

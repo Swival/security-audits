@@ -1,0 +1,20 @@
+diff --git a/usr.sbin/rpki-client/repo.c b/usr.sbin/rpki-client/repo.c
+index 97d136a..be55ebd 100644
+--- a/usr.sbin/rpki-client/repo.c
++++ b/usr.sbin/rpki-client/repo.c
+@@ -630,11 +630,14 @@ static int
+ rrdp_uri_valid(struct rrdprepo *rr, const char *uri)
+ {
+ 	struct repo *rp;
++	size_t len;
+ 
+ 	SLIST_FOREACH(rp, &repos, entry) {
+ 		if (rp->rrdp != rr)
+ 			continue;
+-		if (strncmp(uri, rp->repouri, strlen(rp->repouri)) == 0)
++		len = strlen(rp->repouri);
++		if (strncmp(uri, rp->repouri, len) == 0 &&
++		    (uri[len] == '\0' || uri[len] == '/'))
+ 			return 1;
+ 	}
+ 	return 0;

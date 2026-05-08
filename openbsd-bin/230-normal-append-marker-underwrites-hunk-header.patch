@@ -1,0 +1,13 @@
+diff --git a/usr.bin/patch/pch.c b/usr.bin/patch/pch.c
+index 7c65062..915d3ac 100644
+--- a/usr.bin/patch/pch.c
++++ b/usr.bin/patch/pch.c
+@@ -1090,7 +1090,7 @@ hunk_done:
+ 			p_char[i] = '-';
+ 		}
+ 
+-		if (remove_special_line()) {
++		if (p_ptrn_lines != 0 && remove_special_line()) {
+ 			p_len[i - 1] -= 1;
+ 			(p_line[i - 1])[p_len[i - 1]] = 0;
+ 		}

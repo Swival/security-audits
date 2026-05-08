@@ -1,0 +1,17 @@
+diff --git a/usr.sbin/bgpd/session.c b/usr.sbin/bgpd/session.c
+index 7d6d234..22cb6bd 100644
+--- a/usr.sbin/bgpd/session.c
++++ b/usr.sbin/bgpd/session.c
+@@ -797,8 +797,11 @@ session_connect(struct peer *peer)
+ 	}
+ 
+ 	if (tcp_md5_set(peer->fd, &peer->auth_conf,
+-	    &peer->conf.remote_addr) == -1)
++	    &peer->conf.remote_addr) == -1) {
+ 		log_peer_warn(&peer->conf, "setting md5sig");
++		bgp_fsm(peer, EVNT_CON_OPENFAIL, NULL);
++		return (-1);
++	}
+ 
+ 	/* if local-address is set we need to bind() */
+ 	bind_addr = session_localaddr(peer);

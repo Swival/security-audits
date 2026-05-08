@@ -1,0 +1,14 @@
+diff --git a/usr.sbin/relayd/relay_udp.c b/usr.sbin/relayd/relay_udp.c
+index cac1059..9eda5a7 100644
+--- a/usr.sbin/relayd/relay_udp.c
++++ b/usr.sbin/relayd/relay_udp.c
+@@ -439,7 +439,8 @@ relay_dns_validate(struct rsession *con, struct relay *rlay,
+ 			relay_dns_result(con, buf, len);
+ 	} else {
+ 		priv = con->se_priv;
+-		if (priv == NULL || key != priv->dp_inkey) {
++		if (priv == NULL || key != priv->dp_inkey ||
++		    relay_cmp_af(ss, &con->se_out.ss) != 0) {
+ 			relay_close(con, "invalid response", 1);
+ 			return (NULL);
+ 		}

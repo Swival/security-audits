@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/vmd/vmd.c b/usr.sbin/vmd/vmd.c
+index 0a8b696..bd63a7d 100644
+--- a/usr.sbin/vmd/vmd.c
++++ b/usr.sbin/vmd/vmd.c
+@@ -1429,7 +1429,7 @@ vm_instance(struct privsep *ps, struct vmd_vm **vm_parent,
+ 	}
+ 	if (vmc_parent->vmc_insflags & VMOP_CREATE_INSTANCE) {
+ 		vmc->vmc_insowner.gid = vmc_parent->vmc_insowner.gid;
+-		vmc->vmc_insowner.uid = vmc_parent->vmc_insowner.gid;
++		vmc->vmc_insowner.uid = vmc_parent->vmc_insowner.uid;
+ 		vmc->vmc_insflags = vmc_parent->vmc_insflags;
+ 	} else {
+ 		vmc->vmc_insowner.gid = 0;

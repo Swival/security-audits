@@ -1,0 +1,30 @@
+diff --git a/usr.sbin/rpki-client/http.c b/usr.sbin/rpki-client/http.c
+index 4f0e778..659fad8 100644
+--- a/usr.sbin/rpki-client/http.c
++++ b/usr.sbin/rpki-client/http.c
+@@ -1793,8 +1793,11 @@ again:
+ 	switch (conn->state) {
+ 	case STATE_PROXY_STATUS:
+ 		buf = http_get_line(conn);
+-		if (buf == NULL)
++		if (buf == NULL) {
++			if (conn->bufpos == conn->bufsz)
++				return http_failed(conn);
+ 			return WANT_POLLIN;
++		}
+ 		if (http_parse_status(conn, buf) == -1) {
+ 			free(buf);
+ 			return http_failed(conn);
+@@ -1806,8 +1809,11 @@ again:
+ 		done = 0;
+ 		while (!done) {
+ 			buf = http_get_line(conn);
+-			if (buf == NULL)
++			if (buf == NULL) {
++				if (conn->bufpos == conn->bufsz)
++					return http_failed(conn);
+ 				return WANT_POLLIN;
++			}
+ 			/* empty line, end of header */
+ 			if (*buf == '\0')
+ 				done = 1;

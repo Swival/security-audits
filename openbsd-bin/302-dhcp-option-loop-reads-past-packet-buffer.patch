@@ -1,0 +1,19 @@
+diff --git a/usr.sbin/vmd/dhcp.c b/usr.sbin/vmd/dhcp.c
+index 0990763..093e4c1 100644
+--- a/usr.sbin/vmd/dhcp.c
++++ b/usr.sbin/vmd/dhcp.c
+@@ -112,12 +112,12 @@ dhcp_request(struct virtio_dev *dev, char *buf, size_t buflen, char **obuf)
+ 			memset(&requested_addr, 0, sizeof(requested_addr));
+ 			op = opts + DHCP_OPTIONS_COOKIE_LEN;
+ 			oe = opts + optslen;
+-			while (*op != DHO_END && op + 1 < oe) {
++			while (op < oe && *op != DHO_END) {
+ 				if (op[0] == DHO_PAD) {
+ 					op++;
+ 					continue;
+ 				}
+-				if (op + 2 + op[1] > oe)
++				if (op + 1 >= oe || op[1] > oe - op - 2)
+ 					break;
+ 				if (op[0] == DHO_DHCP_MESSAGE_TYPE &&
+ 				    op[1] == 1)

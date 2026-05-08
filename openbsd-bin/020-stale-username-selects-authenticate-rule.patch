@@ -1,0 +1,12 @@
+diff --git a/usr.sbin/radiusd/radiusd.c b/usr.sbin/radiusd/radiusd.c
+index 94a1b26..7cd01bd 100644
+--- a/usr.sbin/radiusd/radiusd.c
++++ b/usr.sbin/radiusd/radiusd.c
+@@ -529,6 +529,7 @@ radiusd_listen_handle_packet(struct radiusd_listen *listn,
+ 		log_warn("%s: Out of memory", __func__);
+ 		goto on_error;
+ 	}
++	username[0] = '\0';
+ 	if (radius_get_string_attr(packet, RADIUS_TYPE_USER_NAME, username,
+ 	    sizeof(username)) != 0) {
+ 		log_info("Received %s(code=%d) from %s id=%d: no User-Name "

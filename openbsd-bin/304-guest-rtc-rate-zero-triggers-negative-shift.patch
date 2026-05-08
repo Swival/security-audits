@@ -1,0 +1,19 @@
+diff --git a/usr.sbin/vmd/mc146818.c b/usr.sbin/vmd/mc146818.c
+index 6951329..6686397 100644
+--- a/usr.sbin/vmd/mc146818.c
++++ b/usr.sbin/vmd/mc146818.c
+@@ -209,9 +209,13 @@ rtc_reschedule_per(void)
+ {
+ 	uint16_t rate;
+ 	uint64_t us;
++	uint8_t period;
+ 
+ 	if (rtc.regs[MC_REGB] & MC_REGB_PIE) {
+-		rate = 32768 >> ((rtc.regs[MC_REGA] & MC_RATE_MASK) - 1);
++		period = rtc.regs[MC_REGA] & MC_RATE_MASK;
++		if (period == 0)
++			return;
++		rate = 32768 >> (period - 1);
+ 		us = (1.0 / rate) * 1000000;
+ 		rtc.per_tv.tv_usec = us;
+ 		if (evtimer_pending(&rtc.per, NULL))

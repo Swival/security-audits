@@ -1,0 +1,13 @@
+diff --git a/usr.bin/mg/dired.c b/usr.bin/mg/dired.c
+index a7d9372..b4761cf 100644
+--- a/usr.bin/mg/dired.c
++++ b/usr.bin/mg/dired.c
+@@ -967,7 +967,7 @@ dired_(char *dname)
+ 	bp = bfind(dname, TRUE);
+ 	bp->b_flag |= BFREADONLY | BFIGNDIRTY;
+
+-	if ((d_exec(2, bp, NULL, "ls", "-al", dname, NULL)) != TRUE)
++	if ((d_exec(2, bp, NULL, "ls", "-alq", dname, NULL)) != TRUE)
+ 		return (NULL);
+
+ 	/* Find the line with ".." on it. */

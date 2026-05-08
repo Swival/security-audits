@@ -1,0 +1,26 @@
+diff --git a/usr.sbin/bgplgd/slowcgi.c b/usr.sbin/bgplgd/slowcgi.c
+index 65cc1bd..506adbf 100644
+--- a/usr.sbin/bgplgd/slowcgi.c
++++ b/usr.sbin/bgplgd/slowcgi.c
+@@ -686,6 +686,8 @@ slowcgi_request(int fd, short events, void *arg)
+ 	 */
+ 	do {
+ 		parsed = parse_record(c->buf + c->buf_pos, c->buf_len, c);
++		if (parsed == (size_t)-1)
++			goto fail;
+ 		c->buf_pos += parsed;
+ 		c->buf_len -= parsed;
+ 	} while (parsed > 0 && c->buf_len > 0);
+@@ -845,8 +847,10 @@ parse_record(uint8_t *buf, size_t n, struct request *c)
+ 	    + h->padding_len)
+ 		return (0);
+ 
+-	if (h->version != 1)
+-		lerrx(1, "wrong version");
++	if (h->version != 1) {
++		lwarnx("wrong version");
++		return ((size_t)-1);
++	}
+ 
+ 	switch (h->type) {
+ 	case FCGI_BEGIN_REQUEST:

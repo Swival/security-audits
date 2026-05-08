@@ -1,0 +1,25 @@
+diff --git a/lib/libkeynote/keynote-keygen.c b/lib/libkeynote/keynote-keygen.c
+index edf013e..1c5eded 100644
+--- a/lib/libkeynote/keynote-keygen.c
++++ b/lib/libkeynote/keynote-keygen.c
+@@ -240,10 +240,19 @@ keynote_keygen(int argc, char *argv[])
+ 	}
+ 	else
+ 	{
+-	    fp = fopen(argv[4], "w");
++	    int fd;
++
++	    fd = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0600);
++	    if (fd == -1)
++	    {
++		perror(argv[4]);
++		exit(1);
++	    }
++	    fp = fdopen(fd, "w");
+ 	    if (fp == NULL)
+ 	    {
+ 		perror(argv[4]);
++		close(fd);
+ 		exit(1);
+ 	    }
+ 	}

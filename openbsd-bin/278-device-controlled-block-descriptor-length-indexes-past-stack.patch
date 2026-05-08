@@ -1,0 +1,14 @@
+diff --git a/usr.bin/cdio/mmc.c b/usr.bin/cdio/mmc.c
+index 06b47ab..c51d83e 100644
+--- a/usr.bin/cdio/mmc.c
++++ b/usr.bin/cdio/mmc.c
+@@ -395,6 +395,10 @@ writetao(struct track_head *thp)
+ 		return (r);
+ 	}
+ 	bdlen = modebuf[7];
++	if (8 + 8 + bdlen >= sizeof(modebuf)) {
++		warnx("invalid block descriptor length");
++		return (-1);
++	}
+ 	modebuf[2+8+bdlen] |= 0x40; /* Buffer Underrun Free Enable */
+ 	modebuf[2+8+bdlen] |= 0x01; /* change write type to TAO */

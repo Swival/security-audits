@@ -1,0 +1,17 @@
+diff --git a/usr.bin/nm/elf.c b/usr.bin/nm/elf.c
+index 6bf7f3b..31e2314 100644
+--- a/usr.bin/nm/elf.c
++++ b/usr.bin/nm/elf.c
+@@ -449,6 +449,12 @@ elf_symloadx(const char *name, FILE *fp, off_t foff, Elf_Ehdr *eh,
+ 	for (i = 0; i < eh->e_shnum; i++) {
+ 		if (!strcmp(shstr + shdr[i].sh_name, symtab)) {
+ 			symsize = shdr[i].sh_size;
++			if (symsize % sizeof(sbuf) != 0) {
++				warnx("%s: corrupt file", name);
++				if (stab)
++					MUNMAP(stab, *pstabsize);
++				return (1);
++			}
+ 			if (fseeko(fp, foff + shdr[i].sh_offset, SEEK_SET)) {
+ 				warn("%s: fseeko", name);
+ 				if (stab)

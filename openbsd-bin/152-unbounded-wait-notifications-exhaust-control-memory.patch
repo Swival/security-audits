@@ -1,0 +1,24 @@
+diff --git a/usr.sbin/vmd/control.c b/usr.sbin/vmd/control.c
+index bf58b43..8f9f940 100644
+--- a/usr.sbin/vmd/control.c
++++ b/usr.sbin/vmd/control.c
+@@ -466,9 +466,17 @@ control_dispatch_imsg(int fd, short event, void *arg)
+ 
+ 			if (wait || vid.vid_flags & VMOP_WAIT) {
+ 				vid.vid_flags |= VMOP_WAIT;
++				TAILQ_FOREACH(notify, &ctl_notify_q, entry) {
++					if (notify->ctl_fd == fd) {
++						ret = EBUSY;
++						goto fail;
++					}
++				}
+ 				notify = calloc(1, sizeof(struct ctl_notify));
+-				if (notify == NULL)
+-					fatal("%s: calloc", __func__);
++				if (notify == NULL) {
++					ret = ENOMEM;
++					goto fail;
++				}
+ 				notify->ctl_vmid = vid.vid_id;
+ 				notify->ctl_fd = fd;
+ 				TAILQ_INSERT_TAIL(&ctl_notify_q, notify, entry);

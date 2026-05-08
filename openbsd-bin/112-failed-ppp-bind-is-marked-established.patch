@@ -1,0 +1,14 @@
+diff --git a/usr.sbin/npppd/l2tp/l2tp_call.c b/usr.sbin/npppd/l2tp/l2tp_call.c
+index b20657d..8891925 100644
+--- a/usr.sbin/npppd/l2tp/l2tp_call.c
++++ b/usr.sbin/npppd/l2tp/l2tp_call.c
+@@ -222,7 +222,8 @@ l2tp_call_recv_packet(l2tp_ctrl *ctrl, l2tp_call *_this, int mestype,
+ 			memset(&dpi, 0, sizeof(dpi));
+ 			if (l2tp_call_recv_ICCN(_this, pkt, pktlen, &dpi) != 0)
+ 				return 1;
+-			l2tp_call_bind_ppp(_this, &dpi);
++			if (l2tp_call_bind_ppp(_this, &dpi) != 0)
++				return 1;
+ 			l2tp_call_send_ZLB(_this);
+ 			_this->state = L2TP_CALL_STATE_ESTABLISHED;
+ 			_this->ctrl->ncalls++;

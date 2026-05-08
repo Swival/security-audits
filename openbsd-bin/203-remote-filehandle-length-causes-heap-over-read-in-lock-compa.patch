@@ -1,0 +1,15 @@
+diff --git a/usr.sbin/rpc.lockd/lockd_lock.c b/usr.sbin/rpc.lockd/lockd_lock.c
+index bb751cb..a36baed 100644
+--- a/usr.sbin/rpc.lockd/lockd_lock.c
++++ b/usr.sbin/rpc.lockd/lockd_lock.c
+@@ -58,7 +58,9 @@ typedef struct {
+ static int
+ fhcmp(const nfs_fhandle_t *fh1, const nfs_fhandle_t *fh2)
+ {
+-	return memcmp(fh1->fhdata, fh2->fhdata, sizeof(fhandle_t));
++	if (fh1->fhsize != fh2->fhsize)
++		return 1;
++	return memcmp(fh1->fhdata, fh2->fhdata, fh1->fhsize);
+ }
+ 
+ static int

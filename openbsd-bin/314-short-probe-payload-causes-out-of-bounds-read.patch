@@ -1,0 +1,14 @@
+diff --git a/usr.sbin/dvmrpd/probe.c b/usr.sbin/dvmrpd/probe.c
+index 4046dd3..24688cc 100644
+--- a/usr.sbin/dvmrpd/probe.c
++++ b/usr.sbin/dvmrpd/probe.c
+@@ -88,6 +88,9 @@ recv_probe(struct iface *iface, struct in_addr src, u_int32_t src_ip,
+ 			break;
+ 	}
+ 
++	if (len < sizeof(gen_id))
++		return;
++
+ 	memcpy(&gen_id, buf, sizeof(gen_id));
+ 	len -= sizeof(gen_id);
+ 	buf += sizeof(gen_id);

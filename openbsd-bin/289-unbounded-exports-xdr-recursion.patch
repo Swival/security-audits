@@ -1,0 +1,34 @@
+diff --git a/usr.sbin/amd/rpcx/mount_xdr.c b/usr.sbin/amd/rpcx/mount_xdr.c
+index bc4cf4e..3fc4800 100644
+--- a/usr.sbin/amd/rpcx/mount_xdr.c
++++ b/usr.sbin/amd/rpcx/mount_xdr.c
+@@ -42,6 +42,8 @@
+ 
+ #include <nfs/rpcv2.h>
+ 
++#define MAX_EXPORTS 1024
++
+ int
+ xdr_fhstatus(XDR *xdrsp, fhstatus *objp)
+ {
+@@ -150,10 +152,18 @@ xdr_groupnode(XDR *xdrs, groupnode *objp)
+ bool_t
+ xdr_exports(XDR *xdrs, exports *objp)
+ {
+-	if (!xdr_pointer(xdrs, (char **)objp, sizeof(struct exportnode), xdr_exportnode)) {
++	static int exports_depth;
++	bool_t rv;
++
++	if (xdrs->x_op == XDR_DECODE && exports_depth++ >= MAX_EXPORTS) {
++		exports_depth--;
+ 		return (FALSE);
+ 	}
+-	return (TRUE);
++	rv = xdr_pointer(xdrs, (char **)objp, sizeof(struct exportnode),
++	    xdr_exportnode);
++	if (xdrs->x_op == XDR_DECODE)
++		exports_depth--;
++	return (rv);
+ }
+ 
+ bool_t

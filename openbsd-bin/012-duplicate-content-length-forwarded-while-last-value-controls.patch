@@ -1,0 +1,16 @@
+diff --git a/usr.sbin/relayd/relay_http.c b/usr.sbin/relayd/relay_http.c
+index d6960e8..e823547 100644
+--- a/usr.sbin/relayd/relay_http.c
++++ b/usr.sbin/relayd/relay_http.c
+@@ -403,8 +403,9 @@ relay_read_http(struct bufferevent *bev, void *arg)
+ 			goto abort;
+ 		}
+ 
+-		/* The "Host" header must only occur once. */
+-		unique = strcasecmp("Host", key) == 0;
++		/* These headers must only occur once. */
++		unique = strcasecmp("Host", key) == 0 ||
++		    strcasecmp("Content-Length", key) == 0;
+ 
+ 		if ((hdr = kv_add(&desc->http_headers, key,
+ 		    value, unique)) == NULL) {
