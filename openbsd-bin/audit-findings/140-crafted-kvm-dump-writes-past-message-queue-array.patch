@@ -1,0 +1,14 @@
+diff --git a/usr.bin/ipcs/ipcs.c b/usr.bin/ipcs/ipcs.c
+index 95196d9..436adb1 100644
+--- a/usr.bin/ipcs/ipcs.c
++++ b/usr.bin/ipcs/ipcs.c
+@@ -724,7 +724,9 @@ ipcs_kvm(void)
+ 				    != sizeof(msgque))
+ 					errx(1, "kvm_read (%s): %s",
+ 					    "msg que", kvm_geterr(kd));
+-				msqids[msgque.que_ix] = msgque.msqid_ds;
++				if (msgque.que_ix >= 0 &&
++				    msgque.que_ix < msginfo.msgmni)
++					msqids[msgque.que_ix] = msgque.msqid_ds;
+ 				addr = (u_long)TAILQ_NEXT(&msgque, que_next);
+ 			}

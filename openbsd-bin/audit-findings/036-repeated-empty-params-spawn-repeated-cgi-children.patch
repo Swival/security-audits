@@ -1,0 +1,24 @@
+diff --git a/usr.sbin/bgplgd/slowcgi.c b/usr.sbin/bgplgd/slowcgi.c
+index 65cc1bd..c188f45 100644
+--- a/usr.sbin/bgplgd/slowcgi.c
++++ b/usr.sbin/bgplgd/slowcgi.c
+@@ -120,6 +120,7 @@ struct request {
+ 	int				script_flags;
+ 	uint16_t			id;
+ 	uint8_t				request_started;
++	uint8_t				request_exec_started;
+ 	uint8_t				request_done;
+ 	uint8_t				timeout_fired;
+ };
+@@ -743,6 +744,11 @@ parse_params(uint8_t *buf, uint16_t n, struct request *c, uint16_t id)
+ 	 * begin execution of the CGI script.
+ 	 */
+ 	if (n == 0) {
++		if (c->request_exec_started) {
++			lwarnx("unexpected FCGI_PARAMS, ignoring");
++			return;
++		}
++		c->request_exec_started = 1;
+ 		exec_cgi(c);
+ 		return;
+ 	}

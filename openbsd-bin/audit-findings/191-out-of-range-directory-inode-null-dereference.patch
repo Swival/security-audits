@@ -1,0 +1,13 @@
+diff --git a/sbin/ncheck_ffs/ncheck_ffs.c b/sbin/ncheck_ffs/ncheck_ffs.c
+index 285716a..bffdcb3 100644
+--- a/sbin/ncheck_ffs/ncheck_ffs.c
++++ b/sbin/ncheck_ffs/ncheck_ffs.c
+@@ -443,6 +443,8 @@ searchdir(ufsino_t ino, daddr_t blkno, long size, off_t filesize,
+ 				continue;
+ 		}
+ 		di = getino(dp->d_ino);
++		if (di == NULL)
++			continue;
+ 		mode = DIP(di, di_mode) & IFMT;
+ 		subino = dp->d_ino;
+ 		if (bsearch(&subino, ilist, ninodes, sizeof(*ilist), matchino)) {

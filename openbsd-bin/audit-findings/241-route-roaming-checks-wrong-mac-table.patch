@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/hostapd/roaming.c b/usr.sbin/hostapd/roaming.c
+index 4384895..a1e8367 100644
+--- a/usr.sbin/hostapd/roaming.c
++++ b/usr.sbin/hostapd/roaming.c
+@@ -128,7 +128,7 @@ hostapd_roaming(struct hostapd_apme *apme, struct hostapd_node *node, int add)
+ 
+ 	if (iapp->i_flags & HOSTAPD_IAPP_F_ROAMING_ROUTE &&
+ 	    iapp->i_route_tbl != NULL) {
+-		if ((entry = hostapd_entry_lookup(iapp->i_addr_tbl,
++		if ((entry = hostapd_entry_lookup(iapp->i_route_tbl,
+ 		    node->ni_macaddr)) == NULL ||
+ 		    (entry->e_flags & HOSTAPD_ENTRY_F_INADDR) == 0)
+ 			return (ESRCH);

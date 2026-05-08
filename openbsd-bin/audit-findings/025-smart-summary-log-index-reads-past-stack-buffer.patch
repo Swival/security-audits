@@ -1,0 +1,13 @@
+diff --git a/sbin/atactl/atactl.c b/sbin/atactl/atactl.c
+index 2a47fc3..9a8dbf6 100644
+--- a/sbin/atactl/atactl.c
++++ b/sbin/atactl/atactl.c
+@@ -1448,6 +1448,8 @@ device_smart_readlog(int argc, char *argv[])
+ 			printf("No log entries\n");
+ 			return;
+ 		}
++		if (data->index > 5)
++			errx(1, "Invalid SMART log index");
+ 
+ 		nerr = letoh16(data->err_cnt);
+ 		printf("Error count: %d\n\n", nerr);

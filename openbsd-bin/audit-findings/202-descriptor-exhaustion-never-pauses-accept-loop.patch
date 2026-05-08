@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/npppd/pptp/pptpd.c b/usr.sbin/npppd/pptp/pptpd.c
+index e6e1a9d..ee16342 100644
+--- a/usr.sbin/npppd/pptp/pptpd.c
++++ b/usr.sbin/npppd/pptp/pptpd.c
+@@ -619,7 +619,7 @@ pptpd_io_event(int fd, short evmask, void *ctx)
+ 			peerlen = sizeof(peer);
+ 			if ((newsock = accept(listener->sock,
+ 			    (struct sockaddr *)&peer, &peerlen)) < 0) {
+-				if (errno != EAGAIN && errno == EINTR &&
++				if (errno != EAGAIN && errno != EINTR &&
+ 				    errno != ECONNABORTED) {
+ 					if (errno == EMFILE || errno == ENFILE)
+ 						accept_pause();

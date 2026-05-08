@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/bgpd/rtr_proto.c b/usr.sbin/bgpd/rtr_proto.c
+index dc4c41b..04449b3 100644
+--- a/usr.sbin/bgpd/rtr_proto.c
++++ b/usr.sbin/bgpd/rtr_proto.c
+@@ -482,6 +482,8 @@ rtr_parse_header(struct rtr_session *rs, struct ibuf *msg,
+ 		switch (rh.type) {
+ 		case CACHE_RESPONSE:
+ 		case CACHE_RESET:
++			if (rh.version < rs->min_version)
++				goto badversion;
+ 			/* implicit downgrade */
+ 			if (rh.version < rs->version) {
+ 				rs->prev_version = rs->version;

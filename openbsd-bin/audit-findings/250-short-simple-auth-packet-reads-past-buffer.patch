@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/ripd/auth.c b/usr.sbin/ripd/auth.c
+index e48b880..2e6cd21 100644
+--- a/usr.sbin/ripd/auth.c
++++ b/usr.sbin/ripd/auth.c
+@@ -105,6 +105,8 @@ auth_validate(u_int8_t **buf, u_int16_t *len, struct iface *iface,
+ 
+ 	switch (iface->auth_type) {
+ 	case AUTH_SIMPLE:
++		if (*len < RIP_ENTRY_LEN)
++			return (-1);
+ 		bcopy(*buf+sizeof(*auth_head), pwd, MAX_SIMPLE_AUTH_LEN);
+ 		if (bcmp(pwd, iface->auth_key, MAX_SIMPLE_AUTH_LEN)) {
+ 			log_debug("auth_validate: wrong password, "

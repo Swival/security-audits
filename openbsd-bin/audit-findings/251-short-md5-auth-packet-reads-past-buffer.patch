@@ -1,0 +1,18 @@
+diff --git a/usr.sbin/ripd/auth.c b/usr.sbin/ripd/auth.c
+index e48b880..0bda6e4 100644
+--- a/usr.sbin/ripd/auth.c
++++ b/usr.sbin/ripd/auth.c
+@@ -86,6 +86,13 @@ auth_validate(u_int8_t **buf, u_int16_t *len, struct iface *iface,
+ 	*buf += RIP_HDR_LEN;
+ 	*len -= RIP_HDR_LEN;
+ 
++	if (iface->auth_type == AUTH_CRYPT &&
++	    *len < sizeof(struct rip_auth) + sizeof(struct md5_auth)) {
++		log_debug("auth_validate: short authentication data, "
++		    "interface %s", iface->name);
++		return (-1);
++	}
++
+ 	auth_head = (struct rip_auth *)(*buf);
+ 
+ 	if (auth_head->auth_fixed != AUTH) {

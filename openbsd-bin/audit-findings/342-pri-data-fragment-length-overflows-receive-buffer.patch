@@ -1,0 +1,20 @@
+diff --git a/usr.sbin/ldomctl/pri.c b/usr.sbin/ldomctl/pri.c
+index 94d8bb1..287d116 100644
+--- a/usr.sbin/ldomctl/pri.c
++++ b/usr.sbin/ldomctl/pri.c
+@@ -88,10 +88,14 @@ pri_rx_data(struct ldc_conn *lc, uint64_t svc_handle, void *data, size_t len)
+ 		return;
+ 	}
+ 
++	if (pd->payload_len < 24)
++		return;
+ 	pri_len = pd->payload_len - 24;
+-	pri_buf = xmalloc(pri_len);
+ 
+ 	len -= sizeof(struct pri_msg);
++	if (len > pri_len)
++		return;
++	pri_buf = xmalloc(pri_len);
+ 	bcopy(&pd->data, pri_buf, len);
+ 	ds_receive_msg(lc, pri_buf + len, pri_len - len);
+ }

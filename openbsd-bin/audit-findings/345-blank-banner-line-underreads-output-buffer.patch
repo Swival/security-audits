@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/lpd/lp_banner.c b/usr.sbin/lpd/lp_banner.c
+index 6d363df..dcdaec4 100644
+--- a/usr.sbin/lpd/lp_banner.c
++++ b/usr.sbin/lpd/lp_banner.c
+@@ -1141,7 +1141,7 @@ lp_banner(int scfd, char *scsp, int pw)
+ 			*strp++ = BACKGND;
+ 			*strp++ = BACKGND;
+ 		}
+-		while (*--strp == BACKGND && strp >= outbuf)
++		while (strp > outbuf && *--strp == BACKGND)
+ 			;
+ 		strp++;
+ 		*strp++ = '\n';

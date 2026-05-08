@@ -1,0 +1,65 @@
+diff --git a/usr.sbin/ldomctl/mdesc.c b/usr.sbin/ldomctl/mdesc.c
+index 3cae1f7..74a47fa 100644
+--- a/usr.sbin/ldomctl/mdesc.c
++++ b/usr.sbin/ldomctl/mdesc.c
+@@ -456,27 +456,47 @@ md_ingest(void *buf, size_t size)
+ 	for (index = 0; index < node_blk_size / sizeof(*mde); index++, mde++) {
+ 		switch(mde->tag) {
+ 		case MD_NODE:
++			if (betoh32(mde->name_offset) >= name_blk_size)
++				errx(1, "Corrupt MD");
+ 			str = name_blk + betoh32(mde->name_offset);
++			if (memchr(str, '\0',
++			    name_blk_size - betoh32(mde->name_offset)) == NULL)
++				errx(1, "Corrupt MD");
+ 			node = md_add_node(md, str);
+ 			node->index = index;
+ 			break;
+ 		case MD_PROP_VAL:
+ 			if (node == NULL)
+ 				errx(1, "Corrupt MD");
++			if (betoh32(mde->name_offset) >= name_blk_size)
++				errx(1, "Corrupt MD");
+ 			str = name_blk + betoh32(mde->name_offset);
++			if (memchr(str, '\0',
++			    name_blk_size - betoh32(mde->name_offset)) == NULL)
++				errx(1, "Corrupt MD");
+ 			md_add_prop_val(md, node, str, betoh64(mde->d.val));
+ 			break;
+ 		case MD_PROP_STR:
+ 			if (node == NULL)
+ 				errx(1, "Corrupt MD");
++			if (betoh32(mde->name_offset) >= name_blk_size)
++				errx(1, "Corrupt MD");
+ 			str = name_blk + betoh32(mde->name_offset);
++			if (memchr(str, '\0',
++			    name_blk_size - betoh32(mde->name_offset)) == NULL)
++				errx(1, "Corrupt MD");
+ 			data = data_blk + betoh32(mde->d.y.data_offset);
+ 			md_add_prop_str(md, node, str, data);
+ 			break;
+ 		case MD_PROP_DATA:
+ 			if (node == NULL)
+ 				errx(1, "Corrupt MD");
++			if (betoh32(mde->name_offset) >= name_blk_size)
++				errx(1, "Corrupt MD");
+ 			str = name_blk + betoh32(mde->name_offset);
++			if (memchr(str, '\0',
++			    name_blk_size - betoh32(mde->name_offset)) == NULL)
++				errx(1, "Corrupt MD");
+ 			data = data_blk + betoh32(mde->d.y.data_offset);
+ 			md_add_prop_data(md, node, str, data,
+ 			    betoh32(mde->d.y.data_len));
+@@ -484,7 +504,12 @@ md_ingest(void *buf, size_t size)
+ 		case MD_PROP_ARC:
+ 			if (node == NULL)
+ 				errx(1, "Corrupt MD");
++			if (betoh32(mde->name_offset) >= name_blk_size)
++				errx(1, "Corrupt MD");
+ 			str = name_blk + betoh32(mde->name_offset);
++			if (memchr(str, '\0',
++			    name_blk_size - betoh32(mde->name_offset)) == NULL)
++				errx(1, "Corrupt MD");
+ 			prop = md_add_prop(md, node, str);
+ 			prop->tag = MD_PROP_ARC;
+ 			prop->d.arc.index = betoh64(mde->d.val);

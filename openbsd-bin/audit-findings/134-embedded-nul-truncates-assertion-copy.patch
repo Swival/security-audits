@@ -1,0 +1,28 @@
+diff --git a/lib/libkeynote/parse_assertion.c b/lib/libkeynote/parse_assertion.c
+index 59dd7d1..a104c1e 100644
+--- a/lib/libkeynote/parse_assertion.c
++++ b/lib/libkeynote/parse_assertion.c
+@@ -380,13 +380,22 @@ keynote_parse_assertion(char *buf, int len, int assertion_flags)
+     }
+ 
+     /* Keep a copy of the assertion around */
+-    as->as_buf = strdup(buf);
++    if (len < 0)
++    {
++	keynote_free_assertion(as);
++	keynote_errno = ERROR_SYNTAX;
++	return NULL;
++    }
++
++    as->as_buf = malloc((size_t)len + 1);
+     if (as->as_buf == NULL)
+     {
+ 	keynote_errno = ERROR_MEMORY;
+ 	keynote_free_assertion(as);
+ 	return NULL;
+     }
++    memcpy(as->as_buf, buf, (size_t)len);
++    as->as_buf[len] = '\0';
+ 
+     as->as_flags = assertion_flags & ~(ASSERT_FLAG_SIGGEN |
+ 				       ASSERT_FLAG_SIGVER);

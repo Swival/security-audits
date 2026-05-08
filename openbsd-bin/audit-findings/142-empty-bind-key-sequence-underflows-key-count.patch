@@ -1,0 +1,13 @@
+diff --git a/usr.bin/mg/extend.c b/usr.bin/mg/extend.c
+index e4a539d..f6ef5cc 100644
+--- a/usr.bin/mg/extend.c
++++ b/usr.bin/mg/extend.c
+@@ -397,6 +397,8 @@ bindkey(KEYMAP **mapp, const char *fname, KCHAR *keys, int kcount)
+ 		ewprintf("[No match: %s]", fname);
+ 		return (FALSE);
+ 	}
++	if (kcount <= 0)
++		return (FALSE);
+ 	while (--kcount) {
+ 		if (doscan(curmap, c = *keys++, &curmap) != NULL) {
+ 			if (remap(curmap, c, NULL, NULL) != TRUE)

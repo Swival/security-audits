@@ -1,0 +1,40 @@
+diff --git a/usr.bin/ftp/util.c b/usr.bin/ftp/util.c
+index 91c689b..4b97dec 100644
+--- a/usr.bin/ftp/util.c
++++ b/usr.bin/ftp/util.c
+@@ -628,10 +628,14 @@ remotemodtime(const char *file, int noisy)
+ 		char *timestr = reply_string;
+ 
+ 		/* Repair `19%02d' bug on server side */
+-		while (!isspace((unsigned char)*timestr))
++		while (*timestr != '\0' && !isspace((unsigned char)*timestr))
+ 			timestr++;
++		if (*timestr == '\0')
++			goto invalid;
+ 		while (isspace((unsigned char)*timestr))
+ 			timestr++;
++		if (*timestr == '\0')
++			goto invalid;
+ 		if (strncmp(timestr, "191", 3) == 0) {
+ 			fprintf(ttyout,
+ 	    "Y2K warning! Fixed incorrect time-val received from server.\n");
+@@ -639,8 +643,9 @@ remotemodtime(const char *file, int noisy)
+ 			timestr[1] = '2';
+ 			timestr[2] = '0';
+ 		}
+-		sscanf(reply_string, "%*s %04d%02d%02d%02d%02d%02d", &yy, &mo,
+-			&day, &hour, &min, &sec);
++		if (sscanf(reply_string, "%*s %04d%02d%02d%02d%02d%02d", &yy, &mo,
++			&day, &hour, &min, &sec) != 6)
++			goto invalid;
+ 		memset(&timebuf, 0, sizeof(timebuf));
+ 		timebuf.tm_sec = sec;
+ 		timebuf.tm_min = min;
+@@ -666,6 +671,7 @@ remotemodtime(const char *file, int noisy)
+ 		fputs(reply_string, ttyout);
+ 		fputc('\n', ttyout);
+ 	}
++invalid:
+ 	verbose = overbose;
+ 	if (rtime == -1)
+ 		code = ocode;

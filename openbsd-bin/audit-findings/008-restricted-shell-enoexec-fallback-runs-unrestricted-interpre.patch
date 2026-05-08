@@ -1,0 +1,18 @@
+diff --git a/bin/ksh/exec.c b/bin/ksh/exec.c
+index 69a1cb9..b3975b6 100644
+--- a/bin/ksh/exec.c
++++ b/bin/ksh/exec.c
+@@ -380,9 +380,11 @@ execute(struct op *volatile t,
+ 		restoresigs();
+ 		cleanup_proc_env();
+ 		execve(t->str, t->args, ap);
+-		if (errno == ENOEXEC)
++		if (errno == ENOEXEC) {
++			if (Flag(FRESTRICTED))
++				errorf("%s: restricted", s);
+ 			scriptexec(t, ap);
+-		else
++		} else
+ 			errorf("%s: %s", s, strerror(errno));
+ 	}
+     Break:

@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/radiusd/radiusd_ipcp.c b/usr.sbin/radiusd/radiusd_ipcp.c
+index 3c8715b..9b63840 100644
+--- a/usr.sbin/radiusd/radiusd_ipcp.c
++++ b/usr.sbin/radiusd/radiusd_ipcp.c
+@@ -1032,7 +1032,7 @@ void
+ ipcp_reject(struct module_ipcp *self, RADIUS_PACKET *reqp, unsigned int q_id,
+     RADIUS_PACKET *orig_resp, int mserr)
+ {
+-	bool			 is_eap, is_mschap, is_mschap2;
++	bool			 is_eap, is_mschap = false, is_mschap2 = false;
+ 	uint8_t			 attr[256];
+ 	size_t			 attrlen;
+ 	RADIUS_PACKET		*resp;

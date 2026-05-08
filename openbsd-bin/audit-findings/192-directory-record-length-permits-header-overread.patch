@@ -1,0 +1,15 @@
+diff --git a/sbin/ncheck_ffs/ncheck_ffs.c b/sbin/ncheck_ffs/ncheck_ffs.c
+index 285716a..2a1c309 100644
+--- a/sbin/ncheck_ffs/ncheck_ffs.c
++++ b/sbin/ncheck_ffs/ncheck_ffs.c
+@@ -429,7 +429,9 @@ searchdir(ufsino_t ino, daddr_t blkno, long size, off_t filesize,
+ 		size = filesize;
+ 	for (loc = 0; loc < size; ) {
+ 		dp = (struct direct *)(dblk + loc);
+-		if (dp->d_reclen == 0) {
++		if (size - loc < sizeof(*dp) - sizeof(dp->d_name) ||
++		    dp->d_reclen == 0 || dp->d_reclen > size - loc ||
++		    dp->d_reclen < DIRSIZ(dp)) {
+ 			warnx("corrupted directory, inode %llu",
+ 			    (unsigned long long)ino);
+ 			break;

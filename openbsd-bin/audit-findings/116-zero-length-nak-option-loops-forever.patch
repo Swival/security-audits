@@ -1,0 +1,13 @@
+diff --git a/usr.sbin/pppd/ipcp.c b/usr.sbin/pppd/ipcp.c
+index d359cc7..23ea5d0 100644
+--- a/usr.sbin/pppd/ipcp.c
++++ b/usr.sbin/pppd/ipcp.c
+@@ -590,6 +590,8 @@ ipcp_nakci(fsm *f, u_char *p, int len)
+     while (len > CILEN_VOID) {
+ 	GETCHAR(citype, p);
+ 	GETCHAR(cilen, p);
++	if (cilen < CILEN_VOID)
++	    goto bad;
+ 	if( (len -= cilen) < 0 )
+ 	    goto bad;
+ 	next = p + cilen - 2;

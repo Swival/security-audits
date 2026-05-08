@@ -1,0 +1,15 @@
+diff --git a/usr.bin/less/decode.c b/usr.bin/less/decode.c
+index 4846e0c..95bf75c 100644
+--- a/usr.bin/less/decode.c
++++ b/usr.bin/less/decode.c
+@@ -737,7 +737,9 @@ editchar(int c, int flags)
+ 		usercmd[nch+1] = '\0';
+ 		nch++;
+ 		action = ecmd_decode(usercmd, &s);
+-	} while (action == A_PREFIX);
++	} while (action == A_PREFIX && nch < MAX_CMDLEN);
++	if (action == A_PREFIX)
++		action = A_INVALID;
+ 
+ 	if (flags & EC_NORIGHTLEFT) {
+ 		switch (action) {

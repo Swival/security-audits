@@ -1,0 +1,19 @@
+diff --git a/usr.sbin/dhcpd/sync.c b/usr.sbin/dhcpd/sync.c
+index bdaf6f7..03ed4a7 100644
+--- a/usr.sbin/dhcpd/sync.c
++++ b/usr.sbin/dhcpd/sync.c
+@@ -143,12 +143,8 @@ sync_init(const char *iface, const char *baddr, u_short port)
+ 
+ 	sync_key = SHA1File(DHCP_SYNC_KEY, NULL);
+ 	if (sync_key == NULL) {
+-		if (errno != ENOENT) {
+-			log_warn("failed to open sync key");
+-			return (-1);
+-		}
+-		/* Use empty key by default */
+-		sync_key = "";
++		log_warn("failed to open sync key");
++		return (-1);
+ 	}
+ 
+ 	syncfd = socket(AF_INET, SOCK_DGRAM, 0);

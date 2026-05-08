@@ -1,0 +1,16 @@
+diff --git a/usr.sbin/snmpd/proc.c b/usr.sbin/snmpd/proc.c
+index bbf7335..be671de 100644
+--- a/usr.sbin/snmpd/proc.c
++++ b/usr.sbin/snmpd/proc.c
+@@ -248,6 +248,11 @@ proc_accept(struct privsep *ps, int fd, enum privsep_procid dst,
+ 	struct privsep_pipes	*pp = ps->ps_pp;
+ 	struct imsgev		*iev;
+ 
++	if ((unsigned int)dst >= PROC_MAX || n >= ps->ps_instances[dst]) {
++		close(fd);
++		return;
++	}
++
+ 	if (ps->ps_ievs[dst] == NULL) {
+ #if DEBUG > 1
+ 		log_debug("%s: %s src %d %d to dst %d %d not connected",

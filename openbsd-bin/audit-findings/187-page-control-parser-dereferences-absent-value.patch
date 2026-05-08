@@ -1,0 +1,14 @@
+diff --git a/usr.sbin/ypldap/aldap.c b/usr.sbin/ypldap/aldap.c
+index 4efedbe..81210e9 100644
+--- a/usr.sbin/ypldap/aldap.c
++++ b/usr.sbin/ypldap/aldap.c
+@@ -496,7 +496,9 @@ aldap_parse_page_control(struct ber_element *control, size_t len)
+ 	struct aldap_page_control *page;
+ 
+ 	b.br_wbuf = NULL;
+-	ober_scanf_elements(control, "ss", &oid, &encoded);
++	if (ober_scanf_elements(control, "ss", &oid, &encoded) != 0 ||
++	    control->be_next == NULL)
++		return NULL;
+ 	ober_set_readbuf(&b, encoded, control->be_next->be_len);
+ 	elm = ober_read_elements(&b, NULL);

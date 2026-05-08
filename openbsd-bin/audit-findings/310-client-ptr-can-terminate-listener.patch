@@ -1,0 +1,20 @@
+diff --git a/usr.bin/openssl/s_socket.c b/usr.bin/openssl/s_socket.c
+index 86a23c5..e93fc54 100644
+--- a/usr.bin/openssl/s_socket.c
++++ b/usr.bin/openssl/s_socket.c
+@@ -260,15 +260,8 @@ do_accept(int acc_sock, int *sock)
+ 		h2 = gethostbyname(host);
+ 		if (h2 == NULL) {
+ 			BIO_printf(bio_err, "gethostbyname failure\n");
+-			close(ret);
+-			free(host);
+-			return (0);
+-		}
+-		if (h2->h_addrtype != AF_INET) {
++		} else if (h2->h_addrtype != AF_INET) {
+ 			BIO_printf(bio_err, "gethostbyname addr is not AF_INET\n");
+-			close(ret);
+-			free(host);
+-			return (0);
+ 		}
+ 	}

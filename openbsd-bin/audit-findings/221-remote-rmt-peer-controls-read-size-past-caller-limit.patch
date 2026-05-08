@@ -1,0 +1,15 @@
+diff --git a/sbin/dump/dumprmt.c b/sbin/dump/dumprmt.c
+index 4bd2171..4f65897 100644
+--- a/sbin/dump/dumprmt.c
++++ b/sbin/dump/dumprmt.c
+@@ -201,6 +201,10 @@ rmtread(char *buf, int count)
+ 
+ 	(void)snprintf(line, sizeof(line), "R%d\n", count);
+ 	n = rmtcall("read", line);
++	if (n > count) {
++		errno = EPROTO;
++		return (-1);
++	}
+ 	if (n < 0) {
+ 		errno = n;
+ 		return (-1);

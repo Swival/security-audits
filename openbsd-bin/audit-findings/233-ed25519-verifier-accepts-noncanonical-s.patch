@@ -1,0 +1,21 @@
+diff --git a/usr.bin/ssh/ed25519.c b/usr.bin/ssh/ed25519.c
+index 2ba4b84..42ea193 100644
+--- a/usr.bin/ssh/ed25519.c
++++ b/usr.bin/ssh/ed25519.c
+@@ -1995,9 +1995,16 @@ int crypto_sign_ed25519_open(
+   unsigned char rcheck[32];
+   ge25519 get1, get2;
+   sc25519 schram, scs;
++  int i;
+ 
+   if (smlen < 64) goto badsig;
+   if (sm[63] & 224) goto badsig;
++  for(i=31;i>=0;i--)
++  {
++    if (sm[32+i] > sc25519_m[i]) goto badsig;
++    if (sm[32+i] < sc25519_m[i]) break;
++  }
++  if (i < 0) goto badsig;
+   if (ge25519_unpackneg_vartime(&get1,pk)) goto badsig;
+ 
+   memmove(pkcopy,pk,32);

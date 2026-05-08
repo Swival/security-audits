@@ -1,0 +1,52 @@
+diff --git a/usr.bin/ctfconv/parse.c b/usr.bin/ctfconv/parse.c
+index ef483f9..f742d8b 100644
+--- a/usr.bin/ctfconv/parse.c
++++ b/usr.bin/ctfconv/parse.c
+@@ -289,15 +289,44 @@ void
+ it_reference(struct itype *it)
+ {
+ 	struct imember *im;
++	struct itstack {
++		struct itype	*is_it;
++		struct itstack	*is_next;
++	} *is, *next;
+ 
+ 	if (it == NULL || it->it_flags & ITF_USED)
+ 		return;
+ 
++	is = xmalloc(sizeof(*is));
+ 	it->it_flags |= ITF_USED;
++	is->is_it = it;
++	is->is_next = NULL;
+ 
+-	it_reference(it->it_refp);
+-	TAILQ_FOREACH(im, &it->it_members, im_next)
+-		it_reference(im->im_refp);
++	while (is != NULL) {
++		it = is->is_it;
++		next = is->is_next;
++		free(is);
++		is = next;
++
++		if (it->it_refp != NULL &&
++		    !(it->it_refp->it_flags & ITF_USED)) {
++			next = xmalloc(sizeof(*next));
++			it->it_refp->it_flags |= ITF_USED;
++			next->is_it = it->it_refp;
++			next->is_next = is;
++			is = next;
++		}
++		TAILQ_FOREACH(im, &it->it_members, im_next) {
++			if (im->im_refp == NULL ||
++			    im->im_refp->it_flags & ITF_USED)
++				continue;
++			next = xmalloc(sizeof(*next));
++			im->im_refp->it_flags |= ITF_USED;
++			next->is_it = im->im_refp;
++			next->is_next = is;
++			is = next;
++		}
++	}
+ }
+ 
+ void

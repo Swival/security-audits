@@ -1,0 +1,10 @@
+diff --git a/usr.sbin/vmd/fw_cfg.c b/usr.sbin/vmd/fw_cfg.c
+index 3d096f9..04661f3 100644
+--- a/usr.sbin/vmd/fw_cfg.c
++++ b/usr.sbin/vmd/fw_cfg.c
+@@ -400,4 +400,5 @@ fw_cfg_file_dir(void)
+ 	/* XXX should sort by name but SeaBIOS does not care */
+ 
+ 	fw_cfg_set_state(data, size);
++	free(data);
+ }

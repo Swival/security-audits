@@ -1,0 +1,36 @@
+diff --git a/usr.sbin/amd/rpcx/mount_xdr.c b/usr.sbin/amd/rpcx/mount_xdr.c
+index bc4cf4e..c42e123 100644
+--- a/usr.sbin/amd/rpcx/mount_xdr.c
++++ b/usr.sbin/amd/rpcx/mount_xdr.c
+@@ -42,6 +42,10 @@
+ 
+ #include <nfs/rpcv2.h>
+ 
++#define XDR_GROUPS_MAX_DEPTH	1024
++
++static int xdr_groups_depth;
++
+ int
+ xdr_fhstatus(XDR *xdrsp, fhstatus *objp)
+ {
+@@ -129,10 +133,18 @@ xdr_mountbody(XDR *xdrs, mountbody *objp)
+ bool_t
+ xdr_groups(XDR *xdrs, groups *objp)
+ {
+-	if (!xdr_pointer(xdrs, (char **)objp, sizeof(struct groupnode), xdr_groupnode)) {
++	bool_t rv;
++
++	if (xdrs->x_op == XDR_DECODE &&
++	    xdr_groups_depth++ >= XDR_GROUPS_MAX_DEPTH) {
++		xdr_groups_depth--;
+ 		return (FALSE);
+ 	}
+-	return (TRUE);
++	rv = xdr_pointer(xdrs, (char **)objp, sizeof(struct groupnode),
++	    xdr_groupnode);
++	if (xdrs->x_op == XDR_DECODE)
++		xdr_groups_depth--;
++	return (rv);
+ }
+ 
+ bool_t

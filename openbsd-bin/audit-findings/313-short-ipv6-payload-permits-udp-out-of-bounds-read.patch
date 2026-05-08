@@ -1,0 +1,15 @@
+diff --git a/usr.sbin/dhcrelay6/packet.c b/usr.sbin/dhcrelay6/packet.c
+index f87fa46..159c11e 100644
+--- a/usr.sbin/dhcrelay6/packet.c
++++ b/usr.sbin/dhcrelay6/packet.c
+@@ -204,6 +204,10 @@ decode_udp_ip6_header(unsigned char *p, int off, struct packet_ctx *pc,
+ 		log_debug("expected UDP header, got %#02X", ip6->ip6_nxt);
+ 		return -1;
+ 	}
++	if (ptotal < sizeof(*uh)) {
++		log_debug("UDP packet too small (%ld)", ptotal);
++		return -1;
++	}
+ 
+ 	uh = (struct udphdr *)((uint8_t *)ip6 + sizeof(*ip6));
+ 	ss2sin6(&pc->pc_src)->sin6_port = uh->uh_sport;

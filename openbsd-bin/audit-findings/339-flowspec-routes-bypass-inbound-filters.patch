@@ -1,0 +1,24 @@
+diff --git a/usr.sbin/bgpd/rde_filter.c b/usr.sbin/bgpd/rde_filter.c
+index 6520629..3776a7e 100644
+--- a/usr.sbin/bgpd/rde_filter.c
++++ b/usr.sbin/bgpd/rde_filter.c
+@@ -1115,9 +1115,6 @@ rde_filter(struct filter_head *rules, struct rde_peer *peer,
+ 	if (rules == NULL)
+ 		return (action);
+ 
+-	if (prefix->aid == AID_FLOWSPECv4 || prefix->aid == AID_FLOWSPECv6)
+-		return (ACTION_ALLOW);
+-
+ 	f = TAILQ_FIRST(rules);
+ 	while (f != NULL) {
+ 		if (f->peer.peerid && f->peer.peerid != peer->conf.id) {
+@@ -1172,9 +1169,6 @@ rde_filter_out(struct rde_filter *rf, struct rde_peer *peer,
+ 		 */
+ 		return (ACTION_DENY);
+ 
+-	if (prefix->aid == AID_FLOWSPECv4 || prefix->aid == AID_FLOWSPECv6)
+-		return (ACTION_ALLOW);
+-
+ 	for (i = 0; i < rf->len; i++) {
+ 		f = &rf->rules[i];
+ 		if (rde_filter_match(&f->match, peer, from, state,

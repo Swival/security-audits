@@ -1,0 +1,29 @@
+diff --git a/usr.sbin/mtrace/mtrace.c b/usr.sbin/mtrace/mtrace.c
+index 5fa9bf7..8171844 100644
+--- a/usr.sbin/mtrace/mtrace.c
++++ b/usr.sbin/mtrace/mtrace.c
+@@ -531,6 +531,12 @@ send_recv(u_int32_t dst, int type, int code, int tries, struct resp_buf *save)
+ 		if (rquery->tr_src != qsrc) continue;
+ 		if (rquery->tr_dst != qdst) continue;
+ 		len = (igmpdatalen - QLEN)/RLEN;
++		if (len > code || len > MAXHOPS) {
++		    fprintf(stderr,
++			    "Num hops received (%d) exceeds request (%d)\n",
++			    len, code);
++		    continue;
++		}
+ 
+ 		/*
+ 		 * Ignore trace queries passing through this node when
+@@ -551,11 +557,6 @@ send_recv(u_int32_t dst, int type, int code, int tries, struct resp_buf *save)
+ 		/*
+ 		 * A match, we'll keep this one.
+ 		 */
+-		if (len > code) {
+-		    fprintf(stderr,
+-			    "Num hops received (%d) exceeds request (%d)\n",
+-			    len, code);
+-		}
+ 		rquery->tr_raddr = query->tr_raddr;	/* Insure these are */
+ 		rquery->tr_rttl = query->tr_rttl;	/* as we sent them */
+ 		break;
