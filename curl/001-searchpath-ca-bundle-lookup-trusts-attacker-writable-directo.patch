@@ -1,0 +1,56 @@
+diff --git a/src/tool_doswin.c b/src/tool_doswin.c
+index 4b2a2a34b3..a02978c7e5 100644
+--- a/src/tool_doswin.c
++++ b/src/tool_doswin.c
+@@ -539,35 +539,33 @@ SANITIZEcode sanitize_file_name(char ** const sanitized, const char *file_name,
+  * setting CA location for Schannel only when explicitly specified by the user
+  * via CURLOPT_CAINFO / --cacert.
+  *
+- * Function to find CACert bundle on a Win32 platform using SearchPath.
+- * (SearchPath is already declared via inclusions done in setup header file)
+- * (Use the ASCII version instead of the Unicode one!)
+- * The order of the directories it searches is:
+- *  1. application's directory
+- *  2. current working directory
+- *  3. Windows System directory (e.g. C:\Windows\System32)
+- *  4. Windows Directory (e.g. C:\Windows)
+- *  5. all directories along %PATH%
+- *
+- * For WinXP and later search order actually depends on registry value:
+- * HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\SafeProcessSearchMode
++ * Find the CACert bundle in the curl tool directory only.
+  */
+ CURLcode FindWin32CACert(struct OperationConfig *config,
+                          const TCHAR *bundle_file)
+ {
+   CURLcode result = CURLE_OK;
+   DWORD res_len;
++  TCHAR path[MAX_PATH];
+   TCHAR buf[MAX_PATH];
+   TCHAR *ptr = NULL;
+ 
+   buf[0] = TEXT('\0');
+ 
+-  res_len = SearchPath(NULL, bundle_file, NULL, MAX_PATH, buf, &ptr);
+-  if(res_len > 0) {
+-    curlx_free(config->cacert);
+-    config->cacert = curlx_convert_tchar_to_UTF8(buf);
+-    if(!config->cacert)
+-      result = CURLE_OUT_OF_MEMORY;
++  res_len = GetModuleFileName(NULL, path, MAX_PATH);
++  if(res_len > 0 && res_len < MAX_PATH) {
++    ptr = _tcsrchr(path, TEXT('\\'));
++    if(ptr) {
++      *ptr = TEXT('\0');
++      ptr = NULL;
++      res_len = SearchPath(path, bundle_file, NULL, MAX_PATH, buf, &ptr);
++      if(res_len > 0 && res_len < MAX_PATH) {
++        curlx_free(config->cacert);
++        config->cacert = curlx_convert_tchar_to_UTF8(buf);
++        if(!config->cacert)
++          result = CURLE_OUT_OF_MEMORY;
++      }
++    }
+   }
+ 
+   return result;

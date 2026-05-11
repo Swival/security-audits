@@ -1,0 +1,16 @@
+diff --git a/lib/vtls/wolfssl.c b/lib/vtls/wolfssl.c
+index 59574c9b6a..9cb85b4427 100644
+--- a/lib/vtls/wolfssl.c
++++ b/lib/vtls/wolfssl.c
+@@ -819,9 +819,11 @@ CURLcode Curl_wssl_setup_x509_store(struct Curl_cfilter *cf,
+   if(cached_store &&
+      wolfSSL_CTX_get_cert_store(wssl->ssl_ctx) == cached_store) {
+     /* The cached store is already in use, do nothing. */
++    wssl->x509_store_setup = TRUE;
+   }
+   else if(cached_store && wolfSSL_X509_STORE_up_ref(cached_store)) {
+     wolfSSL_CTX_set_cert_store(wssl->ssl_ctx, cached_store);
++    wssl->x509_store_setup = TRUE;
+   }
+   else if(cache_criteria_met) {
+     /* wolfSSL's initial store in CTX is not shareable by default.

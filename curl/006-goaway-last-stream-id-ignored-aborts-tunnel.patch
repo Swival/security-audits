@@ -1,0 +1,12 @@
+diff --git a/lib/cf-h2-proxy.c b/lib/cf-h2-proxy.c
+index a0c5b14321..aab8516495 100644
+--- a/lib/cf-h2-proxy.c
++++ b/lib/cf-h2-proxy.c
+@@ -481,6 +481,7 @@ static int proxy_h2_on_frame_recv(nghttp2_session *session,
+       break;
+     case NGHTTP2_GOAWAY:
+       ctx->rcvd_goaway = TRUE;
++      ctx->last_stream_id = frame->goaway.last_stream_id;
+       break;
+     default:
+       break;

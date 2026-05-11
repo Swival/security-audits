@@ -1,0 +1,14 @@
+diff --git a/src/config2setopts.c b/src/config2setopts.c
+index 9138b3b147..0800138817 100644
+--- a/src/config2setopts.c
++++ b/src/config2setopts.c
+@@ -366,8 +366,7 @@ static CURLcode ssl_setopts(struct OperationConfig *config, CURL *curl)
+     MY_SETOPT_STR(curl, CURLOPT_PROXY_PINNEDPUBLICKEY,
+                   config->proxy_pinnedpubkey);
+     if(result)
+-      warnf("ignoring %s, not supported by libcurl with %s",
+-            "--proxy-pinnedpubkey", ssl_backend());
++      return result;
+   }
+ 
+   if(config->ssl_ec_curves)
