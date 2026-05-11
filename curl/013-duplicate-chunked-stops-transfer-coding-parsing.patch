@@ -1,0 +1,13 @@
+diff --git a/lib/content_encoding.c b/lib/content_encoding.c
+index 0224a8bfe9..c713817b3d 100644
+--- a/lib/content_encoding.c
++++ b/lib/content_encoding.c
+@@ -765,7 +765,7 @@ CURLcode Curl_build_unencoding_stack(struct Curl_easy *data,
+          *  once to a message body."
+          */
+         CURL_TRC_WRITE(data, "ignoring duplicate 'chunked' decoder");
+-        return CURLE_OK;
++        continue;
+       }
+ 
+       if(is_transfer && !is_chunked &&
