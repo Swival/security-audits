@@ -387,12 +387,6 @@ Findings are numbered per component, so some numbers are reused across the diffe
 |---|---------|----------|
 | [331](331-decoded-database-path-overflows-stack-buffer.md) | Decoded database path overflows stack buffer | High |
 
-### login
-
-| # | Finding | Severity |
-|---|---------|----------|
-| [028](028-forced-login-root-instance-grants-root-context.md) | Forced login root instance grants root context | High |
-
 ### lpr / lpd
 
 | # | Finding | Severity |
