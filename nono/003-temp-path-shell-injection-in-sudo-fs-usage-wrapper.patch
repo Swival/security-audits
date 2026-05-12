@@ -1,0 +1,61 @@
+diff --git a/crates/nono-cli/src/learn.rs b/crates/nono-cli/src/learn.rs
+index 9bf154b..7cc33e6 100644
+--- a/crates/nono-cli/src/learn.rs
++++ b/crates/nono-cli/src/learn.rs
+@@ -529,12 +529,15 @@ fn run_fs_usage_and_nettop(
+     // fs_usage fully buffers stdout when writing to a pipe, so trace data
+     // accumulates in an internal buffer and is lost when fs_usage is killed
+     // via SIGTERM. To work around this, we redirect output to a temp file
+-    // via shell-level redirection inside sudo, then read the file after
+-    // fs_usage exits.
++    // by redirecting stdout/stderr directly to temp files, then read the
++    // files after fs_usage exits.
+     let fs_usage_outfile = tempfile::NamedTempFile::new().map_err(|e| {
+         NonoError::LearnError(format!("Failed to create temp file for fs_usage: {e}"))
+     })?;
+     let fs_usage_out_path = fs_usage_outfile.path().to_path_buf();
++    let fs_usage_stdout = fs_usage_outfile.reopen().map_err(|e| {
++        NonoError::LearnError(format!("Failed to reopen temp file for fs_usage: {e}"))
++    })?;
+ 
+     let fs_usage_errfile = tempfile::NamedTempFile::new().map_err(|e| {
+         NonoError::LearnError(format!(
+@@ -542,21 +545,17 @@ fn run_fs_usage_and_nettop(
+         ))
+     })?;
+     let fs_usage_err_path = fs_usage_errfile.path().to_path_buf();
++    let fs_usage_stderr = fs_usage_errfile.reopen().map_err(|e| {
++        NonoError::LearnError(format!(
++            "Failed to reopen temp file for fs_usage stderr: {e}"
++        ))
++    })?;
+ 
+     let mut fs_usage = Command::new("sudo")
+-        .args([
+-            "bash",
+-            "-c",
+-            &format!(
+-                "exec fs_usage -w -f filesys -f pathname {} > '{}' 2> '{}'",
+-                cmd_name,
+-                fs_usage_out_path.display(),
+-                fs_usage_err_path.display()
+-            ),
+-        ])
++        .args(["/usr/bin/fs_usage", "-w", "-f", "filesys", "-f", "pathname", cmd_name])
+         .stdin(Stdio::null())
+-        .stdout(Stdio::null())
+-        .stderr(Stdio::null())
++        .stdout(fs_usage_stdout)
++        .stderr(fs_usage_stderr)
+         .spawn()
+         .map_err(|e| {
+             NonoError::LearnError(format!("Failed to spawn fs_usage (sudo required): {}", e))
+@@ -613,7 +612,7 @@ fn run_fs_usage_and_nettop(
+     let _ = child.wait();
+     debug!("Child process exited");
+ 
+-    // Kill fs_usage. The sudo bash wrapper spawns fs_usage as a child,
++    // Kill fs_usage. The sudo wrapper spawns fs_usage as a child,
+     // so we kill both the wrapper and its children.
+     kill_fs_usage(&fs_usage);
+     let _ = fs_usage.wait();

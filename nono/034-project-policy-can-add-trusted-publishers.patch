@@ -1,0 +1,74 @@
+diff --git a/crates/nono/src/trust/policy.rs b/crates/nono/src/trust/policy.rs
+index e4d85a9..9eb8491 100644
+--- a/crates/nono/src/trust/policy.rs
++++ b/crates/nono/src/trust/policy.rs
+@@ -7,7 +7,7 @@
+ //! # Policy Composition
+ //!
+ //! Multiple `trust-policy.json` files are merged with additive-only semantics:
+-//! - Publishers: union (all publishers from all levels)
++//! - Publishers: only from the trusted anchor policy
+ //! - Blocklist digests: union (all blocked digests from all levels)
+ //! - Blocked publishers: union
+ //! - Include patterns: union (all patterns from all levels)
+@@ -52,8 +52,9 @@ pub fn load_policy_from_file<P: AsRef<Path>>(path: P) -> Result<TrustPolicy> {
+ ///
+ /// Policies are merged in order (first = lowest priority, last = highest).
+ /// All merging is additive-only:
+-/// - Publishers, blocklist entries, blocked publishers, and include
+-///   patterns are unioned (deduplicated by identity)
++/// - Publishers come only from the first trusted anchor policy
++/// - Blocklist entries, blocked publishers, and include patterns are unioned
++///   (deduplicated by identity)
+ /// - Enforcement uses the strictest level across all policies
+ ///
+ /// # Errors
+@@ -87,7 +88,7 @@ pub fn merge_policies(policies: &[TrustPolicy]) -> Result<TrustPolicy> {
+ 
+     let mut strictest_enforcement = Enforcement::Audit;
+ 
+-    for policy in policies {
++    for (policy_index, policy) in policies.iter().enumerate() {
+         // Merge include patterns (deduplicate by pattern string)
+         for pattern in &policy.includes {
+             if seen_patterns.insert(pattern.clone()) {
+@@ -102,16 +103,15 @@ pub fn merge_policies(policies: &[TrustPolicy]) -> Result<TrustPolicy> {
+             }
+         }
+ 
+-        // Merge publishers (deduplicate by name, first-occurrence wins).
+-        // Callers pass policies in precedence order (user-level first),
+-        // so user publishers take priority over project publishers.
++        // Merge publishers from the trusted anchor policy only. Later policies
++        // may narrow scope with includes/blocklists but must not add trust roots.
+         for publisher in &policy.publishers {
+             if !seen_publisher_names.insert(publisher.name.clone()) {
+                 tracing::debug!(
+-                    "trust policy merge: publisher '{}' appears in multiple policies, using the user-level definition for verification",
++                    "trust policy merge: publisher '{}' appears in multiple policies, using the trusted definition for verification",
+                     publisher.name
+                 );
+-            } else {
++            } else if policy_index == 0 {
+                 merged_publishers.push(publisher.clone());
+             }
+         }
+@@ -555,7 +555,7 @@ mod tests {
+     }
+ 
+     #[test]
+-    fn merge_unions_publishers() {
++    fn merge_ignores_later_publisher_additions() {
+         let p1 = make_policy(
+             Enforcement::Audit,
+             vec![keyed_publisher("dev", "key1")],
+@@ -567,7 +567,8 @@ mod tests {
+             vec![],
+         );
+         let merged = merge_policies(&[p1, p2]).unwrap();
+-        assert_eq!(merged.publishers.len(), 2);
++        assert_eq!(merged.publishers.len(), 1);
++        assert_eq!(merged.publishers[0].name, "dev");
+     }
+ 
+     #[test]

@@ -1,0 +1,30 @@
+diff --git a/crates/nono-cli/src/trust_cmd.rs b/crates/nono-cli/src/trust_cmd.rs
+index c9456c4..72841be 100644
+--- a/crates/nono-cli/src/trust_cmd.rs
++++ b/crates/nono-cli/src/trust_cmd.rs
+@@ -1396,24 +1396,9 @@ fn load_trust_policy(explicit_path: Option<&Path>) -> Result<trust::TrustPolicy>
+     Ok(trust::TrustPolicy::default())
+ }
+ 
+-/// Verify the trust policy signature if a `.bundle` sidecar exists.
++/// Verify the trust policy signature before loading it.
+ ///
+ /// Uses the same verification as the pre-exec scan (`trust_scan::verify_policy_signature`).
+-/// If no `.bundle` exists, logs a warning but allows the policy to load — this supports
+-/// development workflows where policies are unsigned. The pre-exec scan path enforces
+-/// signature requirements independently via `trust_override`.
+ fn verify_policy_if_exists(policy_path: &Path) -> Result<()> {
+-    let bundle_path = nono::trust::bundle_path_for(policy_path);
+-    if !bundle_path.exists() {
+-        eprintln!(
+-            "  {}",
+-            format!(
+-                "Warning: trust policy {} has no .bundle sidecar (unsigned).",
+-                policy_path.display()
+-            )
+-            .yellow()
+-        );
+-        return Ok(());
+-    }
+     crate::trust_scan::verify_policy_signature(policy_path)
+ }

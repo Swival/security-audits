@@ -1,0 +1,38 @@
+diff --git a/crates/nono-proxy/src/tls_intercept/cert_cache.rs b/crates/nono-proxy/src/tls_intercept/cert_cache.rs
+index 837b99a..e8b7bd0 100644
+--- a/crates/nono-proxy/src/tls_intercept/cert_cache.rs
++++ b/crates/nono-proxy/src/tls_intercept/cert_cache.rs
+@@ -8,9 +8,9 @@
+ //! ## Why no LRU eviction
+ //!
+ //! Typical agent workloads hit a handful of distinct hosts (`api.openai.com`,
+-//! `api.anthropic.com`, `api.github.com`, …). The cache is naturally bounded
+-//! by the per-session host set and is dropped — along with the CA — when the
+-//! proxy shuts down. An LRU policy would add complexity without payoff.
++//! `api.anthropic.com`, `api.github.com`, …). The cache has a hard per-session
++//! entry limit and is dropped — along with the CA — when the proxy shuts down.
++//! An LRU policy would add complexity without payoff.
+ //!
+ //! ## Failure mode
+ //!
+@@ -39,6 +39,7 @@ use tracing::{debug, warn};
+ /// stolen leaf becomes useless quickly; long enough that no plausible
+ /// HTTP request will outlive it.
+ const LEAF_VALIDITY: Duration = Duration::from_secs(60 * 60);
++const MAX_CERT_CACHE_ENTRIES: usize = 128;
+ 
+ /// Per-hostname leaf certificate cache backed by the session's [`EphemeralCa`].
+ pub struct CertCache {
+@@ -85,6 +86,12 @@ impl CertCache {
+         if let Some(existing) = cache.get(hostname) {
+             return Ok(Arc::clone(existing));
+         }
++        if cache.len() >= MAX_CERT_CACHE_ENTRIES {
++            return Err(ProxyError::Config(format!(
++                "tls_intercept cert cache limit exceeded ({})",
++                MAX_CERT_CACHE_ENTRIES
++            )));
++        }
+         let minted = mint_leaf(self.ca.as_ref(), hostname)?;
+         cache.insert(hostname.to_string(), Arc::clone(&minted));
+         debug!("tls_intercept: minted leaf certificate for {}", hostname);

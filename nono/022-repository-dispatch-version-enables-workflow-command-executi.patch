@@ -1,0 +1,14 @@
+diff --git a/scripts/downstream-workflows/bump-nono-py.yml b/scripts/downstream-workflows/bump-nono-py.yml
+index 52e9cc7..9fa4cb6 100644
+--- a/scripts/downstream-workflows/bump-nono-py.yml
++++ b/scripts/downstream-workflows/bump-nono-py.yml
+@@ -27,6 +27,10 @@ jobs:
+         id: version
+         run: |
+           VERSION="${NONO_VERSION#v}"
++          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
++            echo "Invalid nono version: $NONO_VERSION" >&2
++            exit 1
++          fi
+           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+           echo "branch=bump-nono-${VERSION}" >> "$GITHUB_OUTPUT"

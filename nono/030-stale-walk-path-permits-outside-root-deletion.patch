@@ -1,0 +1,12 @@
+diff --git a/crates/nono/src/undo/snapshot.rs b/crates/nono/src/undo/snapshot.rs
+index 5bf3773..d3ca875 100644
+--- a/crates/nono/src/undo/snapshot.rs
++++ b/crates/nono/src/undo/snapshot.rs
+@@ -318,6 +318,7 @@ impl SnapshotManager {
+         // Delete files not in the manifest (created during session)
+         for path in current_files.keys() {
+             if !manifest.files.contains_key(path) {
++                self.validate_restore_target(path)?;
+                 if let Err(e) = fs::remove_file(path) {
+                     tracing::warn!("Failed to remove {}: {}", path.display(), e);
+                 } else {

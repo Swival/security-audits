@@ -1,0 +1,13 @@
+diff --git a/scripts/monitor-auth.sh b/scripts/monitor-auth.sh
+index fda0e86..bfb6ca8 100755
+--- a/scripts/monitor-auth.sh
++++ b/scripts/monitor-auth.sh
+@@ -33,7 +33,7 @@ check_file() {
+             has_refresh=$(jq -r 'if .refreshToken // .refresh_token then "yes" else "no" end' "$path" 2>/dev/null || true)
+ 
+             [ -n "$key_source" ] && log "    apiKeySource=$key_source"
+-            [ -n "$key_prefix" ] && log "    key_prefix=${key_prefix}..."
++            [ -n "$key_prefix" ] && log "    has_api_key=yes"
+             [ -n "$expires_at" ] && log "    expires_at=$expires_at"
+             [ "$has_refresh" = "yes" ] && log "    has_refresh_token=yes"
+         fi

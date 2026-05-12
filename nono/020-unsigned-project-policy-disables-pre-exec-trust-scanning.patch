@@ -1,0 +1,17 @@
+diff --git a/crates/nono-cli/src/trust_scan.rs b/crates/nono-cli/src/trust_scan.rs
+index 6df15a2..92f2af1 100644
+--- a/crates/nono-cli/src/trust_scan.rs
++++ b/crates/nono-cli/src/trust_scan.rs
+@@ -80,7 +80,11 @@ pub fn load_scan_policy(
+         (None, None) => Ok(TrustPolicy::default()),
+     }?;
+ 
+-    if !trust_override && scan_has_signed_artifacts(root, &effective, skip_dirs)? {
++    if !trust_override
++        && (project_policy_path.is_some()
++            || user_policy_path.is_some()
++            || scan_has_signed_artifacts(root, &effective, skip_dirs)?)
++    {
+         verify_scan_policy_signatures(
+             project_policy_path.as_deref(),
+             user_policy_path.map(PathBuf::as_path),

@@ -1,0 +1,44 @@
+diff --git a/crates/nono-proxy/src/tls_intercept/handle.rs b/crates/nono-proxy/src/tls_intercept/handle.rs
+index 59dbc34..79bff7f 100644
+--- a/crates/nono-proxy/src/tls_intercept/handle.rs
++++ b/crates/nono-proxy/src/tls_intercept/handle.rs
+@@ -22,7 +22,7 @@ use crate::route::RouteStore;
+ use crate::tls_intercept::acceptor;
+ use crate::tls_intercept::cert_cache::CertCache;
+ use std::sync::Arc;
+-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
++use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
+ use tokio::net::TcpStream;
+ use tokio_rustls::TlsAcceptor;
+ use tracing::{debug, warn};
+@@ -140,12 +140,15 @@ where
+     let mut header_bytes = Vec::new();
+     loop {
+         let mut line = String::new();
+-        let n = buf_reader.read_line(&mut line).await?;
+-        if n == 0 || line.trim().is_empty() {
++        let limit = MAX_HEADER_SIZE + 1;
++        let n = {
++            let mut bounded_reader = (&mut buf_reader).take(limit as u64);
++            bounded_reader.read_line(&mut line).await?
++        };
++        if n == 0 {
+             break;
+         }
+-        header_bytes.extend_from_slice(line.as_bytes());
+-        if header_bytes.len() > MAX_HEADER_SIZE {
++        if header_bytes.len() + line.len() > MAX_HEADER_SIZE {
+             // Mirror the outer proxy's behaviour. We have to write into the
+             // BufReader's inner stream — release it first.
+             let buffered = buf_reader.buffer().to_vec();
+@@ -156,6 +159,10 @@ where
+             let _ = buffered;
+             return Ok(());
+         }
++        if line.trim().is_empty() {
++            break;
++        }
++        header_bytes.extend_from_slice(line.as_bytes());
+     }
+     let buffered = buf_reader.buffer().to_vec();
+     drop(buf_reader);

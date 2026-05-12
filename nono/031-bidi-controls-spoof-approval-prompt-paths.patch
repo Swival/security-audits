@@ -1,0 +1,29 @@
+diff --git a/crates/nono-cli/src/terminal_approval.rs b/crates/nono-cli/src/terminal_approval.rs
+index a0d9bc8..2e065a1 100644
+--- a/crates/nono-cli/src/terminal_approval.rs
++++ b/crates/nono-cli/src/terminal_approval.rs
+@@ -66,8 +66,8 @@ impl ApprovalBackend for TerminalApproval {
+     }
+ }
+ 
+-/// Strip control characters and ANSI escape sequences from untrusted input
+-/// before displaying on the terminal.
++/// Strip control characters, Unicode bidi controls, and ANSI escape sequences
++/// from untrusted input before displaying on the terminal.
+ ///
+ /// Handles all standard escape sequence types:
+ /// - CSI (ESC [): cursor movement, SGR colors, erase commands
+@@ -107,7 +107,12 @@ fn sanitize_for_terminal(input: &str) -> String {
+             continue;
+         }
+ 
+-        if c.is_control() {
++        if c.is_control()
++            || matches!(
++                c,
++                '\u{061c}' | '\u{200e}' | '\u{200f}' | '\u{202a}'..='\u{202e}' | '\u{2066}'..='\u{2069}'
++            )
++        {
+             result.push(' ');
+         } else {
+             result.push(c);

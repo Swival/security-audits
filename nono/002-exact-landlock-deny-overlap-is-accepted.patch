@@ -1,0 +1,15 @@
+diff --git a/crates/nono-cli/src/policy.rs b/crates/nono-cli/src/policy.rs
+index f8e5134..65a55a2 100644
+--- a/crates/nono-cli/src/policy.rs
++++ b/crates/nono-cli/src/policy.rs
+@@ -1109,8 +1109,8 @@ pub fn validate_deny_overlaps(deny_paths: &[PathBuf], caps: &CapabilitySet) -> R
+             if cap.is_file {
+                 continue; // File caps can't cover a directory subtree
+             }
+-            // Check if deny path is a child of an allowed directory
+-            if deny_path.starts_with(&cap.resolved) && *deny_path != cap.resolved {
++            // Check if deny path is equal to or a child of an allowed directory
++            if deny_path.starts_with(&cap.resolved) {
+                 let conflict = format!(
+                     "deny '{}' overlaps allowed parent '{}' (source: {})",
+                     deny_path.display(),

@@ -1,0 +1,17 @@
+diff --git a/crates/nono-cli/src/package_status.rs b/crates/nono-cli/src/package_status.rs
+index 964e09e..24e87e4 100644
+--- a/crates/nono-cli/src/package_status.rs
++++ b/crates/nono-cli/src/package_status.rs
+@@ -61,11 +61,7 @@ fn enforce_official_pack_status(target: OfficialPackStatusTarget, silent: bool)
+     };
+ 
+     let package_ref = target.package_ref();
+-    let registry_url = if lockfile.registry.trim().is_empty() {
+-        resolve_registry_url(None)
+-    } else {
+-        resolve_registry_url(Some(lockfile.registry.as_str()))
+-    };
++    let registry_url = resolve_registry_url(None);
+     let client = RegistryClient::new(registry_url);
+     let status = match client.fetch_package_status(&package_ref, Some(locked.version.as_str())) {
+         Ok(status) => status,

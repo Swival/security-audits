@@ -1,0 +1,35 @@
+diff --git a/crates/nono-proxy/src/config.rs b/crates/nono-proxy/src/config.rs
+index 9f5f62d..e04e256 100644
+--- a/crates/nono-proxy/src/config.rs
++++ b/crates/nono-proxy/src/config.rs
+@@ -3,7 +3,7 @@
+ //! Defines the configuration for the proxy server, including allowed hosts,
+ //! credential routes, and external proxy settings.
+ 
+-use globset::Glob;
++use globset::GlobBuilder;
+ use serde::{Deserialize, Serialize};
+ use std::net::IpAddr;
+ use std::path::PathBuf;
+@@ -284,7 +284,9 @@ impl CompiledEndpointRules {
+     pub fn compile(rules: &[EndpointRule]) -> Result<Self, String> {
+         let mut compiled = Vec::with_capacity(rules.len());
+         for rule in rules {
+-            let glob = Glob::new(&rule.path)
++            let glob = GlobBuilder::new(&rule.path)
++                .literal_separator(true)
++                .build()
+                 .map_err(|e| format!("invalid endpoint path pattern '{}': {}", rule.path, e))?;
+             compiled.push(CompiledRule {
+                 method: rule.method.clone(),
+@@ -335,7 +337,9 @@ fn endpoint_allowed(rules: &[EndpointRule], method: &str, path: &str) -> bool {
+     let normalized = normalize_path(path);
+     rules.iter().any(|r| {
+         (r.method == "*" || r.method.eq_ignore_ascii_case(method))
+-            && Glob::new(&r.path)
++            && GlobBuilder::new(&r.path)
++                .literal_separator(true)
++                .build()
+                 .ok()
+                 .map(|g| g.compile_matcher())
+                 .is_some_and(|m| m.is_match(&normalized))

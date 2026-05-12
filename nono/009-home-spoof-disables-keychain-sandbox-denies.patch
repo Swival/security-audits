@@ -1,0 +1,40 @@
+diff --git a/crates/nono/src/sandbox/macos.rs b/crates/nono/src/sandbox/macos.rs
+index 47273ad..a0006db 100644
+--- a/crates/nono/src/sandbox/macos.rs
++++ b/crates/nono/src/sandbox/macos.rs
+@@ -8,8 +8,9 @@
+ use crate::capability::{AccessMode, CapabilitySet, NetworkMode};
+ use crate::error::{NonoError, Result};
+ use crate::sandbox::SupportInfo;
+-use std::ffi::{CStr, CString};
++use std::ffi::{CStr, CString, OsStr};
+ use std::os::raw::c_char;
++use std::os::unix::ffi::OsStrExt;
+ use std::path::Path;
+ use std::ptr;
+ use tracing::{debug, info};
+@@ -251,12 +252,18 @@ fn path_filters_for_cap(cap: &crate::capability::FsCapability) -> Result<Vec<Str
+ ///
+ /// This is a narrow opt-in for tools that need OAuth/session refresh via macOS Keychain.
+ fn has_explicit_keychain_db_access(caps: &CapabilitySet) -> bool {
+-    let user_keychain_dbs = std::env::var("HOME").ok().map(|home| {
+-        [
+-            Path::new(&home).join("Library/Keychains/login.keychain-db"),
+-            Path::new(&home).join("Library/Keychains/metadata.keychain-db"),
+-        ]
+-    });
++    let user_keychain_dbs = unsafe {
++        let passwd = libc::getpwuid(libc::getuid());
++        if passwd.is_null() || (*passwd).pw_dir.is_null() {
++            None
++        } else {
++            let home = OsStr::from_bytes(CStr::from_ptr((*passwd).pw_dir).to_bytes());
++            Some([
++                Path::new(home).join("Library/Keychains/login.keychain-db"),
++                Path::new(home).join("Library/Keychains/metadata.keychain-db"),
++            ])
++        }
++    };
+     let system_keychain_dbs = [
+         Path::new("/Library/Keychains/login.keychain-db").to_path_buf(),
+         Path::new("/Library/Keychains/metadata.keychain-db").to_path_buf(),

@@ -1,0 +1,25 @@
+diff --git a/crates/nono/src/sandbox/linux.rs b/crates/nono/src/sandbox/linux.rs
+index 6bc5275..2b26831 100644
+--- a/crates/nono/src/sandbox/linux.rs
++++ b/crates/nono/src/sandbox/linux.rs
+@@ -484,7 +484,7 @@ pub fn apply_with_abi(caps: &CapabilitySet, abi: &DetectedAbi) -> Result<Seccomp
+                 SeccompNetFallback::None => {
+                     return Err(NonoError::SandboxInit(
+                         "Network filtering requested but kernel Landlock ABI doesn't support it \
+-                         (requires V4+). On this kernel, only full --block-net or --proxy-only \
++                         (requires V4+). On this kernel, only full --block-net \
+                          fallback via seccomp is supported."
+                             .to_string(),
+                     ));
+@@ -1637,10 +1637,7 @@ pub fn seccomp_network_fallback_mode(caps: &CapabilitySet) -> SeccompNetFallback
+                 SeccompNetFallback::None
+             }
+         }
+-        NetworkMode::ProxyOnly { port, bind_ports } => SeccompNetFallback::ProxyOnly {
+-            proxy_port: *port,
+-            bind_ports: bind_ports.clone(),
+-        },
++        NetworkMode::ProxyOnly { .. } => SeccompNetFallback::None,
+         NetworkMode::AllowAll => SeccompNetFallback::None,
+     }
+ }

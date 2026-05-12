@@ -1,0 +1,62 @@
+diff --git a/crates/nono-cli/src/exec_strategy/supervisor_linux.rs b/crates/nono-cli/src/exec_strategy/supervisor_linux.rs
+index cf1786c..43fd28e 100644
+--- a/crates/nono-cli/src/exec_strategy/supervisor_linux.rs
++++ b/crates/nono-cli/src/exec_strategy/supervisor_linux.rs
+@@ -534,12 +534,13 @@ pub(super) fn handle_seccomp_notification(
+ /// Decision produced by [`decide_network_notification`].
+ ///
+ /// Split out as an explicit type so the (testable) policy logic is decoupled
+-/// from the (untestable) seccomp-notify response plumbing. Callers translate
+-/// `Allow` to `continue_notif(…)` and `Deny` to `respond_notif_errno(…, EACCES)`.
++/// from the (untestable) seccomp-notify response plumbing. Until network
++/// syscalls can be mediated without re-reading child memory, callers fail
++/// closed even for `Allow` decisions.
+ #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ pub(super) enum NetworkDecision {
+-    /// Let the kernel proceed with the already-copied sockaddr
+-    /// (`SECCOMP_USER_NOTIF_FLAG_CONTINUE`).
++    /// Policy would allow this sockaddr, but response handling may still
++    /// fail closed if it cannot safely mediate the syscall.
+     Allow,
+     /// Fail the syscall with `EACCES`.
+     Deny,
+@@ -656,16 +657,15 @@ pub(super) fn decide_network_notification(
+ /// the sockaddr from the child's memory and delegates the allow/deny
+ /// decision to [`decide_network_notification`].
+ ///
+-/// Uses SECCOMP_USER_NOTIF_FLAG_CONTINUE on approval (safe for connect/bind
+-/// because the kernel has already copied sockaddr into kernel memory).
++/// Fails closed even on policy approval because continuing would let the
++/// original syscall re-read the child-controlled sockaddr pointer.
+ pub(super) fn handle_network_notification(
+     notify_fd: std::os::fd::RawFd,
+     config: &SupervisorConfig<'_>,
+     rate_limiter: &mut RateLimiter,
+ ) -> nono::error::Result<()> {
+     use nono::sandbox::{
+-        continue_notif, deny_notif, notif_id_valid, read_notif_sockaddr, recv_notif,
+-        respond_notif_errno,
++        deny_notif, notif_id_valid, read_notif_sockaddr, recv_notif, respond_notif_errno,
+     };
+ 
+     let notif = recv_notif(notify_fd)?;
+@@ -695,14 +695,11 @@ pub(super) fn handle_network_notification(
+ 
+     match decide_network_notification(notif.data.nr, &sockaddr, config) {
+         NetworkDecision::Allow => {
+-            // SECCOMP_USER_NOTIF_FLAG_CONTINUE: let the kernel proceed with its
+-            // already-copied sockaddr. Safe for connect/bind (move_addr_to_kernel).
+-            if let Err(e) = continue_notif(notify_fd, notif.id) {
+-                debug!("continue_notif failed for network notification: {}", e);
+-                // Must respond to avoid leaving the child blocked. Propagate if
+-                // deny also fails — the notification is orphaned.
+-                return deny_notif(notify_fd, notif.id);
+-            }
++            debug!(
++                "Denying otherwise-allowed network notification: continuing connect/bind \
++                 would re-read child-controlled sockaddr"
++            );
++            respond_notif_errno(notify_fd, notif.id, libc::EACCES)?;
+         }
+         NetworkDecision::Deny => {
+             respond_notif_errno(notify_fd, notif.id, libc::EACCES)?;

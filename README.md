@@ -31,6 +31,7 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | [libressl/crypto](libressl/crypto/)                           |       37 | LibreSSL libcrypto, the cryptography library   |
 | [libressl/ssl](libressl/ssl/)                                 |        3 | LibreSSL libssl, the TLS/SSL protocol library  |
 | [nginx](nginx/)                                               |       12 | High-performance HTTP server and reverse proxy |
+| [nono](nono/)                                                 |       38 | Sandbox and supervisor for untrusted code and AI-agent workflows |
 | [openbsd-bin](openbsd-bin/)                                   |      334 | OpenBSD userland programs and libraries        |
 | [openbsd-kernel](openbsd-kernel/)                             |       37 | OpenBSD kernel                                 |
 | [openbsd-libc](openbsd-libc/)                                 |       21 | OpenBSD C standard library                     |

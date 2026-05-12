@@ -1,0 +1,50 @@
+diff --git a/crates/nono/src/trust/bundle.rs b/crates/nono/src/trust/bundle.rs
+index 47d7257..863d7b1 100644
+--- a/crates/nono/src/trust/bundle.rs
++++ b/crates/nono/src/trust/bundle.rs
+@@ -257,11 +257,9 @@ pub fn verify_keyed_signature(
+     let contents = DsseContents::from_bundle(bundle, artifact_path)?;
+     let sig_b64 = contents.signature_b64(artifact_path)?;
+ 
+-    // Compute PAE over the payload
+-    let pae_bytes = sigstore_verify::types::dsse::pae(
+-        crate::trust::dsse::IN_TOTO_PAYLOAD_TYPE,
+-        &contents.payload_bytes,
+-    );
++    // Compute PAE over the envelope payload type and payload
++    let pae_bytes =
++        sigstore_verify::types::dsse::pae(&contents.payload_type, &contents.payload_bytes);
+ 
+     // Decode signature
+     let sig_bytes =
+@@ -297,6 +295,8 @@ pub fn verify_keyed_signature(
+ struct DsseContents {
+     /// The raw bundle JSON as a `serde_json::Value` (for signature extraction)
+     bundle_value: serde_json::Value,
++    /// DSSE envelope payload type
++    payload_type: String,
+     /// Decoded DSSE payload bytes
+     payload_bytes: Vec<u8>,
+     /// The in-toto statement parsed from the DSSE payload
+@@ -316,6 +316,13 @@ impl DsseContents {
+                 reason: format!("invalid bundle JSON: {e}"),
+             })?;
+ 
++        let payload_type = bundle_value["dsseEnvelope"]["payloadType"]
++            .as_str()
++            .ok_or_else(|| NonoError::TrustVerification {
++                path: context_path.display().to_string(),
++                reason: "missing DSSE payloadType".to_string(),
++            })?;
++
+         let payload_b64 = bundle_value["dsseEnvelope"]["payload"]
+             .as_str()
+             .ok_or_else(|| NonoError::TrustVerification {
+@@ -344,6 +351,7 @@ impl DsseContents {
+ 
+         Ok(Self {
+             bundle_value,
++            payload_type: payload_type.to_string(),
+             payload_bytes: payload_decoded.as_bytes().to_vec(),
+             statement,
+         })

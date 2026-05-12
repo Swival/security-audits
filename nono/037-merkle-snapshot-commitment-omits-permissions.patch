@@ -1,0 +1,89 @@
+diff --git a/crates/nono/src/undo/merkle.rs b/crates/nono/src/undo/merkle.rs
+index 29514f3..93bf9ab 100644
+--- a/crates/nono/src/undo/merkle.rs
++++ b/crates/nono/src/undo/merkle.rs
+@@ -2,7 +2,7 @@
+ //!
+ //! Computes a Merkle root that cryptographically commits to the entire
+ //! filesystem state captured by a snapshot. The root is a single 32-byte
+-//! value - any change to any file path or content changes the root.
++//! value - any change to any file path, content, or permissions changes the root.
+ //!
+ //! This root is the value that will be signed by a hardware key to provide
+ //! tamper-evident proof of what an AI agent did or didn't modify.
+@@ -24,8 +24,8 @@ const INTERNAL_PREFIX: u8 = 0x01;
+ 
+ /// A Merkle tree computed over snapshot file hashes.
+ ///
+-/// Leaves are `SHA-256(0x00 || canonical_path_bytes || file_content_hash)` to bind
+-/// path identity to content with domain separation. Internal nodes are
++/// Leaves are `SHA-256(0x00 || canonical_path_bytes || file_content_hash || permissions)` to bind
++/// path identity to content and permissions with domain separation. Internal nodes are
+ /// `SHA-256(0x01 || left_child_hash || right_child_hash)`.
+ ///
+ /// File paths are sorted lexicographically to ensure deterministic tree
+@@ -54,12 +54,12 @@ impl MerkleTree {
+         let mut sorted_paths: Vec<&PathBuf> = files.keys().collect();
+         sorted_paths.sort();
+ 
+-        // Compute leaf hashes: SHA-256(path_bytes || content_hash)
++        // Compute leaf hashes: SHA-256(path_bytes || content_hash || permissions)
+         let mut level: Vec<[u8; 32]> = sorted_paths
+             .iter()
+             .map(|path| {
+                 let file_state = &files[*path];
+-                compute_leaf_hash(path, &file_state.hash)
++                compute_leaf_hash(path, &file_state.hash, file_state.permissions)
+             })
+             .collect();
+ 
+@@ -106,16 +106,17 @@ impl MerkleTree {
+     }
+ }
+ 
+-/// Compute a leaf hash: SHA-256(0x00 || path_bytes || content_hash)
++/// Compute a leaf hash: SHA-256(0x00 || path_bytes || content_hash || permissions)
+ ///
+ /// The 0x00 prefix provides domain separation per RFC 6962,
+ /// preventing second-preimage attacks where leaf and internal
+ /// node hashes could be confused.
+-fn compute_leaf_hash(path: &Path, content_hash: &ContentHash) -> [u8; 32] {
++fn compute_leaf_hash(path: &Path, content_hash: &ContentHash, permissions: u32) -> [u8; 32] {
+     let mut hasher = Sha256::new();
+     hasher.update([LEAF_PREFIX]);
+     hasher.update(path_bytes(path));
+     hasher.update(content_hash.as_bytes());
++    hasher.update(permissions.to_be_bytes());
+     hasher.finalize().into()
+ }
+ 
+@@ -176,6 +177,7 @@ mod tests {
+         let expected_leaf = compute_leaf_hash(
+             Path::new("/a/file.txt"),
+             &ContentHash::from_bytes([0x01; 32]),
++            0o644,
+         );
+         assert_eq!(*tree.root().as_bytes(), expected_leaf);
+     }
+@@ -208,6 +210,21 @@ mod tests {
+         assert_ne!(tree1.root(), tree2.root());
+     }
+ 
++    #[test]
++    fn root_changes_when_file_permissions_change() {
++        let mut files1 = HashMap::new();
++        files1.insert(PathBuf::from("/a.txt"), make_file_state(0x01));
++
++        let mut files2 = HashMap::new();
++        let mut file_state = make_file_state(0x01);
++        file_state.permissions = 0o755;
++        files2.insert(PathBuf::from("/a.txt"), file_state);
++
++        let tree1 = MerkleTree::from_manifest(&files1).expect("tree1");
++        let tree2 = MerkleTree::from_manifest(&files2).expect("tree2");
++        assert_ne!(tree1.root(), tree2.root());
++    }
++
+     #[test]
+     fn deterministic_regardless_of_insertion_order() {
+         let mut files1 = HashMap::new();

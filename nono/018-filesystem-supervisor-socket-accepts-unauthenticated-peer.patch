@@ -1,0 +1,123 @@
+diff --git a/crates/nono/src/supervisor/socket.rs b/crates/nono/src/supervisor/socket.rs
+index 69cfe36..09f98e4 100644
+--- a/crates/nono/src/supervisor/socket.rs
++++ b/crates/nono/src/supervisor/socket.rs
+@@ -92,6 +92,7 @@ impl SupervisorSocket {
+         let (stream, _addr) = listener.accept().map_err(|e| {
+             NonoError::SandboxInit(format!("Failed to accept supervisor connection: {e}"))
+         })?;
++        authenticate_supervisor_peer(stream.as_raw_fd())?;
+ 
+         Ok(SupervisorSocket {
+             stream,
+@@ -456,6 +457,110 @@ pub fn peer_credentials(sock_fd: RawFd) -> Result<PeerCredentials> {
+     }
+ }
+ 
++fn authenticate_supervisor_peer(sock_fd: RawFd) -> Result<()> {
++    let peer = peer_credentials(sock_fd)?;
++    let current_uid = unsafe { libc::geteuid() } as u32;
++    let current_pid = std::process::id();
++    let peer_parent = peer_parent_pid(peer.pid)?;
++
++    if peer.uid != current_uid {
++        Err(NonoError::SandboxInit(format!(
++            "supervisor peer uid {} does not match current uid {}",
++            peer.uid, current_uid
++        )))
++    } else if peer_parent != current_pid {
++        Err(NonoError::SandboxInit(format!(
++            "supervisor peer pid {} is not a child of current pid {}",
++            peer.pid, current_pid
++        )))
++    } else if !peer_in_same_user_namespace(peer.pid)? {
++        Err(NonoError::SandboxInit(format!(
++            "supervisor peer pid {} is not in the current user namespace",
++            peer.pid
++        )))
++    } else {
++        Ok(())
++    }
++}
++
++#[cfg(target_os = "linux")]
++fn peer_parent_pid(peer_pid: u32) -> Result<u32> {
++    let status = std::fs::read_to_string(format!("/proc/{peer_pid}/status")).map_err(|e| {
++        NonoError::SandboxInit(format!("Failed to read status for peer pid {peer_pid}: {e}"))
++    })?;
++    let ppid = status
++        .lines()
++        .find_map(|line| line.strip_prefix("PPid:\t"))
++        .ok_or_else(|| {
++            NonoError::SandboxInit(format!("Missing parent pid for peer pid {peer_pid}"))
++        })?;
++    ppid.parse::<u32>().map_err(|e| {
++        NonoError::SandboxInit(format!(
++            "Failed to parse parent pid for peer pid {peer_pid}: {e}"
++        ))
++    })
++}
++
++#[cfg(target_os = "macos")]
++fn peer_parent_pid(peer_pid: u32) -> Result<u32> {
++    const PROC_PIDTBSDINFO: libc::c_int = 3;
++    const PROC_BSD_INFO_SIZE: usize = 136;
++
++    #[repr(C)]
++    struct ProcBsdInfo {
++        pbi_flags: u32,
++        pbi_status: u32,
++        pbi_xstatus: u32,
++        pbi_pid: u32,
++        pbi_ppid: u32,
++        pbi_uid: u32,
++        pbi_gid: u32,
++        pbi_ruid: u32,
++        pbi_rgid: u32,
++        pbi_svuid: u32,
++        pbi_svgid: u32,
++        _reserved: u32,
++        pbi_comm: [u8; 16],
++        pbi_name: [u8; 32],
++        pbi_nfiles: u32,
++        pbi_pgid: u32,
++        pbi_pjobc: u32,
++        e_tdev: u32,
++        e_tpgid: u32,
++        pbi_nice: i32,
++        pbi_start_tvsec: u64,
++        pbi_start_tvusec: u64,
++    }
++
++    const _: [(); PROC_BSD_INFO_SIZE] = [(); std::mem::size_of::<ProcBsdInfo>()];
++
++    let mut info: ProcBsdInfo = unsafe { std::mem::zeroed() };
++    let ret = unsafe {
++        libc::proc_pidinfo(
++            peer_pid as libc::c_int,
++            PROC_PIDTBSDINFO,
++            0,
++            &mut info as *mut ProcBsdInfo as *mut libc::c_void,
++            PROC_BSD_INFO_SIZE as libc::c_int,
++        )
++    };
++    if ret != PROC_BSD_INFO_SIZE as libc::c_int {
++        return Err(NonoError::SandboxInit(format!(
++            "Failed to read parent pid for peer pid {}: {}",
++            peer_pid,
++            std::io::Error::last_os_error()
++        )));
++    }
++    Ok(info.pbi_ppid)
++}
++
++#[cfg(not(any(target_os = "linux", target_os = "macos")))]
++fn peer_parent_pid(_peer_pid: u32) -> Result<u32> {
++    Err(NonoError::UnsupportedPlatform(
++        "Peer parent lookup not supported on this platform".to_string(),
++    ))
++}
++
+ #[doc(hidden)]
+ #[cfg(target_os = "linux")]
+ pub fn peer_in_same_user_namespace(peer_pid: u32) -> Result<bool> {

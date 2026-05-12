@@ -1,0 +1,71 @@
+diff --git a/crates/nono-cli/src/session_commands.rs b/crates/nono-cli/src/session_commands.rs
+index a428d10..992a051 100644
+--- a/crates/nono-cli/src/session_commands.rs
++++ b/crates/nono-cli/src/session_commands.rs
+@@ -20,7 +20,7 @@ use tracing::debug;
+ /// inside a sandbox — a sandboxed agent could use them to kill other
+ /// supervisors or tamper with session state.
+ fn reject_if_sandboxed(command: &str) -> Result<()> {
+-    if std::env::var_os("NONO_CAP_FILE").is_some() {
++    if current_process_is_sandboxed()? {
+         return Err(NonoError::ConfigParse(format!(
+             "`nono {}` cannot be used inside a sandbox.",
+             command
+@@ -29,6 +29,57 @@ fn reject_if_sandboxed(command: &str) -> Result<()> {
+     Ok(())
+ }
+ 
++#[cfg(target_os = "linux")]
++fn current_process_is_sandboxed() -> Result<bool> {
++    // PR_SET_NO_NEW_PRIVS is one-way process state set by Landlock/seccomp.
++    let ret = unsafe { libc::prctl(libc::PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) };
++    if ret < 0 {
++        return Err(NonoError::ConfigParse(format!(
++            "Failed to query sandbox state: {}",
++            std::io::Error::last_os_error()
++        )));
++    }
++    Ok(ret != 0)
++}
++
++#[cfg(target_os = "macos")]
++fn current_process_is_sandboxed() -> Result<bool> {
++    use std::ffi::CString;
++    use std::os::unix::ffi::OsStrExt;
++
++    const SANDBOX_FILTER_PATH: libc::c_int = 1;
++
++    extern "C" {
++        fn sandbox_check(
++            pid: libc::pid_t,
++            operation: *const libc::c_char,
++            filter_type: libc::c_int,
++            ...,
++        ) -> libc::c_int;
++    }
++
++    let operation = CString::new("file-write-create").expect("static string contains no nul");
++    let state_dir = session::sessions_dir()?;
++    let path = CString::new(state_dir.as_os_str().as_bytes()).map_err(|_| {
++        NonoError::ConfigParse("Failed to query sandbox state: path contains nul byte".to_string())
++    })?;
++
++    let ret = unsafe {
++        sandbox_check(
++            libc::getpid(),
++            operation.as_ptr(),
++            SANDBOX_FILTER_PATH,
++            path.as_ptr(),
++        )
++    };
++    Ok(ret != 0)
++}
++
++#[cfg(not(any(target_os = "linux", target_os = "macos")))]
++fn current_process_is_sandboxed() -> Result<bool> {
++    Ok(false)
++}
++
+ /// Dispatch `nono ps`.
+ pub fn run_ps(args: &PsArgs) -> Result<()> {
+     let sessions = session::list_sessions()?;

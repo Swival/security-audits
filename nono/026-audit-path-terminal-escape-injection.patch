@@ -1,0 +1,17 @@
+diff --git a/crates/nono-cli/src/audit_commands.rs b/crates/nono-cli/src/audit_commands.rs
+index 8338836..190b69a 100644
+--- a/crates/nono-cli/src/audit_commands.rs
++++ b/crates/nono-cli/src/audit_commands.rs
+@@ -330,7 +330,11 @@ fn cmd_show(args: AuditShowArgs) -> Result<()> {
+ 
+             for change in &changes {
+                 let symbol = change_symbol(&change.change_type);
+-                eprintln!("        {} {}", symbol, change.path.display());
++                eprintln!(
++                    "        {} {}",
++                    symbol,
++                    sanitize_for_terminal(&change.path.display().to_string())
++                );
+             }
+         }
+     }

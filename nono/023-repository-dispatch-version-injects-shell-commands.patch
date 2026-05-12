@@ -1,0 +1,36 @@
+diff --git a/scripts/downstream-workflows/bump-nono-ts.yml b/scripts/downstream-workflows/bump-nono-ts.yml
+index e0c183f..976a403 100644
+--- a/scripts/downstream-workflows/bump-nono-ts.yml
++++ b/scripts/downstream-workflows/bump-nono-ts.yml
+@@ -26,6 +26,10 @@ jobs:
+       - name: Strip v prefix
+         id: version
+         run: |
++          if ! [[ "$NONO_VERSION" =~ ^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*))?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
++            echo "Invalid nono version: $NONO_VERSION" >&2
++            exit 1
++          fi
+           VERSION="${NONO_VERSION#v}"
+           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+           echo "branch=bump-nono-${VERSION}" >> "$GITHUB_OUTPUT"
+@@ -34,8 +38,9 @@ jobs:
+         id: check
+         env:
+           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++          VERSION: ${{ steps.version.outputs.version }}
+         run: |
+-          EXISTING=$(gh pr list --search "bump nono to ${{ steps.version.outputs.version }}" --state open --json number --jq '.[0].number')
++          EXISTING=$(gh pr list --search "bump nono to $VERSION" --state open --json number --jq '.[0].number')
+           if [ -n "$EXISTING" ]; then
+             echo "PR #$EXISTING already exists, skipping"
+             echo "skip=true" >> "$GITHUB_OUTPUT"
+@@ -45,8 +50,9 @@ jobs:
+ 
+       - name: Update Cargo.toml
+         if: steps.check.outputs.skip != 'true'
++        env:
++          VERSION: ${{ steps.version.outputs.version }}
+         run: |
+-          VERSION="${{ steps.version.outputs.version }}"
+           # Update nono crate dependency
+           sed -i "s/^nono[[:space:]]*=[[:space:]]*\"[^\"]*\"/nono = \"${VERSION}\"/" Cargo.toml

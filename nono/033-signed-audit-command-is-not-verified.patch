@@ -1,0 +1,31 @@
+diff --git a/crates/nono-cli/src/audit_attestation.rs b/crates/nono-cli/src/audit_attestation.rs
+index d109f61..5c280b7 100644
+--- a/crates/nono-cli/src/audit_attestation.rs
++++ b/crates/nono-cli/src/audit_attestation.rs
+@@ -335,6 +335,25 @@ pub(crate) fn verify_audit_attestation(
+             ),
+         ));
+     }
++    let Some(statement_command) = statement
++        .predicate
++        .get("command")
++        .and_then(|value| serde_json::from_value::<Vec<String>>(value.clone()).ok())
++    else {
++        return Ok(attestation_failure(
++            summary,
++            expected_public_key_file.map(|_| true),
++            "audit attestation predicate missing command".to_string(),
++        ));
++    };
++    let scrubbed_metadata_command =
++        nono::scrub_argv_with_policy(&metadata.command, &nono::ScrubPolicy::secure_default());
++    if statement_command != scrubbed_metadata_command {
++        return Ok(attestation_failure(
++            summary,
++            expected_public_key_file.map(|_| true),
++            "audit attestation command does not match session metadata".to_string(),
++        ));
++    }
+
+     Ok(AuditAttestationVerificationResult {
+         present: true,

@@ -1,0 +1,58 @@
+diff --git a/crates/nono-cli/src/instruction_deny.rs b/crates/nono-cli/src/instruction_deny.rs
+index 2900422..df7cd1d 100644
+--- a/crates/nono-cli/src/instruction_deny.rs
++++ b/crates/nono-cli/src/instruction_deny.rs
+@@ -1,7 +1,7 @@
+ //! Write-protection rules for verified files (macOS Seatbelt)
+ //!
+ //! After the pre-exec trust scan verifies files, this module injects
+-//! literal `(deny file-write-data ...)` rules into the Seatbelt profile
++//! literal `(deny file-write* ...)` rules into the Seatbelt profile
+ //! for each verified file. This makes verified files structurally immutable
+ //! at the kernel level — the agent cannot tamper with them even though the
+ //! parent directory has write access granted.
+@@ -27,7 +27,7 @@ use std::path::Path;
+ /// Write-protect verified files in the Seatbelt profile.
+ ///
+ /// For each verified file path, adds a
+-/// `(deny file-write-data (literal ...))` rule to prevent modification.
++/// `(deny file-write* (literal ...))` rule to prevent modification.
+ ///
+ /// On macOS, handles symlinks by emitting rules for both the original
+ /// path and the canonical path when they differ (e.g., `/tmp/` vs
+@@ -59,7 +59,7 @@ pub fn write_protect_verified_files(
+     Ok(())
+ }
+ 
+-/// Add a `(deny file-write-data (literal ...))` rule for a verified file.
++/// Add a `(deny file-write* (literal ...))` rule for a verified file.
+ ///
+ /// This prevents modification of signed files even when the parent
+ /// directory has write access granted. The deny rule takes precedence over
+@@ -72,7 +72,7 @@ fn add_literal_write_deny(caps: &mut CapabilitySet, path: &Path) -> Result<()> {
+     let path_str = path.display().to_string();
+     validate_seatbelt_path(&path_str)?;
+ 
+-    let deny_rule = format!("(deny file-write-data (literal \"{path_str}\"))");
++    let deny_rule = format!("(deny file-write* (literal \"{path_str}\"))");
+     caps.add_platform_rule(deny_rule)?;
+ 
+     // Handle macOS symlinks: emit rule for canonical path too
+@@ -80,7 +80,7 @@ fn add_literal_write_deny(caps: &mut CapabilitySet, path: &Path) -> Result<()> {
+         if canonical != path {
+             let canonical_str = canonical.display().to_string();
+             validate_seatbelt_path(&canonical_str)?;
+-            let canonical_rule = format!("(deny file-write-data (literal \"{canonical_str}\"))");
++            let canonical_rule = format!("(deny file-write* (literal \"{canonical_str}\"))");
+             caps.add_platform_rule(canonical_rule)?;
+         }
+     }
+@@ -131,7 +131,7 @@ mod tests {
+         assert!(
+             rules
+                 .iter()
+-                .any(|r| r.contains("deny file-write-data")
++                .any(|r| r.contains("deny file-write*")
+                     && r.contains(&file.display().to_string()))
+         );
+         // Should NOT have any read-deny rules

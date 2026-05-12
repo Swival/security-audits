@@ -1,0 +1,18 @@
+diff --git a/crates/nono-proxy/src/connect.rs b/crates/nono-proxy/src/connect.rs
+index 02bdbdd..1e3494f 100644
+--- a/crates/nono-proxy/src/connect.rs
++++ b/crates/nono-proxy/src/connect.rs
+@@ -41,10 +41,10 @@ pub async fn handle_connect(
+     debug!("CONNECT request to {}:{}", host, port);
+ 
+     // Validate session token from Proxy-Authorization header.
+-    // Non-fatal for CONNECT: Node.js undici doesn't send Proxy-Authorization
+-    // from URL userinfo for CONNECT requests.
+     if let Err(e) = validate_proxy_auth(remaining_header, session_token) {
+-        debug!("CONNECT auth skipped: {}", e);
++        debug!("CONNECT auth failed: {}", e);
++        send_response(stream, 407, "Proxy Authentication Required").await?;
++        return Err(e);
+     }
+ 
+     // Check host against filter (DNS resolution happens here)

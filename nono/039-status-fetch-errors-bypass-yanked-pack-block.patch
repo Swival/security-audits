@@ -1,0 +1,15 @@
+diff --git a/crates/nono-cli/src/package_status.rs b/crates/nono-cli/src/package_status.rs
+index 964e09e..3c964df 100644
+--- a/crates/nono-cli/src/package_status.rs
++++ b/crates/nono-cli/src/package_status.rs
+@@ -74,7 +74,10 @@ fn enforce_official_pack_status(target: OfficialPackStatusTarget, silent: bool)
+                 "could not check official pack status for {key}@{}: {error}",
+                 locked.version
+             );
+-            return Ok(());
++            return Err(NonoError::ActionRequired(format!(
++                "could not verify official pack {key}@{} status: {error}",
++                locked.version
++            )));
+         }
+     };

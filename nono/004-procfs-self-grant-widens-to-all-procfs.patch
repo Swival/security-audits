@@ -1,0 +1,22 @@
+diff --git a/crates/nono/src/capability.rs b/crates/nono/src/capability.rs
+index 43bcc54..dc6134a 100644
+--- a/crates/nono/src/capability.rs
++++ b/crates/nono/src/capability.rs
+@@ -1205,18 +1205,6 @@ impl CapabilitySet {
+     /// Only applies to READ capabilities at the `/proc/self` level (not
+     /// subdirectories like `/proc/self/fd` which may have write access).
+     pub fn widen_procfs_self_to_proc(&mut self) {
+-        for cap in &mut self.fs {
+-            if cap.access == AccessMode::Read {
+-                let is_proc_self_dir = cap
+-                    .original
+-                    .to_str()
+-                    .map(|s| s == "/proc/self" || s == "/proc/self/")
+-                    .unwrap_or(false);
+-                if is_proc_self_dir {
+-                    cap.resolved = std::path::PathBuf::from("/proc");
+-                }
+-            }
+-        }
+         self.deduplicate();
+     }

@@ -1,0 +1,47 @@
+diff --git a/crates/nono-proxy/src/forward.rs b/crates/nono-proxy/src/forward.rs
+index 704d256..2a133df 100644
+--- a/crates/nono-proxy/src/forward.rs
++++ b/crates/nono-proxy/src/forward.rs
+@@ -231,9 +231,9 @@ where
+
+ /// Stream the upstream response back to the inbound sink.
+ ///
+-/// Returns the HTTP status code parsed from the first chunk. Streams
+-/// chunked / SSE / HTTP-streaming bodies transparently because we never
+-/// buffer the body — each upstream read is mirrored to the inbound write.
++/// Returns the HTTP status code parsed from the status line. Streams
++/// chunked / SSE / HTTP-streaming bodies transparently because we only
++/// buffer the status line — each upstream read is mirrored to the inbound write.
+ async fn stream_response<U, I>(upstream: &mut U, inbound: &mut I) -> Result<u16>
+ where
+     U: AsyncRead + AsyncWrite + Unpin,
+@@ -241,7 +241,9 @@ where
+ {
+     let mut buf = [0u8; 8192];
+     let mut status_code: u16 = 502;
+-    let mut first_chunk = true;
++    const STATUS_LINE_MAX: usize = 512;
++    let mut status_line: Vec<u8> = Vec::new();
++    let mut status_parsed = false;
+
+     loop {
+         let n = match upstream.read(&mut buf).await {
+@@ -253,9 +255,15 @@ where
+             }
+         };
+
+-        if first_chunk {
+-            status_code = parse_response_status(&buf[..n]);
+-            first_chunk = false;
++        if !status_parsed {
++            let take = (STATUS_LINE_MAX - status_line.len()).min(n);
++            status_line.extend_from_slice(&buf[..take]);
++            if status_line.iter().any(|&b| b == b'\r' || b == b'\n')
++                || status_line.len() >= STATUS_LINE_MAX
++            {
++                status_code = parse_response_status(&status_line);
++                status_parsed = true;
++            }
+         }
+
+         inbound.write_all(&buf[..n]).await?;

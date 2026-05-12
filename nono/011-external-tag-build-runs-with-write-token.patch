@@ -1,0 +1,24 @@
+diff --git a/scripts/downstream-workflows/bump-nono-go.yml b/scripts/downstream-workflows/bump-nono-go.yml
+index 9d9b9d6..b324120 100644
+--- a/scripts/downstream-workflows/bump-nono-go.yml
++++ b/scripts/downstream-workflows/bump-nono-go.yml
+@@ -11,8 +11,7 @@ on:
+         type: string
+ 
+ permissions:
+-  contents: write
+-  pull-requests: write
++  contents: read
+ 
+ jobs:
+   rebuild-libs:
+@@ -78,6 +77,9 @@ jobs:
+   create-pr:
+     name: Create bump PR
+     needs: rebuild-libs
++    permissions:
++      contents: write
++      pull-requests: write
+     runs-on: ubuntu-latest
+     env:
+       NONO_VERSION: ${{ github.event.client_payload.nono_version || github.event.inputs.nono_version }}

@@ -1,0 +1,18 @@
+diff --git a/crates/nono-cli/src/exec_strategy.rs b/crates/nono-cli/src/exec_strategy.rs
+index 64ca700..05eb7a8 100644
+--- a/crates/nono-cli/src/exec_strategy.rs
++++ b/crates/nono-cli/src/exec_strategy.rs
+@@ -2979,6 +2979,13 @@ fn validate_procfs_access(
+     let allowed_pid = procfs_context.map(|ctx| ctx.process_pid.to_string());
+     let components: Vec<&str> = suffix.split('/').collect();
+ 
++    if components.iter().any(|component| *component == "..") {
++        return Err(OpenPathError::policy_blocked(format!(
++            "Access to {} is blocked by policy",
++            resolved_path.display(),
++        )));
++    }
++
+     if components.is_empty() || !components[0].chars().all(|c| c.is_ascii_digit()) {
+         return Ok(());
+     }

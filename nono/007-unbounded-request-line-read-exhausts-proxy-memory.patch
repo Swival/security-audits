@@ -1,0 +1,31 @@
+diff --git a/crates/nono-proxy/src/server.rs b/crates/nono-proxy/src/server.rs
+index 59da845..c507278 100644
+--- a/crates/nono-proxy/src/server.rs
++++ b/crates/nono-proxy/src/server.rs
+@@ -22,7 +22,7 @@ use std::net::SocketAddr;
+ use std::path::PathBuf;
+ use std::sync::atomic::{AtomicUsize, Ordering};
+ use std::sync::Arc;
+-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
++use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
+ use tokio::net::TcpListener;
+ use tokio::sync::watch;
+ use tracing::{debug, info, warn};
+@@ -615,7 +615,16 @@ async fn handle_connection(mut stream: tokio::net::TcpStream, state: &ProxyState
+     // to prevent data loss (BufReader may read ahead into the body).
+     let mut buf_reader = BufReader::new(&mut stream);
+     let mut first_line = String::new();
+-    buf_reader.read_line(&mut first_line).await?;
++    let n = (&mut buf_reader)
++        .take((MAX_HEADER_SIZE + 1) as u64)
++        .read_line(&mut first_line)
++        .await?;
++    if n > MAX_HEADER_SIZE {
++        drop(buf_reader);
++        let response = "HTTP/1.1 431 Request Header Fields Too Large\r\n\r\n";
++        stream.write_all(response.as_bytes()).await?;
++        return Ok(());
++    }
+ 
+     if first_line.is_empty() {
+         return Ok(()); // Client disconnected
