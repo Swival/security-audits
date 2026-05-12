@@ -1,0 +1,14 @@
+diff --git a/lib/rand.c b/lib/rand.c
+index dd82750ba6..6076c10138 100644
+--- a/lib/rand.c
++++ b/lib/rand.c
+@@ -41,6 +41,9 @@
+
+ CURLcode Curl_win32_random(unsigned char *entropy, size_t length)
+ {
++  if(length > ULONG_MAX)
++    return CURLE_FAILED_INIT;
++
+   memset(entropy, 0, length);
+
+   if(BCryptGenRandom(NULL, entropy, (ULONG)length,

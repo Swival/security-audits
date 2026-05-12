@@ -4,7 +4,7 @@ Security audit of curl, the command-line tool and `libcurl` library for transfer
 
 ## Summary
 
-**Total findings: 15** -- High: 6, Medium: 8, Low: 1
+**Total findings: 17** -- High: 6, Medium: 9, Low: 2
 
 ## Findings
 
@@ -56,6 +56,18 @@ Security audit of curl, the command-line tool and `libcurl` library for transfer
 | # | Finding | Severity |
 |---|---------|----------|
 | [006](006-goaway-last-stream-id-ignored-aborts-tunnel.md) | GOAWAY last_stream_id ignored aborts tunnel | Medium |
+
+### Telnet
+
+| # | Finding | Severity |
+|---|---------|----------|
+| [010](010-telnet-upload-blocks-past-configured-timeout.md) | Telnet upload blocks past configured timeout | Medium |
+
+### Random number generation
+
+| # | Finding | Severity |
+|---|---------|----------|
+| [015](015-windows-random-truncates-large-length-requests.md) | Windows random truncates large length requests | Low |
 
 ### Command-line tool
 
