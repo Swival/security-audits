@@ -4,7 +4,7 @@ Security audit of the BunnyCDN command-line client. Each finding includes a deta
 
 ## Summary
 
-**Total findings: 25** -- High: 0, Medium: 25, Low: 0
+**Total findings: 26** -- High: 0, Medium: 25, Low: 1
 
 ## Findings
 
@@ -25,6 +25,7 @@ Security audit of the BunnyCDN command-line client. Each finding includes a deta
 | [014](014-force-removes-local-database-token-without-cleanup-confirmat.md) | Force delete removes local database token without cleanup confirmation | Medium |
 | [017](017-token-remains-in-url-on-auth-failure.md) | Token remains in URL on auth failure | Medium |
 | [019](019-json-config-output-exposes-api-key.md) | JSON config output exposes API key | Medium |
+| [033](033-invalid-callback-state-aborts-login.md) | Invalid callback state aborts login | Low |
 
 ### Terminal output and logging
 
