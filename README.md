@@ -24,7 +24,7 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | [bunnycdn-cli](bunnycdn-cli/)                                 |       25 | BunnyCDN command-line client                   |
 | [bunnycdn-tokenauthentication](bunnycdn-tokenauthentication/) |        8 | BunnyCDN token authentication library          |
 | [caddy](caddy/)                                               |        8 | HTTP/2 and HTTP/3 web server with automatic HTTPS |
-| [curl](curl/)                                                 |       15 | Command-line tool and library for URL transfers |
+| [curl](curl/)                                                 |       17 | Command-line tool and library for URL transfers |
 | [go/crypto](go/crypto/)                                       |       54 | Go standard library `crypto/*` packages        |
 | [h2o](h2o/)                                                   |       19 | HTTP/1, HTTP/2 and HTTP/3 server               |
 | [libinjection](libinjection/)                                 |        5 | SQL injection and XSS detection library        |
@@ -41,8 +41,9 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | [pqconnect](pqconnect/)                                       |        4 | Post-quantum VPN using McEliece and X25519     |
 | [proftpd](proftpd/)                                           |       17 | FTP server for Unix-like systems               |
 | [pushpin](pushpin/)                                           |        8 | Reverse proxy for long-lived HTTP and WebSocket connections |
-| [quicly](quicly/)                                             |        1 | QUIC protocol implementation in C              |
+| [quicly](quicly/)                                             |        2 | QUIC protocol implementation in C              |
 | [rust-stdlib](rust-stdlib/)                                   |      151 | Rust standard library and supporting crates    |
+| [tigerbeetle](tigerbeetle/)                                   |       10 | Financial transactions database                |
 | [viceroy](viceroy/)                                           |       30 | Local development server for Fastly Compute    |
 | [vsftpd](vsftpd/)                                             |        3 | Secure FTP daemon for Unix-like systems        |
 | [wasmer-wasix](wasmer-wasix/)                                 |       44 | WASIX runtime in Wasmer                        |

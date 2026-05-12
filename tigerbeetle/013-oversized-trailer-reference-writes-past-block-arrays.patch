@@ -1,0 +1,12 @@
+diff --git a/src/vsr/checkpoint_trailer.zig b/src/vsr/checkpoint_trailer.zig
+index 08f1a074b..5dc78b262 100644
+--- a/src/vsr/checkpoint_trailer.zig
++++ b/src/vsr/checkpoint_trailer.zig
+@@ -231,6 +231,7 @@ pub fn CheckpointTrailerType(comptime Storage: type) type {
+             defer assert(trailer.callback == .open);
+ 
+             assert(reference.trailer_size % trailer.trailer_type.item_size() == 0);
++            assert(block_count_for_trailer_size(reference.trailer_size) <= trailer.blocks.len);
+             assert(trailer.size == 0);
+             assert(trailer.size_transferred == 0);
+             assert(trailer.block_index == 0);
