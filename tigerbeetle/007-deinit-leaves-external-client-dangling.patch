@@ -1,0 +1,62 @@
+diff --git a/src/clients/node/node.zig b/src/clients/node/node.zig
+index 4d5716f42..8a9056230 100644
+--- a/src/clients/node/node.zig
++++ b/src/clients/node/node.zig
+@@ -19,6 +19,10 @@ const stdx = vsr.stdx;
+ 
+ const global_allocator = std.heap.c_allocator;
+ 
++const ClientContext = struct {
++    client: ?*tb_client.ClientInterface,
++};
++
+ pub const std_options: std.Options = .{
+     .log_level = .debug,
+     .logFn = tb_client.exports.Logging.application_logger,
+@@ -217,17 +221,27 @@ fn create(
+     };
+     errdefer client.deinit() catch unreachable;
+ 
+-    return try translate.create_external(env, client);
++    const client_context = global_allocator.create(ClientContext) catch {
++        return translate.throw(env, .{
++            .message = "Failed to allocate the client context.",
++        });
++    };
++    errdefer global_allocator.destroy(client_context);
++    client_context.* = .{ .client = client };
++
++    return try translate.create_external(env, client_context);
+ }
+ 
+ // Javascript is single threaded so no synchronization is necessary for closing/accessing a client.
+ fn destroy(env: c.napi_env, context: c.napi_value) !void {
+-    const client_ptr = try translate.value_external(
++    const context_ptr = try translate.value_external(
+         env,
+         context,
+         "Failed to get client context pointer.",
+     );
+-    const client: *tb_client.ClientInterface = @ptrCast(@alignCast(client_ptr.?));
++    const client_context: *ClientContext = @ptrCast(@alignCast(context_ptr.?));
++    const client = client_context.client orelse return request_error(env, .ERR_CLIENT_CLOSED);
++    client_context.client = null;
+     defer {
+         client.deinit() catch unreachable;
+         global_allocator.destroy(client);
+@@ -251,12 +265,13 @@ fn request(
+     array: c.napi_value,
+     callback: c.napi_value,
+ ) !void {
+-    const client_ptr = try translate.value_external(
++    const context_ptr = try translate.value_external(
+         env,
+         context,
+         "Failed to get client context pointer.",
+     );
+-    const client: *tb_client.ClientInterface = @ptrCast(@alignCast(client_ptr.?));
++    const client_context: *ClientContext = @ptrCast(@alignCast(context_ptr.?));
++    const client = client_context.client orelse return request_error(env, .ERR_CLIENT_CLOSED);
+ 
+     // Create a reference to the callback so it stay alive until the packet completes.
+     var callback_ref: c.napi_ref = undefined;

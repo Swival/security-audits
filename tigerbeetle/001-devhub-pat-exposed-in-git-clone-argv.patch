@@ -1,0 +1,24 @@
+diff --git a/src/scripts/devhub.zig b/src/scripts/devhub.zig
+index 9628afaa1..d7ef55240 100644
+--- a/src/scripts/devhub.zig
++++ b/src/scripts/devhub.zig
+@@ -397,12 +397,17 @@ fn get_measurement(
+ 
+ fn upload_run(shell: *Shell, batch: *const MetricBatch) !void {
+     const token = shell.env_get_option("DEVHUBDB_PAT");
++    const credential_config: []const []const u8 = if (token == null) &.{} else &.{
++        "--config",
++        "credential.helper=!f() { printf '%s\\n' username=oauth2 password=\"$DEVHUBDB_PAT\"; }; f",
++    };
+     try shell.exec(
+         \\git clone --single-branch --depth 1
+-        \\  https://oauth2:{token}@github.com/tigerbeetle/devhubdb.git
++        \\  {credential_config}
++        \\  https://github.com/tigerbeetle/devhubdb.git
+         \\  devhubdb
+     , .{
+-        .token = token orelse "",
++        .credential_config = credential_config,
+     });
+ 
+     try shell.pushd("./devhubdb");

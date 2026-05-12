@@ -1,0 +1,16 @@
+diff --git a/src/cdc/amqp.zig b/src/cdc/amqp.zig
+index 64e5df298..0072214c7 100644
+--- a/src/cdc/amqp.zig
++++ b/src/cdc/amqp.zig
+@@ -790,6 +790,11 @@ pub const Client = struct {
+ 
+     fn process(self: *Client, decoder: *Decoder) Decoder.Error!void {
+         const frame_header = try decoder.read_frame_header();
++        if (@as(usize, frame_header.size) >
++            self.receive_buffer.buffer.len - Encoder.FrameHeader.size_total - @sizeOf(protocol.FrameEnd))
++        {
++            fatal("AMQP frame exceeds receive buffer.", .{});
++        }
+         switch (frame_header.type) {
+             .method => {
+                 const method_header = try decoder.read_method_header();

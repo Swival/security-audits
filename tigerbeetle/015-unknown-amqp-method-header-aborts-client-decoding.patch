@@ -1,0 +1,13 @@
+diff --git a/src/cdc/amqp/spec_parser.py b/src/cdc/amqp/spec_parser.py
+index b8d5bbd8a..5737bae2c 100644
+--- a/src/cdc/amqp/spec_parser.py
++++ b/src/cdc/amqp/spec_parser.py
+@@ -145,7 +145,7 @@ def client_methods(root):
+     print(f"")
+     print(f"    pub fn decode(header: MethodHeader, decoder: *Decoder) Decoder.Error!ClientMethod {{")
+     print(f"        @setEvalBranchQuota(10_000);")
+-    print(f"        const tag: Tag = @enumFromInt(@as(u32, @bitCast(header)));")
++    print(f"        const tag: Tag = std.meta.intToEnum(Tag, @as(u32, @bitCast(header))) catch return error.Unexpected;")
+     print(f"        const value: ClientMethod = switch (tag) {{")
+     print(f"            inline else => |tag_comptime| value: {{")
+     print(f"                const Method = std.meta.TagPayload(ClientMethod, tag_comptime);")

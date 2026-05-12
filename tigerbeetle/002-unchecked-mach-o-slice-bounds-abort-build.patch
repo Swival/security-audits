@@ -1,0 +1,14 @@
+diff --git a/src/build_multiversion.zig b/src/build_multiversion.zig
+index 4cbaee446..666cbc27c 100644
+--- a/src/build_multiversion.zig
++++ b/src/build_multiversion.zig
+@@ -739,6 +739,9 @@ fn macos_universal_binary_extract(
+         {
+             const offset = @byteSwap(fat_arch.offset);
+             const size = @byteSwap(fat_arch.size);
++            if (offset > binary_contents.len or size > binary_contents.len - offset) {
++                return error.InvalidMachO;
++            }
+ 
+             try shell.cwd.writeFile(.{
+                 .sub_path = output_path,

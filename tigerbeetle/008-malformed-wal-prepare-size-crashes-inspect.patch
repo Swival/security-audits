@@ -1,0 +1,13 @@
+diff --git a/src/tigerbeetle/inspect.zig b/src/tigerbeetle/inspect.zig
+index 0a50a8673..8ba9ec116 100644
+--- a/src/tigerbeetle/inspect.zig
++++ b/src/tigerbeetle/inspect.zig
+@@ -589,6 +589,8 @@ const Inspector = struct {
+             );
+ 
+             const wal_prepare_body_valid =
++                wal_prepare.size >= @sizeOf(vsr.Header) and
++                wal_prepare.size <= prepare_buffer.len and
+                 wal_prepare.valid_checksum() and
+                 wal_prepare.valid_checksum_body(
+                     prepare_buffer[@sizeOf(vsr.Header)..wal_prepare.size],

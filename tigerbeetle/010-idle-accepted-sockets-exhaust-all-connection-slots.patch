@@ -1,0 +1,29 @@
+diff --git a/src/message_bus.zig b/src/message_bus.zig
+index 654a5d5e6..ee4c3a111 100644
+--- a/src/message_bus.zig
++++ b/src/message_bus.zig
+@@ -320,8 +320,22 @@ pub fn MessageBusType(comptime IO: type) type {
+             assert(bus.accept_fd != null);
+ 
+             if (bus.accept_connection != null) return;
+-            // All connections are currently in use, do nothing.
+-            if (bus.connections_used == bus.connections.len) return;
++            if (bus.connections_used == bus.connections.len) {
++                // Reclaim unauthenticated accepted sockets so idle peers can't block accept().
++                for (bus.connections) |*connection| {
++                    if (connection.state == .terminating) return;
++                }
++                for (bus.connections) |*connection| {
++                    if (connection.peer == .unknown) {
++                        log.info("{}: on_accept: no free connection, disconnecting unknown peer", .{
++                            bus.id,
++                        });
++                        bus.terminate(connection, .shutdown);
++                        return;
++                    }
++                }
++                return;
++            }
+             assert(bus.connections_used < bus.connections.len);
+             bus.accept_connection = for (bus.connections) |*connection| {
+                 if (connection.state == .free) {
