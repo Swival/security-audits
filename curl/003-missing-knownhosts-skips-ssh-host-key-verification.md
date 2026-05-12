@@ -60,12 +60,14 @@ The patch adds an `else` branch paired with the knownhosts check:
 
 ```c
 else {
+  failf(data,
+        "Denied establishing ssh session: no SSH host key verification");
   rc = SSH_ERROR;
   goto cleanup;
 }
 ```
 
-This converts the previously implicit success path into an explicit verification failure when neither accepted verifier is configured. Existing successful paths remain unchanged:
+This converts the previously implicit success path into an explicit verification failure when neither accepted verifier is configured, and surfaces a readable error to the caller. Existing successful paths remain unchanged:
 
 - Matching MD5 host key pin still returns `SSH_OK`.
 - Knownhosts match still returns `SSH_OK`.
@@ -80,14 +82,16 @@ None
 
 ```diff
 diff --git a/lib/vssh/libssh.c b/lib/vssh/libssh.c
-index c6a6e0cfdf..d129ff2a72 100644
+index c6a6e0cfdf..6c508c3884 100644
 --- a/lib/vssh/libssh.c
 +++ b/lib/vssh/libssh.c
-@@ -286,6 +286,10 @@ static int myssh_is_known(struct Curl_easy *data, struct ssh_conn *sshc)
+@@ -286,6 +286,12 @@ static int myssh_is_known(struct Curl_easy *data, struct ssh_conn *sshc)
        }
      }
    }
 +  else {
++    failf(data,
++          "Denied establishing ssh session: no SSH host key verification");
 +    rc = SSH_ERROR;
 +    goto cleanup;
 +  }

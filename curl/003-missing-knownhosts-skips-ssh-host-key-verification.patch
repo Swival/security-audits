@@ -1,15 +1,17 @@
 diff --git a/lib/vssh/libssh.c b/lib/vssh/libssh.c
-index c6a6e0cfdf..d129ff2a72 100644
+index c6a6e0cfdf..6c508c3884 100644
 --- a/lib/vssh/libssh.c
 +++ b/lib/vssh/libssh.c
-@@ -286,6 +286,10 @@ static int myssh_is_known(struct Curl_easy *data, struct ssh_conn *sshc)
+@@ -286,6 +286,12 @@ static int myssh_is_known(struct Curl_easy *data, struct ssh_conn *sshc)
        }
      }
    }
 +  else {
++    failf(data,
++          "Denied establishing ssh session: no SSH host key verification");
 +    rc = SSH_ERROR;
 +    goto cleanup;
 +  }
    rc = SSH_OK;
- 
+
  cleanup:
