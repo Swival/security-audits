@@ -6,7 +6,7 @@ Vulnerability, medium severity.
 
 ## Affected Locations
 
-`packages/api/src/middleware.ts:85`
+`packages/openapi-client/src/middleware.ts:90`
 
 ## Summary
 
@@ -74,11 +74,11 @@ None
 ## Patch
 
 ```diff
-diff --git a/packages/api/src/middleware.ts b/packages/api/src/middleware.ts
-index 35e60b4..2d42970 100644
---- a/packages/api/src/middleware.ts
-+++ b/packages/api/src/middleware.ts
-@@ -87,8 +87,8 @@ export function authMiddleware(options: ClientOptions): Middleware {
+diff --git a/packages/openapi-client/src/middleware.ts b/packages/openapi-client/src/middleware.ts
+--- a/packages/openapi-client/src/middleware.ts
++++ b/packages/openapi-client/src/middleware.ts
+@@ -86,8 +86,8 @@ export function authMiddleware(options: ClientOptions): Middleware {
+       if (debug) {
          const cloned = response.clone();
          debug(`← ${response.status} ${response.statusText}`);
          try {

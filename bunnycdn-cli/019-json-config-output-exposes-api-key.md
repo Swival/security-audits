@@ -54,13 +54,7 @@ Redact or omit `cfg.apiKey` before passing configuration data to `JSON.stringify
 
 ## Patch Rationale
 
-The patch preserves the JSON output shape while replacing any configured API key with a sentinel value:
-
-```ts
-{ ...cfg, apiKey: cfg.apiKey ? "[redacted]" : undefined }
-```
-
-This prevents disclosure of the secret while still indicating whether an API key is configured.
+The patch preserves the JSON output shape while replacing any configured API key with the same prefix-truncated form already used by the non-JSON output (`${cfg.apiKey.slice(0, 8)}...`). This keeps both output modes consistent, lets users still recognize which key is loaded, and prevents disclosure of the full secret. When no API key is configured the field is omitted entirely (set to `undefined` so `JSON.stringify` drops it).
 
 ## Residual Risk
 
@@ -70,15 +64,17 @@ None
 
 ```diff
 diff --git a/packages/cli/src/commands/config/show.ts b/packages/cli/src/commands/config/show.ts
-index ba67db1..dddd8b2 100644
 --- a/packages/cli/src/commands/config/show.ts
 +++ b/packages/cli/src/commands/config/show.ts
-@@ -11,7 +11,7 @@ export const configShowCommand = defineCommand({
+@@ -11,7 +11,10 @@ export const configShowCommand = defineCommand({
      const cfg = resolveConfig(profile, apiKey);
- 
+
      if (output === "json") {
 -      logger.log(JSON.stringify(cfg, null, 2));
-+      logger.log(JSON.stringify({ ...cfg, apiKey: cfg.apiKey ? "[redacted]" : undefined }, null, 2));
++      const redacted = cfg.apiKey
++        ? `${cfg.apiKey.slice(0, 8)}...`
++        : undefined;
++      logger.log(JSON.stringify({ ...cfg, apiKey: redacted }, null, 2));
        return;
      }
 ```

@@ -1,7 +1,6 @@
-diff --git a/packages/api/src/middleware.ts b/packages/api/src/middleware.ts
-index 35e60b4..f834e47 100644
---- a/packages/api/src/middleware.ts
-+++ b/packages/api/src/middleware.ts
+diff --git a/packages/openapi-client/src/middleware.ts b/packages/openapi-client/src/middleware.ts
+--- a/packages/openapi-client/src/middleware.ts
++++ b/packages/openapi-client/src/middleware.ts
 @@ -72,11 +72,7 @@ export function authMiddleware(options: ClientOptions): Middleware {
        if (debug) {
          debug(`→ ${request.method} ${request.url}`);
@@ -14,3 +13,4 @@ index 35e60b4..f834e47 100644
 +          debug("→ Body: [redacted]");
          }
        }
+

@@ -6,7 +6,7 @@ Medium severity vulnerability.
 
 ## Affected Locations
 
-`packages/api/src/middleware.ts:72`
+`packages/openapi-client/src/middleware.ts:72`
 
 ## Summary
 
@@ -32,14 +32,14 @@ A caller sends a request body containing sensitive JSON fields such as `Secret`,
 
 `authMiddleware` enables debug logging when `verbose && onDebug` is true.
 
-In `packages/api/src/middleware.ts`, `onRequest` checks `request.body`, clones the request, parses the full JSON body with `cloned.json()`, and sends `JSON.stringify(body, null, 2)` to `debug`.
+In `packages/openapi-client/src/middleware.ts`, `onRequest` checks `request.body`, clones the request, parses the full JSON body with `cloned.json()`, and sends `JSON.stringify(body, null, 2)` to `debug`.
 
 This makes caller-controlled request bodies reachable in logs without redaction.
 
 Practical sensitive sources include:
 
-- `packages/cli/src/commands/scripts/env/set.ts:181`, which sends `{ Name, Secret: value }` for Edge Script secrets.
-- `packages/cli/src/commands/registries/add.ts:92`, which sends `passwordCredentials: { userName, password }`.
+- `packages/cli/src/commands/scripts/env/set.ts:183`, which sends `{ Name, Secret: value }` for Edge Script secrets.
+- `packages/cli/src/commands/registries/add.ts:95`, which sends `passwordCredentials: { userName, password }`.
 
 Commands such as `bunny scripts env set API_KEY sk-... --secret --verbose` or registry add with `--verbose` can therefore print raw secrets or passwords into debug logs.
 
@@ -74,10 +74,9 @@ None
 ## Patch
 
 ```diff
-diff --git a/packages/api/src/middleware.ts b/packages/api/src/middleware.ts
-index 35e60b4..f834e47 100644
---- a/packages/api/src/middleware.ts
-+++ b/packages/api/src/middleware.ts
+diff --git a/packages/openapi-client/src/middleware.ts b/packages/openapi-client/src/middleware.ts
+--- a/packages/openapi-client/src/middleware.ts
++++ b/packages/openapi-client/src/middleware.ts
 @@ -72,11 +72,7 @@ export function authMiddleware(options: ClientOptions): Middleware {
        if (debug) {
          debug(`→ ${request.method} ${request.url}`);
@@ -90,4 +89,5 @@ index 35e60b4..f834e47 100644
 +          debug("→ Body: [redacted]");
          }
        }
+
 ```

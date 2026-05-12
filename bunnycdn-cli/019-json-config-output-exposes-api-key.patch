@@ -1,12 +1,15 @@
 diff --git a/packages/cli/src/commands/config/show.ts b/packages/cli/src/commands/config/show.ts
-index ba67db1..dddd8b2 100644
 --- a/packages/cli/src/commands/config/show.ts
 +++ b/packages/cli/src/commands/config/show.ts
-@@ -11,7 +11,7 @@ export const configShowCommand = defineCommand({
+@@ -11,7 +11,10 @@ export const configShowCommand = defineCommand({
      const cfg = resolveConfig(profile, apiKey);
- 
+
      if (output === "json") {
 -      logger.log(JSON.stringify(cfg, null, 2));
-+      logger.log(JSON.stringify({ ...cfg, apiKey: cfg.apiKey ? "[redacted]" : undefined }, null, 2));
++      const redacted = cfg.apiKey
++        ? `${cfg.apiKey.slice(0, 8)}...`
++        : undefined;
++      logger.log(JSON.stringify({ ...cfg, apiKey: redacted }, null, 2));
        return;
      }
+
