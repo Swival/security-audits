@@ -1,0 +1,13 @@
+diff --git a/src/cdc/amqp/protocol.zig b/src/cdc/amqp/protocol.zig
+index dd83dd954..355b7e3b0 100644
+--- a/src/cdc/amqp/protocol.zig
++++ b/src/cdc/amqp/protocol.zig
+@@ -353,7 +353,7 @@ pub const Decoder = struct {
+             .not_implemented_double,
+             .not_implemented_decimal,
+             .not_implemented_byte_array,
+-            => fatal("AMQP type '{c}' not supported.", .{@intFromEnum(tag)}),
++            => return error.Unexpected,
+         };
+         assert(value == tag);
+         return value;
