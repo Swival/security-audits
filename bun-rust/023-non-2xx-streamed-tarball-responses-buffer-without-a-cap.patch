@@ -1,0 +1,45 @@
+diff --git a/src/install/NetworkTask.rs b/src/install/NetworkTask.rs
+index 00a766d2b9..dbb4eb6940 100644
+--- a/src/install/NetworkTask.rs
++++ b/src/install/NetworkTask.rs
+@@ -280,6 +280,10 @@ impl NetworkTask {
+                 // delivering its body: accumulate in `response_buffer`
+                 // (we did *not* reset above) so the main thread can
+                 // inspect it. Do not enqueue until the stream ends.
++                if !ok_status && this.response_buffer.list.len() > MAX_STREAMING_ERROR_BODY_SIZE {
++                    this.response_buffer.list.truncate(MAX_STREAMING_ERROR_BODY_SIZE);
++                    this.signal_store.aborted.store(true, Ordering::Relaxed);
++                }
+                 return;
+             }
+             // Fall through to the normal completion path for anything that
+@@ -344,6 +348,7 @@ const DEFAULT_HEADERS_BUF: &str = concat!(
+     "application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*",
+ );
+ const EXTENDED_HEADERS_BUF: &str = concat!("Accept", "application/json, */*");
++const MAX_STREAMING_ERROR_BODY_SIZE: usize = 1024 * 1024;
+ 
+ fn append_auth(header_builder: &mut HeaderBuilder, scope: &npm::registry::Scope) {
+     if !scope.token.is_empty() {
+@@ -786,10 +791,9 @@ impl NetworkTask {
+             // `generateNetworkTaskForTarball`) because it needs the
+             // pre-allocated `Task` that carries the final result.
+             //
+-            // Only wire up the one signal we need; `Signals.Store.to()`
+-            // would also publish `aborted`/`cert_errors`/etc., which makes
+-            // the HTTP client allocate an abort-tracker id and changes
+-            // keep-alive behaviour we don't want here.
++            // Only wire up the signals we need; `Signals.Store.to()` would
++            // also publish `cert_errors`/etc. and change behaviour we don't
++            // want here.
+             self.signal_store = http::signals::Store::default();
+             self.signal_store
+                 .response_body_streaming
+@@ -798,6 +802,7 @@ impl NetworkTask {
+                 response_body_streaming: Some(NonNull::from(
+                     &self.signal_store.response_body_streaming,
+                 )),
++                aborted: Some(NonNull::from(&self.signal_store.aborted)),
+                 ..Default::default()
+             });
+         }

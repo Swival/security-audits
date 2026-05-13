@@ -1,0 +1,14 @@
+diff --git a/src/runtime/bake/DevServer.rs b/src/runtime/bake/DevServer.rs
+index 6c47400fe0..58d0a69298 100644
+--- a/src/runtime/bake/DevServer.rs
++++ b/src/runtime/bake/DevServer.rs
+@@ -2765,8 +2765,7 @@ impl DevServer {
+             paths::basename(unsafe { &(&(*html.html_bundle).bundle).path }),
+             b".html",
+         );
+-        // TODO: function for URL safe chars
+-        if !strings::is_all_ascii(display_name) {
++        if !strings::is_all_ascii(display_name) || display_name.contains(&b'"') {
+             display_name = b"page";
+         }
+ 

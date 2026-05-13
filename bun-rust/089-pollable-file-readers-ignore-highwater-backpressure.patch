@@ -1,0 +1,14 @@
+diff --git a/src/runtime/webcore/FileReader.rs b/src/runtime/webcore/FileReader.rs
+index 2ac5bf5db4..2133128d40 100644
+--- a/src/runtime/webcore/FileReader.rs
++++ b/src/runtime/webcore/FileReader.rs
+@@ -798,8 +798,7 @@ impl FileReader {
+         let ret = !matches!(
+             self.read_inside_on_pull.get(),
+             ReadDuringJSOnPullResult::Temporary(_)
+-        ) && !(self.buffered.get().len() + reader_buffer_len >= self.highwater_mark
+-            && !self.reader_is_pollable());
++        ) && self.buffered.get().len() + reader_buffer_len < self.highwater_mark;
+         close_if_needed!();
+         ret
+     }

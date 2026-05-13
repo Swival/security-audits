@@ -1,0 +1,55 @@
+diff --git a/src/runtime/valkey_jsc/valkey.rs b/src/runtime/valkey_jsc/valkey.rs
+index 9481fa7fdb..090d541f34 100644
+--- a/src/runtime/valkey_jsc/valkey.rs
++++ b/src/runtime/valkey_jsc/valkey.rs
+@@ -37,6 +37,8 @@ macro_rules! debug {
+     ($($args:tt)*) => { bun_output::scoped_log!(Redis, $($args)*) };
+ }
+ 
++const MAX_READ_BUFFER_SIZE: usize = 16 * 1024 * 1024;
++
+ /// Connection flags to track Valkey client state
+ pub struct ConnectionFlags {
+     // TODO(markovejnovic): I am not a huge fan of these flags. I would
+@@ -689,6 +691,17 @@ impl ValkeyClient {
+         any_socket_close(&socket);
+     }
+ 
++    fn fail_read_buffer_too_large(&mut self) -> JsTerminated<()> {
++        self.flags.is_manually_closed = true;
++        self.read_buffer.clear_and_free();
++        self.fail(
++            b"Valkey response exceeded maximum read buffer size",
++            RedisError::InvalidResponse,
++        )?;
++        self.close();
++        Ok(())
++    }
++
+     /// Handle connection closed event
+     pub fn on_close(&mut self) -> JsTerminated<()> {
+         self.unregister_auto_flusher();
+@@ -785,6 +798,9 @@ impl ValkeyClient {
+         );
+         // Path 1: Buffer already has data, append and process from buffer
+         if !self.read_buffer.remaining().is_empty() {
++            if (self.read_buffer.len() as usize).saturating_add(data.len()) > MAX_READ_BUFFER_SIZE {
++                return self.fail_read_buffer_too_large();
++            }
+             self.read_buffer
+                 .write(data)
+                 .expect("failed to write to read buffer");
+@@ -862,8 +878,12 @@ impl ValkeyClient {
+                                 current_data_slice.len() - before_read_pos
+                             );
+                         }
++                        let remaining_stack_data = &current_data_slice[before_read_pos..];
++                        if remaining_stack_data.len() > MAX_READ_BUFFER_SIZE {
++                            return self.fail_read_buffer_too_large();
++                        }
+                         self.read_buffer
+-                            .write(&current_data_slice[before_read_pos..])
++                            .write(remaining_stack_data)
+                             .expect("failed to write remaining stack data to buffer");
+                         return Ok(()); // Exit onData, next call will use the buffer path
+                     } else {

@@ -1,0 +1,16 @@
+diff --git a/src/jsc/RuntimeTranspilerCache.rs b/src/jsc/RuntimeTranspilerCache.rs
+index 9fdd40f8b8..72fac1b6e0 100644
+--- a/src/jsc/RuntimeTranspilerCache.rs
++++ b/src/jsc/RuntimeTranspilerCache.rs
+@@ -446,6 +446,11 @@ impl Entry {
+                         self.metadata.output_byte_length as usize,
+                         self.metadata.output_byte_offset,
+                     )?;
++                    if self.metadata.output_hash != 0 {
++                        if hash(&utf8) != self.metadata.output_hash {
++                            return Err(bun_core::err!(InvalidHash));
++                        }
++                    }
+                     OutputCode::Utf8(utf8)
+                 }
+                 Encoding::LATIN1 => {

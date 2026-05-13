@@ -1,0 +1,29 @@
+diff --git a/src/bun_core/util.rs b/src/bun_core/util.rs
+index bd8e34a345..7cf0c27ec9 100644
+--- a/src/bun_core/util.rs
++++ b/src/bun_core/util.rs
+@@ -2898,7 +2898,7 @@ pub fn is_writable(fd: Fd) -> Pollable {
+ // from. PERF(port): if a hot path needs the BoringSSL DRBG, install a
+ // vtable hook from bun_runtime at startup.
+ pub fn csprng(bytes: &mut [u8]) {
+-    #[cfg(target_os = "linux")]
++    #[cfg(any(target_os = "linux", target_os = "android"))]
+     {
+         let mut filled = 0usize;
+         while filled < bytes.len() {
+@@ -2946,6 +2946,15 @@ pub fn csprng(bytes: &mut [u8]) {
+             }
+         }
+     }
++    #[cfg(not(any(
++        target_os = "linux",
++        target_os = "android",
++        target_os = "macos",
++        target_os = "ios",
++        target_os = "freebsd",
++        windows,
++    )))]
++    compile_error!("unsupported platform for csprng");
+ }
+ 
+ // ── self_exe_path ─────────────────────────────────────────────────────────

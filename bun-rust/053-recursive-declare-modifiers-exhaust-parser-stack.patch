@@ -1,0 +1,17 @@
+diff --git a/src/js_parser/parse/parse_property.rs b/src/js_parser/parse/parse_property.rs
+index dc5001fb75..ca1cbc1e39 100644
+--- a/src/js_parser/parse/parse_property.rs
++++ b/src/js_parser/parse/parse_property.rs
+@@ -431,6 +431,12 @@ impl<'a, const TYPESCRIPT: bool, J: JsxT, const SCAN_ONLY: bool> P<'a, TYPESCRIP
+                                             && Self::IS_TYPESCRIPT_ENABLED
+                                             && raw == b"declare"
+                                         {
++                                            if !opts.declare_range.is_empty() {
++                                                p.lexer.unexpected()?;
++                                                return Err(err!("SyntaxError"));
++                                            }
++
++                                            opts.declare_range = name_range;
+                                             let scope_index = p.scopes_in_order.len();
+                                             if let Some(_prop) =
+                                                 p.parse_property(kind, opts, None)?

@@ -1,0 +1,48 @@
+diff --git a/src/install/PackageManager/PackageManagerDirectories.rs b/src/install/PackageManager/PackageManagerDirectories.rs
+index 571ef1238f..4d45270e37 100644
+--- a/src/install/PackageManager/PackageManagerDirectories.rs
++++ b/src/install/PackageManager/PackageManagerDirectories.rs
+@@ -586,9 +586,19 @@ pub fn cached_git_folder_name_print<'a>(
+     resolved: &[u8],
+     patch_hash: Option<u64>,
+ ) -> &'a ZStr {
++    let resolved_too_long = resolved
++        .len()
++        .saturating_add(b"@G@".len())
++        .saturating_add(b"_patch_hash=".len())
++        .saturating_add(16)
++        >= buf.len();
+     let mut w = ByteCursor::new(buf);
+     w.put(b"@G@");
+-    w.put(resolved);
++    if resolved_too_long {
++        w.put_u64_hex16::<true>(Semver::semver_string::Builder::string_hash(resolved));
++    } else {
++        w.put(resolved);
++    }
+     w.put_patch_hash(patch_hash);
+     w.finish_z()
+ }
+@@ -632,9 +642,21 @@ pub fn cached_github_folder_name_print<'a>(
+     resolved: &[u8],
+     patch_hash: Option<u64>,
+ ) -> &'a ZStr {
++    let resolved_too_long = resolved
++        .len()
++        .saturating_add(b"@GH@".len())
++        .saturating_add(b"@@@".len())
++        .saturating_add(20)
++        .saturating_add(b"_patch_hash=".len())
++        .saturating_add(16)
++        >= buf.len();
+     let mut w = ByteCursor::new(buf);
+     w.put(b"@GH@");
+-    w.put(resolved);
++    if resolved_too_long {
++        w.put_u64_hex16::<true>(Semver::semver_string::Builder::string_hash(resolved));
++    } else {
++        w.put(resolved);
++    }
+     w.put_cache_version(Some(CacheVersion::CURRENT));
+     w.put_patch_hash(patch_hash);
+     w.finish_z()

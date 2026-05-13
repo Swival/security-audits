@@ -1,0 +1,14 @@
+diff --git a/src/install/yarn.rs b/src/install/yarn.rs
+index a0f87af34b..a859e38088 100644
+--- a/src/install/yarn.rs
++++ b/src/install/yarn.rs
+@@ -377,6 +377,9 @@ impl<'a> YarnLock<'a> {
+                 let mut specs_it = strings::split(specs_str, b",");
+                 while let Some(spec) = specs_it.next() {
+                     let spec_trimmed = strings::trim(spec, b" \"");
++                    if spec_trimmed.is_empty() {
++                        continue;
++                    }
+                     // TODO(port): Zig dupes here; we borrow from `content` directly since
+                     // spec_trimmed is a subslice of `content` and outlives YarnLock<'a>.
+                     current_specs.push(spec_trimmed);

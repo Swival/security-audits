@@ -1,0 +1,54 @@
+diff --git a/src/bundler/linker_context/postProcessJSChunk.rs b/src/bundler/linker_context/postProcessJSChunk.rs
+index 6d29cc03a9..61ef578c6c 100644
+--- a/src/bundler/linker_context/postProcessJSChunk.rs
++++ b/src/bundler/linker_context/postProcessJSChunk.rs
+@@ -670,20 +670,23 @@ pub fn post_process_js_chunk(
+                 line_offset.advance(b"  ");
+             }
+ 
++            j.push_static(b"// ");
++            line_offset.advance(b"// ");
++
+             match comment_type {
+                 CommentType::Multiline => {
+-                    j.push_static(b"/* ");
+-                    line_offset.advance(b"/* ");
++                    let mut buf = MutableString::init_empty();
++                    let _ = js_printer::quote_for_json(pretty, &mut buf, true);
++                    let pretty = buf.to_default_owned();
++                    line_offset.advance(&pretty);
++                    j.push_owned(pretty);
+                 }
+                 CommentType::Single => {
+-                    j.push_static(b"// ");
+-                    line_offset.advance(b"// ");
++                    j.push_static(pretty);
++                    line_offset.advance(pretty);
+                 }
+             }
+ 
+-            j.push_static(pretty);
+-            line_offset.advance(pretty);
+-
+             if emit_targets_in_commands {
+                 j.push_static(b" (");
+                 line_offset.advance(b" (");
+@@ -695,16 +698,8 @@ pub fn post_process_js_chunk(
+                 line_offset.advance(b")");
+             }
+ 
+-            match comment_type {
+-                CommentType::Multiline => {
+-                    j.push_static(b" */\n");
+-                    line_offset.advance(b" */\n");
+-                }
+-                CommentType::Single => {
+-                    j.push_static(b"\n");
+-                    line_offset.advance(b"\n");
+-                }
+-            }
++            j.push_static(b"\n");
++            line_offset.advance(b"\n");
+         }
+ 
+         if is_runtime {

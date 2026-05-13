@@ -1,0 +1,31 @@
+diff --git a/src/css/values/calc.rs b/src/css/values/calc.rs
+index 1c5047dcb9..733f1650bf 100644
+--- a/src/css/values/calc.rs
++++ b/src/css/values/calc.rs
+@@ -431,19 +431,15 @@ impl<V: CalcValue> Calc<V> {
+                     }
+                 }
+ 
+-                let switch_val: u8 = ((min.is_some() as u8) << 1) | (min.is_some() as u8);
+-                // TODO(port): Zig original has a likely bug — both bits derive from `min != null`.
+-                // Ported faithfully; Phase B should verify intended `(min, max)` packing.
+-                Ok(match switch_val {
+-                    0b00 => center,
+-                    0b10 => Calc::Function(Box::new(MathFunction::Max(arr2(min.unwrap(), center)))),
+-                    0b01 => Calc::Function(Box::new(MathFunction::Min(arr2(max.unwrap(), center)))),
+-                    0b11 => Calc::Function(Box::new(MathFunction::Clamp {
+-                        min: min.unwrap(),
++                Ok(match (min, max) {
++                    (None, None) => center,
++                    (Some(min), None) => Calc::Function(Box::new(MathFunction::Max(arr2(min, center)))),
++                    (None, Some(max)) => Calc::Function(Box::new(MathFunction::Min(arr2(max, center)))),
++                    (Some(min), Some(max)) => Calc::Function(Box::new(MathFunction::Clamp {
++                        min,
+                         center,
+-                        max: max.unwrap(),
++                        max,
+                     })),
+-                    _ => unreachable!(),
+                 })
+             }
+             CalcUnit::Round => input.parse_nested_block(|i| {

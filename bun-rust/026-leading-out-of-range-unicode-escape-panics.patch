@@ -1,0 +1,28 @@
+diff --git a/src/js_parser/lexer.rs b/src/js_parser/lexer.rs
+index c08c2c3471..d0812e3304 100644
+--- a/src/js_parser/lexer.rs
++++ b/src/js_parser/lexer.rs
+@@ -874,10 +874,10 @@ lexer_impl_header! {
+                                     self.syntax_error()?;
+                                 }
+ 
+-                                let hex_start = (iter.i as usize + start)
+-                                    - width as usize
+-                                    - width2 as usize
+-                                    - width3 as usize;
++                                let hex_start = (iter.i as usize)
++                                    .saturating_sub(width as usize)
++                                    .saturating_sub(width2 as usize)
++                                    .saturating_sub(width3 as usize);
+                                 let mut is_first = true;
+                                 let mut is_out_of_range = false;
+                                 'variable_length: loop {
+@@ -930,7 +930,7 @@ lexer_impl_header! {
+                                                     .unwrap(),
+                                             },
+                                             len: i32::try_from(
+-                                                (iter.i as usize + start) - hex_start,
++                                                (iter.i as usize).saturating_sub(hex_start),
+                                             )
+                                             .unwrap(),
+                                         },

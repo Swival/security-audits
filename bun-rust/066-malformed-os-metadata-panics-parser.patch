@@ -1,0 +1,22 @@
+diff --git a/src/install/yarn.rs b/src/install/yarn.rs
+index a0f87af34b..35e9ed6b73 100644
+--- a/src/install/yarn.rs
++++ b/src/install/yarn.rs
+@@ -503,14 +503,14 @@ impl<'a> YarnLock<'a> {
+                         }
+                     } else if key == b"integrity" {
+                         entry.integrity = Some(value);
+-                    } else if key == b"os" {
++                    } else if key == b"os" && value.starts_with(b"[") && value.ends_with(b"]") {
+                         let mut os_list: Vec<&'a [u8]> = Vec::new();
+                         let mut os_it = strings::split(&value[1..value.len() - 1], b",");
+                         while let Some(os) = os_it.next() {
+                             let trimmed_os = strings::trim(os, b" \"");
+                             os_list.push(trimmed_os);
+                         }
+                         entry.os = Some(os_list);
+-                    } else if key == b"cpu" {
++                    } else if key == b"cpu" && value.starts_with(b"[") && value.ends_with(b"]") {
+                         let mut cpu_list: Vec<&'a [u8]> = Vec::new();
+                         let mut cpu_it = strings::split(&value[1..value.len() - 1], b",");
+                         while let Some(cpu) = cpu_it.next() {

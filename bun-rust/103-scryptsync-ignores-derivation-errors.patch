@@ -1,0 +1,18 @@
+diff --git a/src/runtime/node/node_crypto_binding.rs b/src/runtime/node/node_crypto_binding.rs
+--- a/src/runtime/node/node_crypto_binding.rs
++++ b/src/runtime/node/node_crypto_binding.rs
+@@ -1206,6 +1206,14 @@
+         let (ctx, _) = Scrypt::from_js::<false>(global, call_frame)?;
+         let mut ctx = scopeguard::guard(ctx, |mut c| c.deinit_sync());
+         let (buf, bytes) = ArrayBuffer::alloc::<{ JSType::ArrayBuffer }>(global, ctx.keylen)?;
+         ctx.run_task_impl(bytes);
++        if ctx.err.is_some() {
++            return Err(global
++                .err(
++                    ErrorCode::CRYPTO_OPERATION_FAILED,
++                    format_args!("Scrypt failed"),
++                )
++                .throw());
++        }
+         Ok(buf)
+     }

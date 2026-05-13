@@ -1,0 +1,20 @@
+diff --git a/src/sql_jsc/mysql/MySQLConnection.rs b/src/sql_jsc/mysql/MySQLConnection.rs
+index 77382ca441..afbe03af50 100644
+--- a/src/sql_jsc/mysql/MySQLConnection.rs
++++ b/src/sql_jsc/mysql/MySQLConnection.rs
+@@ -701,13 +701,10 @@ impl MySQLConnection {
+             self.tls_status = TLSStatus::SslNotAvailable;
+ 
+             match self.ssl_mode {
+-                SSLMode::VerifyCa | SSLMode::VerifyFull => {
++                SSLMode::Require | SSLMode::VerifyCa | SSLMode::VerifyFull => {
+                     return Err(AnyMySQLError::AuthenticationFailed);
+                 }
+-                // require behaves like prefer for postgres.js compatibility,
+-                // allowing graceful fallback to non-SSL when the server
+-                // doesn't support it.
+-                SSLMode::Require | SSLMode::Prefer | SSLMode::Disable => {}
++                SSLMode::Prefer | SSLMode::Disable => {}
+             }
+         }
+         // Send auth response

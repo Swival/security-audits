@@ -1,0 +1,20 @@
+diff --git a/src/install/repository.rs b/src/install/repository.rs
+index 5d518584e5..4ff74af1a2 100644
+--- a/src/install/repository.rs
++++ b/src/install/repository.rs
+@@ -758,13 +758,14 @@ impl RepositoryExt for Repository {
+ 
+         let shared = SharedEnv::get(env);
+ 
+-        let argv_with: [&[u8]; 7] = [
++        let argv_with: [&[u8]; 8] = [
+             b"git",
+             b"-C",
+             path,
+             b"log",
+             b"--format=%H",
+             b"-1",
++            b"--",
+             committish,
+         ];
+         let argv_without: [&[u8]; 6] = [b"git", b"-C", path, b"log", b"--format=%H", b"-1"];

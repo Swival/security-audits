@@ -1,0 +1,31 @@
+diff --git a/src/bun_core/fmt.rs b/src/bun_core/fmt.rs
+index 2d6530e07b..a5289c7ebe 100644
+--- a/src/bun_core/fmt.rs
++++ b/src/bun_core/fmt.rs
+@@ -618,7 +618,7 @@ impl Display for FormatUTF8<'_> {
+     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+         if let Some(opts) = self.path_fmt_opts {
+             if opts.path_sep == PathSep::Any && !opts.escape_backslashes {
+-                return write_bytes(f, self.buf);
++                return write!(f, "{}", bstr::BStr::new(self.buf));
+             }
+ 
+             let mut ptr = self.buf;
+@@ -629,7 +629,7 @@ impl Display for FormatUTF8<'_> {
+                     PathSep::Auto => crate::SEP,
+                     PathSep::Any => ptr[i],
+                 };
+-                write_bytes(f, &ptr[..i])?;
++                write!(f, "{}", bstr::BStr::new(&ptr[..i]))?;
+                 f.write_char(sep as char)?;
+                 if opts.escape_backslashes && sep == b'\\' {
+                     f.write_char(sep as char)?;
+@@ -637,7 +637,7 @@ impl Display for FormatUTF8<'_> {
+                 ptr = &ptr[i + 1..];
+             }
+ 
+-            return write_bytes(f, ptr);
++            return write!(f, "{}", bstr::BStr::new(ptr));
+         }
+ 
+         write_bytes(f, self.buf)

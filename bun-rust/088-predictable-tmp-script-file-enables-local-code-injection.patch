@@ -1,0 +1,15 @@
+diff --git a/src/runtime/cli/fuzzilli_command.rs b/src/runtime/cli/fuzzilli_command.rs
+index 7006a4e49e..47b5f03a05 100644
+--- a/src/runtime/cli/fuzzilli_command.rs
++++ b/src/runtime/cli/fuzzilli_command.rs
+@@ -65,8 +65,8 @@ impl FuzzilliCommand {
+             let temp_file_fd: Fd = match sys::openat(
+                 temp_dir_fd,
+                 zstr!("bun-fuzzilli-reprl.js"),
+-                O::CREAT | O::WRONLY | O::TRUNC,
+-                0o644,
++                O::CREAT | O::WRONLY | O::TRUNC | O::EXCL | O::NOFOLLOW,
++                0o600,
+             ) {
+                 Ok(fd) => fd,
+                 Err(_) => {

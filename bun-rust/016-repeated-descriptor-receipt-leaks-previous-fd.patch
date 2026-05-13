@@ -1,0 +1,15 @@
+diff --git a/src/jsc/ipc.rs b/src/jsc/ipc.rs
+index 6b7fa34e13..b6a7130a4a 100644
+--- a/src/jsc/ipc.rs
++++ b/src/jsc/ipc.rs
+@@ -2107,8 +2107,9 @@ pub mod IPCHandlers {
+             #[cfg(not(windows))]
+             {
+                 log!("onFd: {}", fd);
+-                if send_queue.incoming_fd.is_some() {
++                if let Some(existing_fd) = send_queue.incoming_fd.take() {
+                     log!("onFd: incoming_fd already set; overwriting");
++                    FdExt::close(existing_fd);
+                 }
+                 send_queue.incoming_fd = Some(Fd::from_native(fd));
+             }

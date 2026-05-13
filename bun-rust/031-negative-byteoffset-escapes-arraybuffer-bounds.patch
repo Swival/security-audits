@@ -1,0 +1,15 @@
+diff --git a/src/runtime/ffi/FFIObject.rs b/src/runtime/ffi/FFIObject.rs
+index 74f45ea500..4623623975 100644
+--- a/src/runtime/ffi/FFIObject.rs
++++ b/src/runtime/ffi/FFIObject.rs
+@@ -640,7 +640,9 @@ fn ptr_(global_this: &JSGlobalObject, value: JSValue, byte_offset: Option<JSValu
+             addr += usize::try_from(bytei64).expect("int cast");
+         }
+ 
+-        if addr > array_buffer.ptr as usize + array_buffer.byte_len as usize {
++        if addr < array_buffer.ptr as usize
++            || addr > array_buffer.ptr as usize + array_buffer.byte_len as usize
++        {
+             return global_this.to_invalid_arguments(format_args!("byteOffset out of bounds"));
+         }
+     }

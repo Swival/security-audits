@@ -21,6 +21,7 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | ------------------------------------------------------------- | -------: | ---------------------------------------------- |
 | [apache-httpd](apache-httpd/)                                 |       56 | Apache HTTP Server                             |
 | [boringssl](boringssl/)                                       |       12 | Google's fork of OpenSSL                       |
+| [bun-rust](bun-rust/)                                         |      105 | Bun JavaScript runtime, Rust port              |
 | [bunnycdn-cli](bunnycdn-cli/)                                 |       25 | BunnyCDN command-line client                   |
 | [bunnycdn-tokenauthentication](bunnycdn-tokenauthentication/) |        8 | BunnyCDN token authentication library          |
 | [caddy](caddy/)                                               |        8 | HTTP/2 and HTTP/3 web server with automatic HTTPS |

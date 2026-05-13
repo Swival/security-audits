@@ -1,0 +1,30 @@
+diff --git a/src/runtime/cli/init_command.rs b/src/runtime/cli/init_command.rs
+index f6715659d5..f615d7e1b4 100644
+--- a/src/runtime/cli/init_command.rs
++++ b/src/runtime/cli/init_command.rs
+@@ -879,7 +879,10 @@ impl InitCommand {
+                     Output::flush();
+                 }
+ 
+-                if !fields.entry_point.is_empty() && !exists(&fields.entry_point) {
++                if !fields.entry_point.is_empty()
++                    && is_safe_entry_point_path(&fields.entry_point)
++                    && !exists(&fields.entry_point)
++                {
+                     if let Some(dirname) = bun_core::dirname(&fields.entry_point) {
+                         if dirname != b"." {
+                             let _ = bun_sys::make_path(bun_sys::Dir::cwd(), dirname);
+@@ -2016,6 +2019,13 @@ pub(crate) fn exists(path: &[u8]) -> bool {
+     bun_sys::exists(path)
+ }
+ 
++fn is_safe_entry_point_path(path: &[u8]) -> bool {
++    !bun_paths::is_absolute_loose(path)
++        && !path
++            .split(|&c| c == b'/' || c == b'\\')
++            .any(|component| component == b"..")
++}
++
+ #[inline]
+ fn exists_z(path: &[u8]) -> bool {
+     // TODO(port): Zig `existsZ` takes `[:0]const u8`; here we accept `&[u8]` and

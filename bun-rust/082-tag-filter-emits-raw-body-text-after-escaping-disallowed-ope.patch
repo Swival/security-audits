@@ -1,0 +1,18 @@
+diff --git a/src/md/html_renderer.rs b/src/md/html_renderer.rs
+index 521b5885c0..e715910b06 100644
+--- a/src/md/html_renderer.rs
++++ b/src/md/html_renderer.rs
+@@ -428,12 +428,7 @@ impl<'src> HtmlRenderer<'src> {
+                 }
+             }
+             _ => {
+-                // When inside a tag-filtered disallowed tag, emit text as raw
+-                if self.tag_filter && self.tag_filter_raw_depth > 0 {
+-                    self.write(content);
+-                } else {
+-                    self.write_html_escaped(content);
+-                }
++                self.write_html_escaped(content);
+             }
+         }
+     }

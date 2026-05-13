@@ -1,0 +1,14 @@
+diff --git a/src/install/migration.rs b/src/install/migration.rs
+index b3c65ffc63..e00a429bef 100644
+--- a/src/install/migration.rs
++++ b/src/install/migration.rs
+@@ -371,6 +371,9 @@ pub fn migrate_npm_lockfile<'a>(
+         let pkg: &E::Object = pkg;
+ 
+         if pkg.get(b"link").is_some() {
++            if pkg_path.is_empty() {
++                return Err(err!("InvalidNPMLockfile"));
++            }
+             id_map.put_assume_capacity(
+                 pkg_path,
+                 IdMapValue {

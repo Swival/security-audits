@@ -1,0 +1,19 @@
+diff --git a/src/runtime/image/Image.rs b/src/runtime/image/Image.rs
+index 7d129f0ebc..2e778170af 100644
+--- a/src/runtime/image/Image.rs
++++ b/src/runtime/image/Image.rs
+@@ -1316,6 +1316,14 @@ impl<'a> BlobReadChain<'a> {
+ 
+         match r {
+             ReadBytesResult::Ok(bytes) => {
++                if bytes.len() as u64 > MAX_INPUT_FILE_BYTES {
++                    drop(deliver);
++                    let _ = outer.reject(
++                        global,
++                        Ok(reject_error(global, codecs::Error::TooManyPixels)),
++                    );
++                    return;
++                }
+                 // Concurrent terminals can have started multiple BlobReadChains
+                 // (no in-flight serialisation — `start()` re-enters every time
+                 // it sees `.blob`). The FIRST resolver wins and swaps to

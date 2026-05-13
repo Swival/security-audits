@@ -1,0 +1,14 @@
+diff --git a/src/runtime/bake/FrameworkRouter.rs b/src/runtime/bake/FrameworkRouter.rs
+index 9cd12a1a4b..aa90884789 100644
+--- a/src/runtime/bake/FrameworkRouter.rs
++++ b/src/runtime/bake/FrameworkRouter.rs
+@@ -358,6 +358,9 @@ impl EncodedPattern {
+                     i += 1 + expect.len();
+                 }
+                 Part::Param(name) => {
++                    if i > path.len() {
++                        return false;
++                    }
+                     let end = strings::index_of_char_pos(path, b'/', i).unwrap_or(path.len());
+                     // Check if we're about to exceed the maximum number of parameters
+                     if param_num >= MatchedParams::MAX_COUNT {

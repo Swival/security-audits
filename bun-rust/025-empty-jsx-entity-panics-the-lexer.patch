@@ -1,0 +1,14 @@
+diff --git a/src/js_parser/lexer.rs b/src/js_parser/lexer.rs
+index c08c2c3471..6dbc17f96a 100644
+--- a/src/js_parser/lexer.rs
++++ b/src/js_parser/lexer.rs
+@@ -3385,6 +3385,9 @@ lexer_impl_header! {
+             let length = length as usize;
+             let end = cursor.width as usize + cursor.i as usize;
+             let entity = &text[end..end + length];
++            if entity.is_empty() {
++                return;
++            }
+             if entity[0] == b'#' {
+                 let mut number = &entity[1..entity.len()];
+                 let mut base: u8 = 10;
