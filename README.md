@@ -32,6 +32,7 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | [libinjection](libinjection/)                                 |        5 | SQL injection and XSS detection library                     |
 | [libressl/crypto](libressl/crypto/)                           |       37 | LibreSSL libcrypto, the cryptography library                |
 | [libressl/ssl](libressl/ssl/)                                 |        3 | LibreSSL libssl, the TLS/SSL protocol library               |
+| [lol-html](lol-html/)                                         |        2 | Cloudflare's streaming HTML rewriter                        |
 | [nginx](nginx/)                                               |       12 | High-performance HTTP server and reverse proxy              |
 | [openbsd-bin](openbsd-bin/)                                   |      334 | OpenBSD userland programs and libraries                     |
 | [openbsd-kernel](openbsd-kernel/)                             |       37 | OpenBSD kernel                                              |

@@ -1,0 +1,143 @@
+diff --git a/src/selectors_vm/compiler.rs b/src/selectors_vm/compiler.rs
+index 567d0bc..25293c4 100644
+--- a/src/selectors_vm/compiler.rs
++++ b/src/selectors_vm/compiler.rs
+@@ -81,11 +81,15 @@ impl Compilable for Expr<OnTagNameExpr> {
+             }
+             OnTagNameExpr::NthOfType(nth) => {
+                 *enable_nth_of_type = true;
++                // `state.typed` is normally `Some` when an `:nth-of-type`
++                // selector is active. It can be `None` only when the
++                // typed-counter map refused to allocate an entry because
++                // the memory limiter rejected the request. In that case we
++                // treat the selector as a non-match for this element so
++                // the rewriter can degrade gracefully under memory
++                // pressure instead of panicking.
+                 Self::compile_expr(neg, move |state, _| {
+-                    state
+-                        .typed
+-                        .expect("Counter for type required at this point")
+-                        .is_nth(nth)
++                    state.typed.is_some_and(|c| c.is_nth(nth))
+                 })
+             }
+         };
+diff --git a/src/selectors_vm/stack.rs b/src/selectors_vm/stack.rs
+index b4cfc0a..e291f12 100644
+--- a/src/selectors_vm/stack.rs
++++ b/src/selectors_vm/stack.rs
+@@ -8,6 +8,7 @@ use crate::selectors_vm::DenseHashSet;
+ use hashbrown::HashMap;
+ use hashbrown::hash_map::RawEntryMut;
+ use std::hash::BuildHasher;
++use std::mem::size_of;
+ 
+ #[inline]
+ fn is_void_element(local_name: &LocalName<'_>, enable_esi_tags: bool) -> bool {
+@@ -99,25 +100,49 @@ impl CounterList {
+ }
+ 
+ /// A more efficient counter that only requires one owned local name to track counters across multiple stack frames
+-pub(crate) struct TypedChildCounterMap(HashMap<LocalName<'static>, CounterList>);
++pub(crate) struct TypedChildCounterMap {
++    map: HashMap<LocalName<'static>, CounterList>,
++    limiter: SharedMemoryLimiter,
++}
+ 
+ impl TypedChildCounterMap {
+     #[must_use]
+     #[inline]
+-    pub(crate) fn new() -> Self {
+-        Self(HashMap::new())
++    pub(crate) fn new(limiter: SharedMemoryLimiter) -> Self {
++        Self {
++            map: HashMap::new(),
++            limiter,
++        }
+     }
+ 
+     fn hash_name(&self, name: &LocalName<'_>) -> u64 {
+-        self.0.hasher().hash_one(name)
++        self.map.hasher().hash_one(name)
++    }
++
++    /// Approximate memory cost of a new map entry: the owned key, the
++    /// value struct, and any heap-allocated bytes referenced from the key.
++    /// Used purely as input to the memory limiter; the exact byte count
++    /// does not need to match a real `size_of_val` since the limit is a
++    /// soft cap rather than an allocation hook.
++    fn entry_size(name: &LocalName<'_>) -> usize {
++        let key_data = match name {
++            LocalName::Hash(_) => 0,
++            LocalName::Bytes(bytes) => bytes.len(),
++        };
++        size_of::<LocalName<'static>>() + key_data + size_of::<CounterList>()
+     }
+ 
+     /// Adds a seen child to the map. The index is the level of the item
+     pub fn add_child(&mut self, name: &LocalName<'_>, index: usize) {
+         let hash = self.hash_name(name);
+-        let entry = self.0.raw_entry_mut().from_hash(hash, |n| name == n);
++        let entry = self.map.raw_entry_mut().from_hash(hash, |n| name == n);
+         match entry {
+             RawEntryMut::Vacant(vacant) => {
++                let entry_size = Self::entry_size(name);
++                // Check memory limit before allocating
++                if self.limiter.increase_usage(entry_size).is_err() {
++                    return; // Memory limit exceeded, skip tracking this element
++                }
+                 vacant.insert_hashed_nocheck(
+                     hash,
+                     name.clone().into_owned(), // the hash won't change just because we've got ownership
+@@ -128,10 +153,23 @@ impl TypedChildCounterMap {
+                 let CounterList { items, current } = occupied.get_mut();
+                 if current.index == index {
+                     current.counter.inc();
+-                } else {
++                } else if self
++                    .limiter
++                    .increase_usage(size_of::<CounterItem>())
++                    .is_ok()
++                {
+                     let counter = ChildCounter::new_and_inc();
+                     let old = std::mem::replace(current, CounterItem { counter, index });
+                     items.push(old);
++                } else {
++                    // Memory limit exceeded; drop the historical counter
++                    // rather than aborting the parse. Selector matches
++                    // for popped-back ancestors of this element may be
++                    // wrong, but availability is preserved.
++                    *current = CounterItem {
++                        counter: ChildCounter::new_and_inc(),
++                        index,
++                    };
+                 }
+             }
+         }
+@@ -139,7 +177,7 @@ impl TypedChildCounterMap {
+ 
+     #[inline]
+     pub fn pop_to(&mut self, index: usize) {
+-        self.0.retain(|_, v| {
++        self.map.retain(|_, v| {
+             while v.current.index > index {
+                 match v.items.pop() {
+                     Some(next) => {
+@@ -157,7 +195,7 @@ impl TypedChildCounterMap {
+     where
+         'a: 'i,
+     {
+-        match self.0.get(name) {
++        match self.map.get(name) {
+             Some(CounterList {
+                 current:
+                     CounterItem {
+@@ -224,7 +262,7 @@ impl<E: ElementData> Stack<E> {
+     pub fn new(memory_limiter: SharedMemoryLimiter, enable_nth_of_type: bool) -> Self {
+         Self {
+             root_child_counter: Default::default(),
+-            typed_child_counters: enable_nth_of_type.then(TypedChildCounterMap::new),
++            typed_child_counters: enable_nth_of_type.then(|| TypedChildCounterMap::new(memory_limiter.clone())),
+             items: LimitedVec::new(memory_limiter),
+         }
+     }
