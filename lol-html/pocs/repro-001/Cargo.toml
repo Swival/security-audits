@@ -1,0 +1,11 @@
+[package]
+name = "repro-001"
+version = "0.0.0"
+edition = "2024"
+
+[dependencies]
+lol_html = { path = "../.." }
+
+[[bin]]
+name = "repro-001"
+path = "main.rs"
