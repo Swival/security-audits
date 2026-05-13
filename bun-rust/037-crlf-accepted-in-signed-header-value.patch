@@ -1,0 +1,34 @@
+diff --git a/src/s3_signing/credentials.rs b/src/s3_signing/credentials.rs
+index 953f90e9b5..681a3b691e 100644
+--- a/src/s3_signing/credentials.rs
++++ b/src/s3_signing/credentials.rs
+@@ -871,6 +871,20 @@ impl S3Credentials {
+             return Ok(r);
+         }
+ 
++        if contains_newline_or_cr(aws_content_hash)
++            || contains_newline_or_cr(&amz_date)
++            || contains_newline_or_cr(&host)
++            || contains_newline_or_cr(&authorization)
++            || acl.is_some_and(contains_newline_or_cr)
++            || session_token.is_some_and(contains_newline_or_cr)
++            || storage_class.is_some_and(contains_newline_or_cr)
++            || content_disposition.is_some_and(contains_newline_or_cr)
++            || content_encoding.is_some_and(contains_newline_or_cr)
++            || content_md5.as_deref().is_some_and(contains_newline_or_cr)
++        {
++            return Err(SignError::InvalidHeaderValue);
++        }
++
+         let url = alloc_print!(
+             "{}://{}{}{}",
+             protocol,
+@@ -1273,6 +1287,8 @@ pub enum SignError {
+     InvalidEndpoint,
+     #[error("InvalidSessionToken")]
+     InvalidSessionToken,
++    #[error("InvalidHeaderValue")]
++    InvalidHeaderValue,
+     #[error("FailedToGenerateSignature")]
+     FailedToGenerateSignature,
+     #[error("NoSpaceLeft")]

@@ -1,0 +1,20 @@
+diff --git a/src/sourcemap_jsc/CodeCoverage.rs b/src/sourcemap_jsc/CodeCoverage.rs
+index e0895e7d47..942048188b 100644
+--- a/src/sourcemap_jsc/CodeCoverage.rs
++++ b/src/sourcemap_jsc/CodeCoverage.rs
+@@ -312,7 +312,14 @@ pub mod lcov {
+ 
+         // SF: Source File path
+         // For example, `SF:path/to/source.ts`
+-        write!(writer, "SF:{}\n", bstr::BStr::new(filename))?;
++        writer.write_all(b"SF:")?;
++        for &byte in filename {
++            match byte {
++                b'\n' | b'\r' => writer.write_all(b"?")?,
++                byte => writer.write_all(&[byte])?,
++            }
++        }
++        writer.write_all(b"\n")?;
+ 
+         // ** Per-function coverage not supported yet, since JSC does not support function names yet. **
+         // FN: line number,function name

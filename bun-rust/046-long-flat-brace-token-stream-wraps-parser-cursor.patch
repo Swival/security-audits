@@ -1,0 +1,15 @@
+diff --git a/src/shell_parser/braces.rs b/src/shell_parser/braces.rs
+index 4638744c79..8e3c30579f 100644
+--- a/src/shell_parser/braces.rs
++++ b/src/shell_parser/braces.rs
+@@ -1158,6 +1158,10 @@ fn build_expansion_table(
+         variants: u16,
+         prev_tok_end: u16,
+     }
++    if tokens.len() > u16::MAX as usize {
++        return Err(ParserError::UnexpectedToken);
++    }
++
+     let mut brace_stack: SmallVec<[BraceState; MAX_NESTED_BRACES]> = SmallVec::new();
+ 
+     let mut i: u16 = 0;

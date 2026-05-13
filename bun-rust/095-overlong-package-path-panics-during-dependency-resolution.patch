@@ -1,0 +1,21 @@
+diff --git a/src/install/lockfile/bun.lock.rs b/src/install/lockfile/bun.lock.rs
+index 2cc8dc98e2..c2bc011b12 100644
+--- a/src/install/lockfile/bun.lock.rs
++++ b/src/install/lockfile/bun.lock.rs
+@@ -1393,6 +1393,16 @@ impl<T> PkgMap<T> {
+         path_buf: &mut [u8],
+     ) -> Result<&T, ResolveError> {
+         let dep_name = dep.name.slice(string_buf);
++        let Some(needed) = pkg_path
++            .len()
++            .checked_add(1)
++            .and_then(|len| len.checked_add(dep_name.len()))
++        else {
++            return Err(ResolveError::InvalidPackageKey);
++        };
++        if needed > path_buf.len() {
++            return Err(ResolveError::InvalidPackageKey);
++        }
+ 
+         path_buf[0..pkg_path.len()].copy_from_slice(pkg_path);
+         path_buf[pkg_path.len()] = b'/';

@@ -1,0 +1,61 @@
+diff --git a/src/runtime/cli/pack_command.rs b/src/runtime/cli/pack_command.rs
+index 497239f04d..752b019a0e 100644
+--- a/src/runtime/cli/pack_command.rs
++++ b/src/runtime/cli/pack_command.rs
+@@ -3136,6 +3136,27 @@ pub struct TarballNameFormatter<'a> {
+     style: TarballNameStyle,
+ }
+ 
++fn fmt_tarball_filename_part(part: &[u8]) -> TarballNamePartFormatter<'_> {
++    TarballNamePartFormatter { part }
++}
++
++struct TarballNamePartFormatter<'a> {
++    part: &'a [u8],
++}
++
++impl<'a> fmt::Display for TarballNamePartFormatter<'a> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        let mut start = 0;
++        for (i, &byte) in self.part.iter().enumerate() {
++            if byte == b'/' || byte == b'\\' {
++                write!(f, "{}-", bstr::BStr::new(&self.part[start..i]))?;
++                start = i + 1;
++            }
++        }
++        write!(f, "{}", bstr::BStr::new(&self.part[start..]))
++    }
++}
++
+ impl<'a> fmt::Display for TarballNameFormatter<'a> {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+         if self.style == TarballNameStyle::Raw {
+@@ -3154,8 +3175,8 @@ impl<'a> fmt::Display for TarballNameFormatter<'a> {
+                     return write!(
+                         f,
+                         "{}-{}-{}.tgz",
+-                        bstr::BStr::new(&self.package_name[1..][..slash - 1]),
+-                        bstr::BStr::new(&self.package_name[slash + 1..]),
++                        fmt_tarball_filename_part(&self.package_name[1..][..slash - 1]),
++                        fmt_tarball_filename_part(&self.package_name[slash + 1..]),
+                         bstr::BStr::new(self.package_version),
+                     );
+                 }
+@@ -3164,7 +3185,7 @@ impl<'a> fmt::Display for TarballNameFormatter<'a> {
+             return write!(
+                 f,
+                 "{}-{}.tgz",
+-                bstr::BStr::new(&self.package_name[1..]),
++                fmt_tarball_filename_part(&self.package_name[1..]),
+                 bstr::BStr::new(self.package_version),
+             );
+         }
+@@ -3172,7 +3193,7 @@ impl<'a> fmt::Display for TarballNameFormatter<'a> {
+         write!(
+             f,
+             "{}-{}.tgz",
+-            bstr::BStr::new(self.package_name),
++            fmt_tarball_filename_part(self.package_name),
+             bstr::BStr::new(self.package_version),
+         )
+     }

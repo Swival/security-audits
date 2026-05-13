@@ -1,0 +1,58 @@
+diff --git a/src/runtime/test_runner/snapshot.rs b/src/runtime/test_runner/snapshot.rs
+index 66e7cb0ebb..8b461ba471 100644
+--- a/src/runtime/test_runner/snapshot.rs
++++ b/src/runtime/test_runner/snapshot.rs
+@@ -901,10 +901,19 @@ impl<'a> Snapshots<'a> {
+                         self.snapshot_dir_path = Some(core::ptr::NonNull::from(dir_path));
+                     }
+                     bun_sys::Result::Err(err) => match err.get_errno() {
+-                        bun_sys::Errno::EEXIST => {
+-                            // SAFETY: see above — read-only backref, never written through.
+-                            self.snapshot_dir_path = Some(core::ptr::NonNull::from(dir_path));
+-                        }
++                        bun_sys::Errno::EEXIST => match bun_sys::lstat(snapshot_dir_path) {
++                            Ok(st) if bun_sys::kind_from_mode(st.st_mode as bun_sys::Mode) == bun_sys::FileKind::Directory => {
++                                // SAFETY: see above — read-only backref, never written through.
++                                self.snapshot_dir_path = Some(core::ptr::NonNull::from(dir_path));
++                            }
++                            Ok(_) => {
++                                return Ok(bun_sys::Result::Err(
++                                    bun_sys::Error::from_code(bun_sys::E::ENOTDIR, bun_sys::Tag::mkdir)
++                                        .with_path(snapshot_dir_path.as_bytes()),
++                                ));
++                            }
++                            Err(err) => return Ok(bun_sys::Result::Err(err)),
++                        },
+                         _ => return Ok(bun_sys::Result::Err(err)),
+                     },
+                 }
+@@ -918,7 +927,7 @@ impl<'a> Snapshots<'a> {
+             // SAFETY: buf[pos] == 0 written above
+             let snapshot_file_path = ZStr::from_buf(&buf[..], pos);
+ 
+-            let mut flags: i32 = bun_sys::O::CREAT | bun_sys::O::RDWR;
++            let mut flags: i32 = bun_sys::O::CREAT | bun_sys::O::RDWR | bun_sys::O::NOFOLLOW;
+             if self.update_snapshots {
+                 flags |= bun_sys::O::TRUNC;
+             }
+@@ -926,6 +935,20 @@ impl<'a> Snapshots<'a> {
+                 bun_sys::Result::Ok(fd) => fd,
+                 bun_sys::Result::Err(err) => return Ok(bun_sys::Result::Err(err)),
+             };
++            match bun_sys::fstat(fd) {
++                Ok(st) if bun_sys::is_regular_file(st.st_mode as bun_sys::Mode) => {}
++                Ok(_) => {
++                    let _ = bun_sys::close(fd);
++                    return Ok(bun_sys::Result::Err(
++                        bun_sys::Error::from_code(bun_sys::E::EINVAL, bun_sys::Tag::open)
++                            .with_path(snapshot_file_path.as_bytes()),
++                    ));
++                }
++                Err(err) => {
++                    let _ = bun_sys::close(fd);
++                    return Ok(bun_sys::Result::Err(err));
++                }
++            }
+ 
+             let file = File {
+                 id: file_id,

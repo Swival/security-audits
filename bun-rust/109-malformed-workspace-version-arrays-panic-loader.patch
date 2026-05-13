@@ -1,0 +1,26 @@
+diff --git a/src/install/lockfile/bun.lockb.rs b/src/install/lockfile/bun.lockb.rs
+index 905d5eb1c4..d19ecf0ebc 100644
+--- a/src/install/lockfile/bun.lockb.rs
++++ b/src/install/lockfile/bun.lockb.rs
+@@ -435,6 +435,10 @@ pub fn load(
+                     // const block without specialization; rely on type-checked
+                     // `ensure_total_capacity` + slice copy below to enforce it.
+ 
++                    if workspace_package_name_hashes.len() != workspace_versions_list.len() {
++                        return Err(bun_core::err!("InvalidLockfile"));
++                    }
++
+                     lockfile
+                         .workspace_versions
+                         .ensure_total_capacity(workspace_versions_list.len())?;
+@@ -460,6 +464,10 @@ pub fn load(
+                     let workspace_paths_hashes: Vec<PackageNameHash> = buffers::read_array(stream)?;
+                     let workspace_paths_strings: Vec<SemverString> = buffers::read_array(stream)?;
+ 
++                    if workspace_paths_hashes.len() != workspace_paths_strings.len() {
++                        return Err(bun_core::err!("InvalidLockfile"));
++                    }
++
+                     lockfile
+                         .workspace_paths
+                         .ensure_total_capacity(workspace_paths_strings.len())?;

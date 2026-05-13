@@ -1,0 +1,24 @@
+diff --git a/src/sourcemap_jsc/CodeCoverage.rs b/src/sourcemap_jsc/CodeCoverage.rs
+index e0895e7d47..0e900f7033 100644
+--- a/src/sourcemap_jsc/CodeCoverage.rs
++++ b/src/sourcemap_jsc/CodeCoverage.rs
+@@ -703,6 +703,9 @@ impl ByteRangeMapping {
+ 
+                         let line: u32 =
+                             u32::try_from(point.original.lines.zero_based()).expect("int cast");
++                        if line >= line_count {
++                            continue;
++                        }
+ 
+                         executable_lines.set(line as usize);
+                         if has_executed {
+@@ -782,6 +785,9 @@ impl ByteRangeMapping {
+ 
+                         let line: u32 =
+                             u32::try_from(point.original.lines.zero_based()).expect("int cast");
++                        if line >= line_count {
++                            continue;
++                        }
+                         min_line = min_line.min(line);
+                         max_line = max_line.max(line);
+                     }

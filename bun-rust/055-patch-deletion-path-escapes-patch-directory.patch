@@ -1,0 +1,24 @@
+diff --git a/src/patch/lib.rs b/src/patch/lib.rs
+index cf2da18873..1845868c12 100644
+--- a/src/patch/lib.rs
++++ b/src/patch/lib.rs
+@@ -102,6 +102,19 @@ impl<'a> PatchFile<'a> {
+         for part in &self.parts {
+             match part {
+                 PatchFilePart::FileDeletion(file_deletion) => {
++                    if file_deletion.path.is_empty()
++                        || paths::is_sep_any(file_deletion.path[0])
++                        || (file_deletion.path.len() >= 2
++                            && file_deletion.path[1] == b':'
++                            && paths::is_drive_letter(file_deletion.path[0]))
++                        || file_deletion
++                            .path
++                            .split(|b| paths::is_sep_any(*b))
++                            .any(|part| part == b"..")
++                    {
++                        return Some(sys::Error::from_code(sys::E::EINVAL, sys::Tag::unlink));
++                    }
++
+                     let pathz = ZBox::from_vec_with_nul(file_deletion.path.to_vec());
+ 
+                     if let sys::Result::Err(e) = sys::unlinkat(patch_dir, &pathz) {

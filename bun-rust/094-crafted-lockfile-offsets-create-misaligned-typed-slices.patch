@@ -1,0 +1,21 @@
+diff --git a/src/install/lockfile/Buffers.rs b/src/install/lockfile/Buffers.rs
+index 71077731b5..183f813da6 100644
+--- a/src/install/lockfile/Buffers.rs
++++ b/src/install/lockfile/Buffers.rs
+@@ -1,4 +1,4 @@
+-use core::mem::size_of;
++use core::mem::{align_of, size_of};
+ 
+ use bun_collections::DynamicBitSet as Bitset;
+ use bun_core::Output;
+@@ -147,6 +147,10 @@ pub fn read_array<T: Copy>(stream: &mut Stream) -> Result<Vec<T>, bun_core::Erro
+     }
+ 
+     let byte_len = end_pos - start_pos;
++    if start_pos % align_of::<T>() as u64 != 0 || byte_len % size_of::<T>() as u64 != 0 {
++        return Err(bun_core::err!("CorruptLockfile"));
++    }
++
+     stream.pos = end_pos as usize;
+ 
+     if byte_len == 0 {

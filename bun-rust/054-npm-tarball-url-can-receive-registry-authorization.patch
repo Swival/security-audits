@@ -1,0 +1,41 @@
+diff --git a/src/install/PackageManager/PackageManagerEnqueue.rs b/src/install/PackageManager/PackageManagerEnqueue.rs
+index 54e7856b0a..5dcce11c5f 100644
+--- a/src/install/PackageManager/PackageManagerEnqueue.rs
++++ b/src/install/PackageManager/PackageManagerEnqueue.rs
+@@ -2167,6 +2167,20 @@ fn get_or_put_resolved_package_with_find_result(
+             );
+             debug_assert!(!this.network_dedupe_map.contains(&task_id));
+ 
++            let tarball_url = manifest.str(&find_result.package.tarball_url);
++            let authorization = if tarball_url.is_empty()
++                || bun_url::URL::parse(tarball_url).origin
++                    == this
++                        .scope_for_package_name(this.lockfile.str(&name))
++                        .url
++                        .url()
++                        .origin
++            {
++                crate::network_task::Authorization::AllowAuthorization
++            } else {
++                crate::network_task::Authorization::NoAuthorization
++            };
++
+             break 'extract Some(ResolvedPackageResult {
+                 package,
+                 is_first_time: true,
+@@ -2174,13 +2188,12 @@ fn get_or_put_resolved_package_with_find_result(
+                     run_tasks::generate_network_task_for_tarball(
+                         this,
+                         task_id,
+-                        manifest.str(&find_result.package.tarball_url),
++                        tarball_url,
+                         behavior.is_required(),
+                         dependency_id,
+                         package,
+                         name_and_version_hash,
+-                        // its npm.
+-                        crate::network_task::Authorization::AllowAuthorization,
++                        authorization,
+                     )?
+                     .expect("unreachable"),
+                 )),

@@ -1,0 +1,73 @@
+diff --git a/src/zstd/lib.rs b/src/zstd/lib.rs
+index a4d91eebae..677af864d9 100644
+--- a/src/zstd/lib.rs
++++ b/src/zstd/lib.rs
+@@ -279,6 +279,7 @@ pub fn decompress_alloc(src: &[u8]) -> core::result::Result<Vec<u8>, ZstdError>
+         let mut list: Vec<u8> = Vec::new();
+         // PORT NOTE: Zig's `errdefer list.deinit(allocator)` is implicit — `list` drops on `?`.
+         let mut reader = ZstdReaderArrayList::init(src, &mut list)?;
++        reader.max_output_size = MAX_PREALLOCATE_SIZE;
+ 
+         reader.read_all(true)?;
+         drop(reader);
+@@ -319,6 +320,7 @@ pub struct ZstdReaderArrayList<'a> {
+     pub state: State,
+     pub total_out: usize,
+     pub total_in: usize,
++    pub max_output_size: usize,
+ }
+ 
+ impl<'a> ZstdReaderArrayList<'a> {
+@@ -350,6 +352,7 @@ impl<'a> ZstdReaderArrayList<'a> {
+             state: State::Uninitialized,
+             total_out: 0,
+             total_in: 0,
++            max_output_size: usize::MAX,
+         }))
+     }
+ 
+@@ -387,9 +390,19 @@ impl<'a> ZstdReaderArrayList<'a> {
+                 return Ok(());
+             }
+ 
++            let remaining = match self.max_output_size.checked_sub(self.total_out) {
++                Some(remaining) if remaining > 0 => remaining,
++                _ => {
++                    self.state = State::Error;
++                    return Err(ZstdError::ZstdDecompressionError);
++                }
++            };
++
+             // SAFETY: write-only spare; ZSTD_decompressStream initializes the
+             // first `out_buf.pos` bytes.
+-            let spare = unsafe { bun_core::vec::reserve_spare_bytes(self.list_ptr, 4096) };
++            let spare = unsafe {
++                bun_core::vec::reserve_spare_bytes(self.list_ptr, remaining.min(4096))
++            };
+             let mut in_buf = c::ZSTD_inBuffer {
+                 src: next_in.as_ptr().cast::<c_void>(),
+                 size: next_in.len(),
+@@ -397,7 +410,7 @@ impl<'a> ZstdReaderArrayList<'a> {
+             };
+             let mut out_buf = c::ZSTD_outBuffer {
+                 dst: spare.as_mut_ptr().cast::<c_void>(),
+-                size: spare.len(),
++                size: spare.len().min(remaining),
+                 pos: 0,
+             };
+ 
+@@ -412,6 +425,14 @@ impl<'a> ZstdReaderArrayList<'a> {
+ 
+             let bytes_written = out_buf.pos;
+             let bytes_read = in_buf.pos;
++            if self
++                .total_out
++                .checked_add(bytes_written)
++                .map_or(true, |total| total > self.max_output_size)
++            {
++                self.state = State::Error;
++                return Err(ZstdError::ZstdDecompressionError);
++            }
+             // SAFETY: ZSTD_decompressStream wrote exactly `bytes_written` initialized bytes
+             // into the spare capacity starting at the previous len.
+             unsafe { bun_core::vec::commit_spare(self.list_ptr, bytes_written) };

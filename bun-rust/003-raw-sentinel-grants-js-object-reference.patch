@@ -1,0 +1,31 @@
+diff --git a/src/shell_parser/parse.rs b/src/shell_parser/parse.rs
+index 6fc9740b42..d06809f71f 100644
+--- a/src/shell_parser/parse.rs
++++ b/src/shell_parser/parse.rs
+@@ -2406,11 +2406,11 @@ pub struct LexError {
+ /// A special char used to denote the beginning of a special token
+ /// used for substituting JS variables into the script string.
+ ///
+-/// \b (decimal value of 8) is deliberately chosen so that it is not
+-/// easy for the user to accidentally use this char in their script.
+-const SPECIAL_JS_CHAR: u8 = 8;
+-pub const LEX_JS_OBJREF_PREFIX: &[u8] = b"\x08__bun_";
+-pub const LEX_JS_STRING_PREFIX: &[u8] = b"\x08__bunstr_";
++/// NUL is rejected from user-provided shell strings before lexing, so raw
++/// source bytes cannot smuggle these internal substitution sentinels.
++const SPECIAL_JS_CHAR: u8 = 0;
++pub const LEX_JS_OBJREF_PREFIX: &[u8] = b"\0__bun_";
++pub const LEX_JS_STRING_PREFIX: &[u8] = b"\0__bunstr_";
+ 
+ #[derive(Clone, Copy, PartialEq, Eq, core::marker::ConstParamTy)]
+ pub enum StringEncoding {
+@@ -2649,8 +2649,7 @@ impl<'bump, const ENCODING: StringEncoding> Lexer<'bump, ENCODING> {
+             let char = input.char;
+             let escaped = input.escaped;
+ 
+-            // Special token to denote substituted JS variables
+-            // we use 8 or \b which is a non printable char
++            // Special token to denote substituted JS variables.
+             if char == u32::from(SPECIAL_JS_CHAR) {
+                 if self.looks_like_js_string_ref() {
+                     if let Some(bunstr) = self.eat_js_string_ref() {

@@ -1,0 +1,50 @@
+diff --git a/src/runtime/node/node_fs.rs b/src/runtime/node/node_fs.rs
+index 07cb2d7ece..1db9eeda5f 100644
+--- a/src/runtime/node/node_fs.rs
++++ b/src/runtime/node/node_fs.rs
+@@ -2247,6 +2247,8 @@ mod _async_tasks {
+ 
+         pub subtask_count: AtomicUsize,
+ 
++        pub perform_work_mutex: bun_threading::Mutex,
++
+         /// The final result list
+         pub result_list: ResultListEntryValue,
+ 
+@@ -2355,10 +2357,9 @@ mod _async_tasks {
+                 }
+             });
+             let mut buf = PathBuffer::uninit();
+-            // SAFETY: readdir_task (ParentRef) outlives subtask via subtask_count
+-            // refcount. `from_raw_mut` was used at enqueue, so write provenance is
+-            // present; this work-pool callback is the sole holder of `&mut` to the
+-            // parent's per-result fields (it pushes to a lock-free queue).
++            let _guard = readdir_task.get().perform_work_mutex.lock_guard();
++            // SAFETY: readdir_task outlives subtask via subtask_count, and
++            // perform_work_mutex serializes mutable access to the parent.
+             unsafe { readdir_task.assume_mut() }.perform_work(
+                 basename.slice_assume_z(),
+                 &mut buf,
+@@ -2470,6 +2471,7 @@ mod _async_tasks {
+                 r#ref: KeepAlive::default(),
+                 tracker: AsyncTaskTracker::init(vm),
+                 subtask_count: AtomicUsize::new(1),
++                perform_work_mutex: bun_threading::Mutex::default(),
+                 root_path,
+                 result_list,
+                 result_list_count: AtomicUsize::new(0),
+@@ -2550,10 +2552,11 @@ mod _async_tasks {
+ 
+         fn work_pool_callback(task: *mut WorkPoolTask) {
+             // SAFETY: task points to Self.task
+-            let this = unsafe { &mut *Self::from_task_ptr(task) };
++            let this = Self::from_task_ptr(task);
+             let mut buf = PathBuffer::uninit();
+-            let root_path = this.root_path;
+-            this.perform_work(root_path.slice_assume_z(), &mut buf, true);
++            let root_path = unsafe { (*this).root_path };
++            let _guard = unsafe { &*this }.perform_work_mutex.lock_guard();
++            unsafe { &mut *this }.perform_work(root_path.slice_assume_z(), &mut buf, true);
+         }
+ 
+         pub fn write_results<T: IntoResultListEntry>(&mut self, result: &mut Vec<T>) {

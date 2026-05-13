@@ -1,0 +1,12 @@
+diff --git a/src/bunfig/bunfig.rs b/src/bunfig/bunfig.rs
+index f87f005f9f..399437d4ed 100644
+--- a/src/bunfig/bunfig.rs
++++ b/src/bunfig/bunfig.rs
+@@ -1588,6 +1588,7 @@ impl<'a> Parser<'a> {
+                     }
+                     break 'plugins Some(plugins);
+                 } else {
++                    self.expect_string(&config_plugins)?;
+                     let s = config_plugins
+                         .data
+                         .e_string()

@@ -1,0 +1,13 @@
+diff --git a/src/install/npm.rs b/src/install/npm.rs
+index 04024fd8d8..1ce7a690ce 100644
+--- a/src/install/npm.rs
++++ b/src/install/npm.rs
+@@ -205,7 +205,7 @@ pub fn whoami(manager: &mut PackageManager) -> Result<Vec<u8>, WhoamiError> {
+                 "failed to parse '/-/whoami' response body as JSON",
+                 format_args!(""),
+             );
+-            Global::crash();
++            return Err(WhoamiError::ProbablyInvalidAuth);
+         }
+     };
+ 

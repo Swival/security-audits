@@ -1,0 +1,16 @@
+diff --git a/src/install/lockfile/Tree.rs b/src/install/lockfile/Tree.rs
+index 27a0c0922b..beeb4ada15 100644
+--- a/src/install/lockfile/Tree.rs
++++ b/src/install/lockfile/Tree.rs
+@@ -323,6 +323,11 @@ pub fn relative_path_and_depth<'b, const PATH_STYLE: IteratorPathStyle>(
+         let mut depth_buf_len: usize = 1;
+ 
+         while parent_id > 0 && (parent_id as usize) < trees.len() {
++            if depth_buf_len == MAX_DEPTH || depth_buf[1..depth_buf_len].contains(&parent_id) {
++                path_buf[path_written] = 0;
++                return (ZStr::from_buf(path_buf, path_written), 0);
++            }
++
+             depth_buf[depth_buf_len] = parent_id;
+             parent_id = trees[parent_id as usize].parent;
+             depth_buf_len += 1;

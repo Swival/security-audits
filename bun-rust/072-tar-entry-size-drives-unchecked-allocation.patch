@@ -1,0 +1,14 @@
+diff --git a/src/libarchive/lib.rs b/src/libarchive/lib.rs
+index 28c57763cc..648eab7346 100644
+--- a/src/libarchive/lib.rs
++++ b/src/libarchive/lib.rs
+@@ -900,7 +900,8 @@ pub mod lib {
+             archive: *mut Archive,
+         ) -> core::result::Result<IterResult<Vec<u8>>, bun_core::OOM> {
+             let size = self.entry().size();
+-            if size < 0 {
++            const MAX_ENTRY_DATA_SIZE: i64 = 16 * 1024 * 1024;
++            if size < 0 || size > MAX_ENTRY_DATA_SIZE {
+                 return Ok(Err(IteratorError {
+                     archive,
+                     message: b"invalid archive entry size",

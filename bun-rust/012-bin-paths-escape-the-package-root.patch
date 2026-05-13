@@ -1,0 +1,70 @@
+diff --git a/src/runtime/cli/pack_command.rs b/src/runtime/cli/pack_command.rs
+index 497239f04d..3a78a128e3 100644
+--- a/src/runtime/cli/pack_command.rs
++++ b/src/runtime/cli/pack_command.rs
+@@ -1524,10 +1524,12 @@ fn get_package_bins(json: &Expr) -> Result<Vec<BinInfo>, AllocError> {
+                 bin_str,
+                 &mut path_buf,
+             );
+-            bins.push(BinInfo {
+-                path: ZBox::from_bytes(normalized),
+-                ty: BinType::File,
+-            });
++            if !is_invalid_package_bin_path(normalized) {
++                bins.push(BinInfo {
++                    path: ZBox::from_bytes(normalized),
++                    ty: BinType::File,
++                });
++            }
+             return Ok(bins);
+         }
+ 
+@@ -1543,10 +1545,12 @@ fn get_package_bins(json: &Expr) -> Result<Vec<BinInfo>, AllocError> {
+                             bin_str,
+                             &mut path_buf,
+                         );
+-                        bins.push(BinInfo {
+-                            path: ZBox::from_bytes(normalized),
+-                            ty: BinType::File,
+-                        });
++                        if !is_invalid_package_bin_path(normalized) {
++                            bins.push(BinInfo {
++                                path: ZBox::from_bytes(normalized),
++                                ty: BinType::File,
++                            });
++                        }
+                     }
+                 }
+             }
+@@ -1563,10 +1567,12 @@ fn get_package_bins(json: &Expr) -> Result<Vec<BinInfo>, AllocError> {
+                         bin_str,
+                         &mut path_buf,
+                     );
+-                    bins.push(BinInfo {
+-                        path: ZBox::from_bytes(normalized),
+-                        ty: BinType::Dir,
+-                    });
++                    if !is_invalid_package_bin_path(normalized) {
++                        bins.push(BinInfo {
++                            path: ZBox::from_bytes(normalized),
++                            ty: BinType::Dir,
++                        });
++                    }
+                 }
+             }
+         }
+@@ -1575,6 +1581,14 @@ fn get_package_bins(json: &Expr) -> Result<Vec<BinInfo>, AllocError> {
+     Ok(bins)
+ }
+ 
++fn is_invalid_package_bin_path(path: &[u8]) -> bool {
++    path::is_absolute_loose(path)
++        || (path.len() >= 2
++            && path[0] == b'.'
++            && path[1] == b'.'
++            && (path.len() == 2 || path[2] == b'/'))
++}
++
+ fn is_package_bin(bins: &[BinInfo], maybe_bin_path: &[u8]) -> bool {
+     for bin in bins {
+         match bin.ty {

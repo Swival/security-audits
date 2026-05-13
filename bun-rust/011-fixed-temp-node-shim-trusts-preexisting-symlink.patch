@@ -1,0 +1,44 @@
+diff --git a/src/install/lib.rs b/src/install/lib.rs
+index 042aff5496..d9cca735d9 100644
+--- a/src/install/lib.rs
++++ b/src/install/lib.rs
+@@ -648,15 +648,34 @@ impl RunCommand {
+                 ZStr::from_static(B)
+             };
+ 
++            match bun_sys::mkdir(DIR_Z, 0o700) {
++                Ok(()) => {}
++                Err(e) if e.get_errno() == bun_sys::E::EEXIST => {
++                    let stat = match bun_sys::lstat(DIR_Z) {
++                        Ok(stat) => stat,
++                        Err(_) => return Ok(()),
++                    };
++                    if bun_sys::kind_from_mode(stat.st_mode as bun_sys::Mode)
++                        != bun_sys::FileKind::Directory
++                        || stat.st_uid != bun_sys::c::getuid()
++                        || ((stat.st_mode as bun_sys::Mode) & 0o022) != 0
++                    {
++                        return Ok(());
++                    }
++                }
++                Err(_) => return Ok(()),
++            }
++
+             for dest in [NODE_LINK, BUN_LINK] {
+-                let mut retried = false;
+                 loop {
+                     match bun_sys::symlink(argv0_z, dest) {
+                         Ok(()) => break,
+-                        Err(e) if e.get_errno() == bun_sys::E::EEXIST => break,
+-                        Err(_) if !retried => {
+-                            let _ = bun_sys::mkdir(DIR_Z, 0o755);
+-                            retried = true;
++                        Err(e) if e.get_errno() == bun_sys::E::EEXIST => {
++                            let mut existing_target = bun_paths::PathBuffer::uninit();
++                            match bun_sys::readlink(dest, &mut existing_target) {
++                                Ok(len) if &existing_target[..len] == argv0_z.as_bytes() => break,
++                                _ => return Ok(()),
++                            }
+                         }
+                         Err(_) => return Ok(()),
+                     }

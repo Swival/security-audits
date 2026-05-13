@@ -1,0 +1,45 @@
+diff --git a/src/bundler/linker_context/prepareCssAstsForChunk.rs b/src/bundler/linker_context/prepareCssAstsForChunk.rs
+index 0a060f7f35..e9fe4bfa07 100644
+--- a/src/bundler/linker_context/prepareCssAstsForChunk.rs
++++ b/src/bundler/linker_context/prepareCssAstsForChunk.rs
+@@ -389,26 +389,21 @@ fn prepare_css_asts_for_chunk_impl(c: &mut LinkerContext, chunk: &mut Chunk, bum
+                             // Prefix is all "@layer" (or empty). Nothing to
+                             // strip — leave `ast.rules.v` untouched.
+                         } else if layer_count == 0 {
+-                            // Fast path: no "@layer" statements to preserve,
+-                            // reslice the copied header forward. This does
+-                            // not touch the backing array.
+-                            let original_len = original_rules.len();
+-                            let tail_len = original_len - prefix_end;
+-                            // SAFETY: `ast.rules.v` is a shallow-copied `Vec` header
+-                            // aliasing the source stylesheet's backing buffer (see
+-                            // `ptr::read` above). Advancing ptr/len/cap mirrors Zig's
+-                            // ArrayListUnmanaged reslice; the buffer is arena-owned
+-                            // and never freed via this view.
+-                            unsafe {
+-                                let old_ptr = ast.rules.v.as_mut_ptr();
+-                                let old_cap = ast.rules.v.capacity();
+-                                core::mem::forget(core::mem::take(&mut ast.rules.v));
+-                                ast.rules.v = Vec::from_raw_parts(
+-                                    old_ptr.add(prefix_end),
+-                                    tail_len,
+-                                    old_cap - prefix_end,
+-                                );
++                            // No "@layer" statements to preserve. Copy the
++                            // tail into a fresh list so Vec ownership still
++                            // starts at the allocation base.
++                            let mut new_rules = BundlerCssRuleList::default();
++                            for rule in &original_rules[prefix_end..] {
++                                // SAFETY: Zig by-value copy of arena-backed rule.
++                                new_rules.v.push(unsafe { core::ptr::read(rule) });
+                             }
++                            // `ast.rules` is the shallow-copied header aliasing the
++                            // source stylesheet's arena buffer (see `ptr::read` above).
++                            // Dropping it would `drop_in_place` the aliased rules and
++                            // free the shared backing array. Leak the header (Zig
++                            // semantics: bitwise overwrite) before installing the
++                            // freshly-allocated list.
++                            core::mem::forget(core::mem::replace(&mut ast.rules, new_rules));
+                         } else {
+                             // Interleaved case: allocate a fresh rules list
+                             // so we don't mutate the shared backing array.

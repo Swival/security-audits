@@ -1,0 +1,19 @@
+diff --git a/src/runtime/cli/publish_command.rs b/src/runtime/cli/publish_command.rs
+index a18a294d52..d0add479e5 100644
+--- a/src/runtime/cli/publish_command.rs
++++ b/src/runtime/cli/publish_command.rs
+@@ -2085,10 +2085,12 @@ impl PublishCommand {
+         )
+         .ok();
+ 
++        write!(&mut buf, ",\"dist-tags\":{{").ok();
++        bun_js_printer::write_json_string::<_, { bun_js_printer::Encoding::Utf8 }>(tag, &mut buf)
++            .map_err(|_| AllocError)?;
+         write!(
+             &mut buf,
+-            ",\"dist-tags\":{{\"{}\":\"{}\"}}",
+-            bstr::BStr::new(tag),
++            ":\"{}\"}}",
+             bstr::BStr::new(version_without_build_tag),
+         )
+         .ok();

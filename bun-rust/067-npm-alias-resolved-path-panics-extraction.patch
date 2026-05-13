@@ -1,0 +1,13 @@
+diff --git a/src/install/yarn.rs b/src/install/yarn.rs
+index a0f87af34b..2eb10279aa 100644
+--- a/src/install/yarn.rs
++++ b/src/install/yarn.rs
+@@ -319,7 +319,7 @@ impl<'a> Entry<'a> {
+ 
+             if last_slash < dash_idx && url[last_slash + 1] == b'@' {
+                 return Some(&url[second_last_slash + 1..dash_idx]);
+-            } else {
++            } else if last_slash < dash_idx {
+                 return Some(&url[last_slash + 1..dash_idx]);
+             }
+         }

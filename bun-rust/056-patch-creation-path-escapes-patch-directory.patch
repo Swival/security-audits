@@ -1,0 +1,30 @@
+diff --git a/src/patch/lib.rs b/src/patch/lib.rs
+index cf2da18873..9f2e8cb976 100644
+--- a/src/patch/lib.rs
++++ b/src/patch/lib.rs
+@@ -136,6 +136,10 @@ impl<'a> PatchFile<'a> {
+                     }
+                 }
+                 PatchFilePart::FileCreation(file_creation) => {
++                    if !is_safe_patch_path(file_creation.path) {
++                        return Some(sys::Error::from_code(sys::E::EINVAL, sys::Tag::open));
++                    }
++
+                     let filepath_z = ZBox::from_vec_with_nul(file_creation.path.to_vec());
+                     let filepath = PathString::init(filepath_z.as_bytes());
+                     let filedir = paths::dirname_simple(filepath.slice());
+@@ -1071,6 +1075,14 @@ fn parse_file_mode(mode: &[u8]) -> Option<FileMode> {
+     FileMode::from_u32(parsed_mode)
+ }
+ 
++fn is_safe_patch_path(path: &[u8]) -> bool {
++    !path.is_empty()
++        && !paths::is_absolute_loose(path)
++        && !path
++            .split(|&c| c == b'/' || c == b'\\')
++            .any(|part| part == b"..")
++}
++
+ // ──────────────────────────────────────────────────────────────────────────
+ // ScalarSplitIter / LookbackIterator
+ // ──────────────────────────────────────────────────────────────────────────

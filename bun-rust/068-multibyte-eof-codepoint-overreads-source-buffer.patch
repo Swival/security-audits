@@ -1,0 +1,28 @@
+diff --git a/src/parsers/toml/lexer.rs b/src/parsers/toml/lexer.rs
+index ed47e9acec..d99c379395 100644
+--- a/src/parsers/toml/lexer.rs
++++ b/src/parsers/toml/lexer.rs
+@@ -229,14 +229,15 @@ impl<'a> Lexer<'a> {
+         let code_point: CodePoint = match slice.len() {
+             0 => -1,
+             1 => slice[0] as CodePoint,
+-            _ => strings::decode_wtf8_rune_t_multibyte(
+-                // SAFETY: contents has at least 4 bytes available from `current` when cp_len > 1
+-                // (matches Zig `slice.ptr[0..4]` which over-reads up to 4 bytes).
+-                // TODO(port): verify bun_str signature; may take &[u8; 4] or *const u8.
+-                unsafe { &*slice.as_ptr().cast::<[u8; 4]>() },
+-                u8::try_from(slice.len()).expect("int cast"), // @intCast to u3
+-                strings::UNICODE_REPLACEMENT as CodePoint,
+-            ),
++            _ => {
++                let mut bytes = [0; 4];
++                bytes[..slice.len()].copy_from_slice(slice);
++                strings::decode_wtf8_rune_t_multibyte(
++                    &bytes,
++                    u8::try_from(slice.len()).expect("int cast"), // @intCast to u3
++                    strings::UNICODE_REPLACEMENT as CodePoint,
++                )
++            }
+         };
+ 
+         self.end = self.current;

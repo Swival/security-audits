@@ -1,0 +1,28 @@
+diff --git a/src/runtime/api/cron.rs b/src/runtime/api/cron.rs
+index 31a8c944ee..0e03cba31c 100644
+--- a/src/runtime/api/cron.rs
++++ b/src/runtime/api/cron.rs
+@@ -700,8 +700,9 @@ pub fn cron_register(global: &JSGlobalObject, frame: &CallFrame) -> JsResult<JSV
+         }
+     };
+ 
+-    // Validate path has no single quotes (shell escaping in crontab) or
+-    // percent signs (cron interprets % as newline before the shell sees it)
++    // Validate path has no single quotes (shell escaping in crontab),
++    // percent signs (cron interprets % as newline before the shell sees it),
++    // or line breaks (which would create additional crontab entries).
+     for &c in abs_path.as_bytes() {
+         if c == b'\'' {
+             return Err(
+@@ -713,6 +714,11 @@ pub fn cron_register(global: &JSGlobalObject, frame: &CallFrame) -> JsResult<JSV
+                 "Path must not contain percent signs (cron interprets % as newline)"
+             )));
+         }
++        if c == b'\n' || c == b'\r' {
++            return Err(global.throw_invalid_arguments(format_args!(
++                "Path must not contain line breaks"
++            )));
++        }
+     }
+ 
+     let bun_exe = match bun_core::self_exe_path() {

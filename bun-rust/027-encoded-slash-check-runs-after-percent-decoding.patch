@@ -1,0 +1,56 @@
+diff --git a/src/resolver/package_json.rs b/src/resolver/package_json.rs
+index 234a2f26cc..c7b1d775e7 100644
+--- a/src/resolver/package_json.rs
++++ b/src/resolver/package_json.rs
+@@ -2416,6 +2416,25 @@ impl<'a> ESModule<'a> {
+ 
+         // If resolved contains any percent encodings of "/" or "\" ("%2f" and "%5C"
+         // respectively), then throw an Invalid Module Specifier error.
++        let mut found: &[u8] = b"";
++        if strings::contains(&result.path, INVALID_PERCENT_CHARS[0]) {
++            found = INVALID_PERCENT_CHARS[0];
++        } else if strings::contains(&result.path, INVALID_PERCENT_CHARS[1]) {
++            found = INVALID_PERCENT_CHARS[1];
++        } else if strings::contains(&result.path, INVALID_PERCENT_CHARS[2]) {
++            found = INVALID_PERCENT_CHARS[2];
++        } else if strings::contains(&result.path, INVALID_PERCENT_CHARS[3]) {
++            found = INVALID_PERCENT_CHARS[3];
++        }
++
++        if !found.is_empty() {
++            return Resolution {
++                status: Status::InvalidModuleSpecifier,
++                path: result.path,
++                debug: result.debug,
++            };
++        }
++
+         // SAFETY: threadlocal UnsafeCell; finalize() does not recurse, so this is the unique
+         // live `&mut` to resolved_path_buf_percent on this thread.
+         let resolved_path_buf_percent: &mut PathBuffer =
+@@ -2437,25 +2456,6 @@ impl<'a> ESModule<'a> {
+ 
+         let resolved_path = &resolved_path_buf_percent.0[0..len as usize];
+ 
+-        let mut found: &[u8] = b"";
+-        if strings::contains(resolved_path, INVALID_PERCENT_CHARS[0]) {
+-            found = INVALID_PERCENT_CHARS[0];
+-        } else if strings::contains(resolved_path, INVALID_PERCENT_CHARS[1]) {
+-            found = INVALID_PERCENT_CHARS[1];
+-        } else if strings::contains(resolved_path, INVALID_PERCENT_CHARS[2]) {
+-            found = INVALID_PERCENT_CHARS[2];
+-        } else if strings::contains(resolved_path, INVALID_PERCENT_CHARS[3]) {
+-            found = INVALID_PERCENT_CHARS[3];
+-        }
+-
+-        if !found.is_empty() {
+-            return Resolution {
+-                status: Status::InvalidModuleSpecifier,
+-                path: result.path,
+-                debug: result.debug,
+-            };
+-        }
+-
+         // If resolved is a directory, throw an Unsupported Directory Import error.
+         if strings::ends_with_any(resolved_path, b"/\\") {
+             return Resolution {

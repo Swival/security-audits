@@ -1,0 +1,17 @@
+diff --git a/src/libarchive_sys/bindings.rs b/src/libarchive_sys/bindings.rs
+index 8ae479c6e6..031d8384ed 100644
+--- a/src/libarchive_sys/bindings.rs
++++ b/src/libarchive_sys/bindings.rs
+@@ -1256,9 +1256,11 @@ impl NextEntry {
+         &self,
+         archive: &Archive,
+     ) -> Result<IteratorResult<Box<[u8]>>, bun_alloc::AllocError> {
++        const MAX_ENTRY_DATA_SIZE: i64 = 16 * 1024 * 1024;
++
+         // SAFETY: self.entry is the libarchive-owned entry from read_next_header.
+         let size = unsafe { (*self.entry).size() };
+-        if size < 0 {
++        if size < 0 || size > MAX_ENTRY_DATA_SIZE {
+             return Ok(IteratorResult::init_err(
+                 archive.as_mut_ptr(),
+                 b"invalid archive entry size",
