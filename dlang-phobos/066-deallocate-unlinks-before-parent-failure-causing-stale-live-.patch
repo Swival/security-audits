@@ -1,0 +1,32 @@
+diff --git a/std/experimental/allocator/building_blocks/scoped_allocator.d b/std/experimental/allocator/building_blocks/scoped_allocator.d
+index 96859b076..ba5ee7b90 100644
+--- a/std/experimental/allocator/building_blocks/scoped_allocator.d
++++ b/std/experimental/allocator/building_blocks/scoped_allocator.d
+@@ -172,15 +172,22 @@ struct ScopedAllocator(ParentAllocator)
+     static if (hasMember!(Allocator, "deallocate"))
+     bool deallocate(void[] b)
+     {
+-        // Remove from list
++        Node* prev = null;
++        Node* next = null;
+         if (b.ptr)
+         {
+             Node* n = & parent.prefix(b);
+-            if (n.prev) n.prev.next = n.next;
+-            else root = n.next;
+-            if (n.next) n.next.prev = n.prev;
++            prev = n.prev;
++            next = n.next;
+         }
+-        return parent.deallocate(b);
++        auto result = parent.deallocate(b);
++        if (result && b.ptr)
++        {
++            if (prev) prev.next = next;
++            else root = next;
++            if (next) next.prev = prev;
++        }
++        return result;
+     }
+ 
+     /**

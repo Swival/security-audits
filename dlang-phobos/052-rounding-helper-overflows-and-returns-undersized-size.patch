@@ -1,0 +1,18 @@
+diff --git a/std/experimental/allocator/common.d b/std/experimental/allocator/common.d
+index b06fb627d..c58306427 100644
+--- a/std/experimental/allocator/common.d
++++ b/std/experimental/allocator/common.d
+@@ -152,7 +152,12 @@ package size_t roundUpToMultipleOf(size_t s, uint base)
+ {
+     assert(base);
+     auto rem = s % base;
+-    return rem ? s + base - rem : s;
++    if (!rem) return s;
++    immutable increment = base - rem;
++    assert(s <= size_t.max - increment);
++    const result = s + increment;
++    assert(result >= s);
++    return result;
+ }
+ 
+ @safe @nogc nothrow pure

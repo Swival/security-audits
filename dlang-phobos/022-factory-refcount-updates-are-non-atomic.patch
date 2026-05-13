@@ -1,0 +1,29 @@
+diff --git a/std/regex/internal/ir.d b/std/regex/internal/ir.d
+index 3ec860b3c..16d864d1e 100644
+--- a/std/regex/internal/ir.d
++++ b/std/regex/internal/ir.d
+@@ -490,6 +490,7 @@ interface MatcherFactory(Char)
+ // Only memory management, no compile-time vs run-time specialities
+ abstract class GenericFactory(alias EngineType, Char) : MatcherFactory!Char
+ {
++    import core.atomic : atomicLoad, atomicOp;
+     import core.memory : pureFree;
+     import std.internal.memory : enforceMalloc;
+     import core.memory : GC;
+@@ -524,13 +525,13 @@ abstract class GenericFactory(alias EngineType, Char) : MatcherFactory!Char
+ 
+     override size_t incRef(Matcher!Char m) const
+     {
+-        return ++m.refCount;
++        return atomicOp!"+="(m.refCount, 1);
+     }
+ 
+     override size_t decRef(Matcher!Char m) const  @trusted
+     {
+-        assert(m.refCount != 0);
+-        auto cnt = --m.refCount;
++        assert(atomicLoad(m.refCount) != 0);
++        auto cnt = atomicOp!"-="(m.refCount, 1);
+         if (cnt == 0)
+         {
+             void* ptr = cast(void*) m;

@@ -1,0 +1,13 @@
+diff --git a/std/experimental/allocator/building_blocks/segregator.d b/std/experimental/allocator/building_blocks/segregator.d
+index ff089bddc..0eb171afd 100644
+--- a/std/experimental/allocator/building_blocks/segregator.d
++++ b/std/experimental/allocator/building_blocks/segregator.d
+@@ -156,7 +156,7 @@ struct Segregator(size_t threshold, SmallAllocator, LargeAllocator)
+         bool expand(ref void[] b, size_t delta)
+         {
+             if (!delta) return true;
+-            if (b.length + delta <= threshold)
++            if (b.length <= threshold && delta <= threshold - b.length)
+             {
+                 // Old and new allocations handled by _small
+                 static if (hasMember!(SmallAllocator, "expand"))

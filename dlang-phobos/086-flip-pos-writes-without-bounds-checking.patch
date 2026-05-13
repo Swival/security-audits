@@ -1,0 +1,16 @@
+diff --git a/std/bitmanip.d b/std/bitmanip.d
+index f8a97dfbf..a8a70d417 100644
+--- a/std/bitmanip.d
++++ b/std/bitmanip.d
+@@ -1418,6 +1418,11 @@ public:
+       Flips a single bit, specified by `pos`
+      */
+     void flip(size_t pos) @nogc pure nothrow
++    in
++    {
++        assert(pos < _len, "pos must be less than the length");
++    }
++    do
+     {
+         bt(_ptr, pos) ? btr(_ptr, pos) : bts(_ptr, pos);
+     }

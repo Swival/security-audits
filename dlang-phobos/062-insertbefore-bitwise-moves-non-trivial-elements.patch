@@ -1,0 +1,63 @@
+diff --git a/std/container/array.d b/std/container/array.d
+index 0ae8a6a03..090e9b026 100644
+--- a/std/container/array.d
++++ b/std/container/array.d
+@@ -1049,14 +1049,23 @@ if (!is(immutable T == immutable bool))
+     if (isImplicitlyConvertible!(Stuff, T))
+     {
+         import core.lifetime : emplace;
++        import std.algorithm.mutation : moveEmplace;
+         enforce(r._outer._data is _data && r._a <= length);
+         reserve(length + 1);
+         assert(_data.refCountedStore.isInitialized,
+             "Failed to allocate capacity to insertBefore");
+-        // Move elements over by one slot
+-        memmove(_data._payload.ptr + r._a + 1,
+-                _data._payload.ptr + r._a,
+-                T.sizeof * (length - r._a));
++        static if (__traits(needsDestruction, T) || hasElaborateCopyConstructor!T)
++        {
++            foreach_reverse (i; r._a .. length)
++                moveEmplace(_data._payload[i], *(_data._payload.ptr + i + 1));
++        }
++        else
++        {
++            // Trivially movable elements can still be shifted as raw bytes.
++            memmove(_data._payload.ptr + r._a + 1,
++                    _data._payload.ptr + r._a,
++                    T.sizeof * (length - r._a));
++        }
+         emplace(_data._payload.ptr + r._a, stuff);
+         _data._payload = _data._payload.ptr[0 .. _data._payload.length + 1];
+         return 1;
+@@ -1067,6 +1076,7 @@ if (!is(immutable T == immutable bool))
+     if (isInputRange!Stuff && isImplicitlyConvertible!(ElementType!Stuff, T))
+     {
+         import core.lifetime : emplace;
++        import std.algorithm.mutation : moveEmplace;
+         enforce(r._outer._data is _data && r._a <= length);
+         static if (isForwardRange!Stuff)
+         {
+@@ -1076,10 +1086,18 @@ if (!is(immutable T == immutable bool))
+             reserve(length + extra);
+             assert(_data.refCountedStore.isInitialized,
+                 "Failed to allocate capacity to insertBefore");
+-            // Move elements over by extra slots
+-            memmove(_data._payload.ptr + r._a + extra,
+-                    _data._payload.ptr + r._a,
+-                    T.sizeof * (length - r._a));
++            static if (__traits(needsDestruction, T) || hasElaborateCopyConstructor!T)
++            {
++                foreach_reverse (i; r._a .. length)
++                    moveEmplace(_data._payload[i], *(_data._payload.ptr + i + extra));
++            }
++            else
++            {
++                // Trivially movable elements can still be shifted as raw bytes.
++                memmove(_data._payload.ptr + r._a + extra,
++                        _data._payload.ptr + r._a,
++                        T.sizeof * (length - r._a));
++            }
+             foreach (p; _data._payload.ptr + r._a ..
+                     _data._payload.ptr + r._a + extra)
+             {

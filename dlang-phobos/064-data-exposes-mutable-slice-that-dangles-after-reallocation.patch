@@ -1,0 +1,19 @@
+diff --git a/std/container/array.d b/std/container/array.d
+index 0ae8a6a03..383a164d2 100644
+--- a/std/container/array.d
++++ b/std/container/array.d
+@@ -692,12 +692,12 @@ if (!is(immutable T == immutable bool))
+     }
+ 
+     /**
+-     * Returns: the internal representation of the array.
++     * Returns: a read-only view of the array's internal representation.
+      *
+      * Complexity: $(BIGOH 1).
+      */
+ 
+-    inout(T)[] data() inout @system
++    const(T)[] data() const @system
+     {
+         return _data.refCountedStore.isInitialized ? _data._payload : [];
+     }

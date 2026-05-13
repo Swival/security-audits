@@ -1,0 +1,44 @@
+diff --git a/std/zip.d b/std/zip.d
+index 72d128700..4187b5a4b 100644
+--- a/std/zip.d
++++ b/std/zip.d
+@@ -906,6 +906,11 @@ public:
+             de.comment = cast(string)(_data[i .. i + commentlen]);
+             i += commentlen;
+ 
++            enforce!ZipException(data.length >= localFileHeaderLength
++                                 && de.offset <= data.length - localFileHeaderLength
++                                 && segmentContains(de.offset, de.offset + localFileHeaderLength),
++                                 "invalid local file header offset");
++
+             auto localFileHeaderNamelen = getUshort(de.offset + 26);
+             auto localFileHeaderExtralen = getUshort(de.offset + 28);
+ 
+@@ -1186,6 +1191,10 @@ public:
+         uint namelen;
+         uint extralen;
+ 
++        enforce!ZipException(data.length >= localFileHeaderLength
++                             && de.offset <= data.length - localFileHeaderLength
++                             && segmentContains(de.offset, de.offset + localFileHeaderLength),
++                             "invalid local file header offset");
+         enforce!ZipException(_data[de.offset .. de.offset + 4] == localFileHeaderSignature,
+                              "wrong local file header signature found");
+ 
+@@ -1344,6 +1353,16 @@ private:
+         uint end;
+     }
+ 
++    bool segmentContains(uint start, uint end) const pure @safe
++    in (start < end, "segment invalid")
++    {
++        foreach (seg; _segs)
++            if (seg.start <= start && seg.end >= end)
++                return true;
++
++        return false;
++    }
++
+     // removes Segment start .. end from _segs
+     // throws zipException if start .. end is not completely available in _segs;
+     void removeSegment(uint start, uint end) pure @safe

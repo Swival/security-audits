@@ -1,0 +1,21 @@
+diff --git a/std/experimental/allocator/building_blocks/aligned_block_list.d b/std/experimental/allocator/building_blocks/aligned_block_list.d
+index 99768bc31..ae2171170 100644
+--- a/std/experimental/allocator/building_blocks/aligned_block_list.d
++++ b/std/experimental/allocator/building_blocks/aligned_block_list.d
+@@ -153,7 +153,15 @@ public:
+         // the `parent` `AlignedBlockNode`
+         enum ulong mask = ~(theAlignment - 1);
+         ulong ptr = ((cast(ulong) b.ptr) & mask);
+-        AlignedBlockNode *node = cast(AlignedBlockNode*) ptr;
++        AlignedBlockNode* node = cast(AlignedBlockNode*) ptr;
++        for (auto tmp = cast(AlignedBlockNode*) root; tmp; tmp = tmp.next)
++        {
++            if (tmp == node)
++                goto foundNode;
++        }
++        return false;
++
++    foundNode:
+         if (node.bAlloc.deallocate(b))
+         {
+             static if (isShared)

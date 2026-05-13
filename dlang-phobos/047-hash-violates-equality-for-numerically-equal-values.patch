@@ -1,0 +1,25 @@
+diff --git a/std/json.d b/std/json.d
+index 2875faef9..fe8463ba8 100644
+--- a/std/json.d
++++ b/std/json.d
+@@ -1065,11 +1065,11 @@ struct JSONValue
+         final switch (type_tag)
+         {
+         case JSONType.integer:
+-            return hashOf(store.integer);
++            return hashOf(store.integer == 0 ? 0.0 : cast(double) store.integer);
+         case JSONType.uinteger:
+-            return hashOf(store.uinteger);
++            return hashOf(store.uinteger == 0 ? 0.0 : cast(double) store.uinteger);
+         case JSONType.float_:
+-            return hashOf(store.floating);
++            return hashOf(store.floating == 0 ? 0.0 : store.floating);
+         case JSONType.string:
+             return hashOf(store.str);
+         case JSONType.object:
+@@ -2782,4 +2782,5 @@ pure nothrow @safe unittest
+     aa[JSONValue(int(5))] = true;
+     assert(JSONValue(int(5)) in aa);
+     assert(JSONValue(uint(5)) in aa);
++    assert(JSONValue(5.0) in aa);
+ }

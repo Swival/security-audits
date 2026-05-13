@@ -1,0 +1,72 @@
+diff --git a/std/range/package.d b/std/range/package.d
+index 3d4ec7a91..f57db990d 100644
+--- a/std/range/package.d
++++ b/std/range/package.d
+@@ -4630,7 +4630,7 @@ struct Cycle(R)
+ if (isStaticArray!R)
+ {
+     private alias ElementType = typeof(R.init[0]);
+-    private ElementType* _ptr;
++    private R _data;
+     private size_t _index;
+ 
+ nothrow:
+@@ -4638,18 +4638,18 @@ nothrow:
+     /// Range primitives
+     this(ref R input, size_t index = 0) @system
+     {
+-        _ptr = input.ptr;
++        _data = input;
+         _index = index % R.length;
+     }
+ 
+     /// ditto
+     @property ref inout(ElementType) front() inout @safe
+     {
+-        static ref auto trustedPtrIdx(typeof(_ptr) p, size_t idx) @trusted
++        static ref auto trustedPtrIdx(typeof(_data.ptr) p, size_t idx) @trusted
+         {
+             return p[idx];
+         }
+-        return trustedPtrIdx(_ptr, _index);
++        return trustedPtrIdx(_data.ptr, _index);
+     }
+ 
+     /// ditto
+@@ -4666,11 +4666,11 @@ nothrow:
+     /// ditto
+     ref inout(ElementType) opIndex(size_t n) inout @safe
+     {
+-        static ref auto trustedPtrIdx(typeof(_ptr) p, size_t idx) @trusted
++        static ref auto trustedPtrIdx(typeof(_data.ptr) p, size_t idx) @trusted
+         {
+             return p[idx % R.length];
+         }
+-        return trustedPtrIdx(_ptr, n + _index);
++        return trustedPtrIdx(_data.ptr, n + _index);
+     }
+ 
+     /// ditto
+@@ -4700,11 +4700,9 @@ nothrow:
+     /// ditto
+     inout(typeof(this)) opSlice(size_t i, DollarToken) inout @safe
+     {
+-        static auto trustedCtor(typeof(_ptr) p, size_t idx) @trusted
+-        {
+-            return cast(inout) Cycle(*cast(R*)(p), idx);
+-        }
+-        return trustedCtor(_ptr, _index + i);
++        auto result = this;
++        result._index = (_index + i) % R.length;
++        return result;
+     }
+ }
+ 
+@@ -4817,7 +4815,7 @@ if (isStaticArray!R)
+     int[3] a = [ 1, 2, 3 ];
+     static assert(isStaticArray!(typeof(a)));
+     auto c = cycle(a);
+-    assert(a.ptr == c._ptr);
++    assert(a == c._data);
+     assert(equal(take(cycle(a), 5), [ 1, 2, 3, 1, 2 ][]));
+     static assert(isForwardRange!(typeof(c)));

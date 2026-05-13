@@ -1,0 +1,37 @@
+diff --git a/std/mmfile.d b/std/mmfile.d
+index d0860ca70..8dab25023 100644
+--- a/std/mmfile.d
++++ b/std/mmfile.d
+@@ -142,9 +142,11 @@ class MmFile
+         if (prot & PROT_WRITE && size > statbuf.st_size)
+         {
+             // Need to make the file size bytes big
+-            lseek(fd, cast(off_t)(size - 1), SEEK_SET);
++            errnoEnforce(lseek(fd, cast(off_t)(size - 1), SEEK_SET) != -1,
++                    "Could not resize file");
+             char c = 0;
+-            core.sys.posix.unistd.write(fd, &c, 1);
++            errnoEnforce(core.sys.posix.unistd.write(fd, &c, 1) == 1,
++                    "Could not resize file");
+         }
+         else if (prot & PROT_READ && size == 0)
+             size = statbuf.st_size;
+@@ -339,9 +341,16 @@ class MmFile
+                 if (prot & PROT_WRITE && size > statbuf.st_size)
+                 {
+                     // Need to make the file size bytes big
+-                    .lseek(fd, cast(off_t)(size - 1), SEEK_SET);
+                     char c = 0;
+-                    core.sys.posix.unistd.write(fd, &c, 1);
++                    if (.lseek(fd, cast(off_t)(size - 1), SEEK_SET) == -1 ||
++                            core.sys.posix.unistd.write(fd, &c, 1) != 1)
++                    {
++                        auto err = errno;
++                        .close(fd);
++                        fd = -1;
++                        errno = err;
++                        errnoEnforce(false, "Could not resize file "~filename);
++                    }
+                 }
+                 else if (prot & PROT_READ && size == 0)
+                     size = statbuf.st_size;

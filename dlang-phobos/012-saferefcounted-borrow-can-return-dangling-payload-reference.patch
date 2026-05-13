@@ -1,0 +1,61 @@
+diff --git a/std/typecons.d b/std/typecons.d
+index 0d32ac07a..6369fdf75 100644
+--- a/std/typecons.d
++++ b/std/typecons.d
+@@ -8401,8 +8401,7 @@ Params:
+   fun = A callable accepting the payload either by value or by reference.
+   refCount = The counted reference to the payload.
+ Returns:
+-  The return value of `fun`, if any. `ref` in the return value will be
+-  forwarded.
++  The return value of `fun`, if any. `ref` returns are not forwarded.
+ Issues:
+   For yet unknown reason, code that uses this function with UFCS syntax
+   will not be inferred as `@safe`. It will still compile if the code is
+@@ -8413,7 +8412,7 @@ template borrow(alias fun)
+     import std.functional : unaryFun;
+ 
+     ///
+-    auto ref borrow(RC)(RC refCount)
++    auto borrow(RC)(RC refCount)
+     if
+     (
+         isInstanceOf!(SafeRefCounted, RC)
+@@ -8442,7 +8441,7 @@ template borrow(alias fun)
+ 
+     // using `ref` in the function
+     auto arr = [0, 1, 2, 3, 4, 5, 6];
+-    sameInt.borrow!(ref (x) => arr[x]) = 10;
++    sameInt.borrow!((ref x) => arr[x] = 10);
+     assert(arr == [0, 1, 2, 3, 4, 10, 6]);
+ 
+     // modifying the payload via an alias
+@@ -8462,14 +8461,6 @@ template borrow(alias fun)
+     {
+         return borrow!((ref x) => x)(arg);
+     }
+-    ref harmlessRefReturn(RcInt arg)
+-    {
+-        return borrow!(ref (ref x) => *globalPtr = x)(arg);
+-    }
+-    ref problematicRefReturn(RcInt arg)
+-    {
+-        return borrow!(ref (ref x) => x)(arg);
+-    }
+     auto sideChannelEscape(RcInt arg)
+     {
+         return borrow!((ref x)
+@@ -8500,12 +8491,11 @@ template borrow(alias fun)
+     // supposed to do.
+     auto testRc = safeRefCounted(42);
+     assert(sideChannelEscape(testRc) == 42);
+-    assert(&problematicRefReturn(testRc) == globalPtr);
++    static assert(!__traits(compiles, borrow!(ref (ref x) => *globalPtr = x)(testRc)));
++    static assert(!__traits(compiles, borrow!(ref (ref x) => x)(testRc)));
+ 
+     // Now, are the @safe attributes inferred correctly?
+     assert(isSafe!standardUsage);
+-    assert(isSafe!harmlessRefReturn);
+-    assert(!isSafe!problematicRefReturn);
+     assert(!isSafe!sideChannelEscape);
+     assert(isSafe!destroyDuringApply);

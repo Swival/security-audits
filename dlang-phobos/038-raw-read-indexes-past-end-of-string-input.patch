@@ -1,0 +1,17 @@
+diff --git a/std/format/internal/read.d b/std/format/internal/read.d
+index d2620e903..eb858db50 100644
+--- a/std/format/internal/read.d
++++ b/std/format/internal/read.d
+@@ -257,8 +257,12 @@ if (is(immutable ElementEncodingType!Range == immutable char)
+     || is(immutable ElementEncodingType!Range == immutable byte)
+     || is(immutable ElementEncodingType!Range == immutable ubyte))
+ {
++    import std.format : enforceFmt;
+     import std.range.primitives : popFront;
+ 
++    static if (isSomeString!Range)
++        enforceFmt(input.length >= T.sizeof, "Need more input");
++
+     union X
+     {
+         ubyte[T.sizeof] raw;

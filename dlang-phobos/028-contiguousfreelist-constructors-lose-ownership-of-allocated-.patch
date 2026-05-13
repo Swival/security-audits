@@ -1,0 +1,45 @@
+diff --git a/std/experimental/allocator/building_blocks/free_list.d b/std/experimental/allocator/building_blocks/free_list.d
+index d2b320992..a865277e8 100644
+--- a/std/experimental/allocator/building_blocks/free_list.d
++++ b/std/experimental/allocator/building_blocks/free_list.d
+@@ -601,8 +601,8 @@ struct ContiguousFreeList(ParentAllocator,
+     static if (stateSize!ParentAllocator)
+     this(ParentAllocator parent, ubyte[] buffer)
+     {
+-        initialize(buffer);
+         this.parent = SParent(parent);
++        initialize(buffer);
+     }
+ 
+     /// ditto
+@@ -616,8 +616,8 @@ struct ContiguousFreeList(ParentAllocator,
+     static if (stateSize!ParentAllocator)
+     this(ParentAllocator parent, size_t bytes)
+     {
+-        initialize(cast(ubyte[])(parent.allocate(bytes)));
+         this.parent = SParent(parent);
++        initialize(cast(ubyte[])(parent.allocate(bytes)));
+     }
+ 
+     /// ditto
+@@ -637,8 +637,8 @@ struct ContiguousFreeList(ParentAllocator,
+     {
+         static if (maxSize == chooseAtRuntime) fl.max = max;
+         static if (minSize == chooseAtRuntime) fl.min = max;
+-        initialize(cast(ubyte[])(parent.allocate(bytes)), max);
+         this.parent = SParent(parent);
++        initialize(cast(ubyte[])(parent.allocate(bytes)), max);
+     }
+ 
+     /// ditto
+@@ -662,9 +662,8 @@ struct ContiguousFreeList(ParentAllocator,
+     {
+         static if (maxSize == chooseAtRuntime) fl.max = max;
+         fl.min = min;
++        this.parent = SParent(parent);
+         initialize(cast(ubyte[])(parent.allocate(bytes)), max);
+-        static if (stateSize!ParentAllocator)
+-            this.parent = SParent(parent);
+     }
+ 
+     /**

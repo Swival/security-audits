@@ -1,0 +1,13 @@
+diff --git a/std/zip.d b/std/zip.d
+index 72d128700..be326ff51 100644
+--- a/std/zip.d
++++ b/std/zip.d
+@@ -872,6 +872,8 @@ public:
+             uint extralen;
+             uint commentlen;
+ 
++            enforce!ZipException(i + centralFileHeaderLength <= directoryOffset + directorySize,
++                                 "corrupted directory");
+             enforce!ZipException(_data[i .. i + 4] == centralFileHeaderSignature,
+                                  "wrong central file header signature found");
+             ArchiveMember de = new ArchiveMember();

@@ -1,0 +1,13 @@
+diff --git a/std/experimental/allocator/typed.d b/std/experimental/allocator/typed.d
+index fd364ecc3..940738af8 100644
+--- a/std/experimental/allocator/typed.d
++++ b/std/experimental/allocator/typed.d
+@@ -230,7 +230,7 @@ struct TypedAllocator(PrimaryAllocator, Policies...)
+         static if (is(T == immutable))
+             result |= AllocFlag.immutableShared;
+         else static if (is(T == shared))
+-            result |= AllocFlag.forSharing;
++            result |= 0;
+         static if (!is(T == U[], U))
+             result |= AllocFlag.fixedSize;
+         import std.traits : hasIndirections;

@@ -1,0 +1,52 @@
+diff --git a/std/experimental/allocator/building_blocks/fallback_allocator.d b/std/experimental/allocator/building_blocks/fallback_allocator.d
+index 3990418c3..bb43b3191 100644
+--- a/std/experimental/allocator/building_blocks/fallback_allocator.d
++++ b/std/experimental/allocator/building_blocks/fallback_allocator.d
+@@ -166,14 +166,20 @@ struct FallbackAllocator(Primary, Fallback)
+     {
+         bool crossAllocatorMove(From, To)(ref From from, ref To to)
+         {
+-            auto b1 = to.allocate(newSize);
+-            if (b1.length != newSize) return false;
+-            if (b.length < newSize) b1[0 .. b.length] = b[];
+-            else b1[] = b[0 .. newSize];
+-            static if (hasMember!(From, "deallocate"))
++            static if (!hasMember!(From, "deallocate"))
++            {
++                return false;
++            }
++            else
++            {
++                auto b1 = to.allocate(newSize);
++                if (b1.length != newSize) return false;
++                if (b.length < newSize) b1[0 .. b.length] = b[];
++                else b1[] = b[0 .. newSize];
+                 from.deallocate(b);
+-            b = b1;
+-            return true;
++                b = b1;
++                return true;
++            }
+         }
+ 
+         if (b is null || primary.owns(b) == Ternary.yes)
+@@ -194,7 +200,8 @@ struct FallbackAllocator(Primary, Fallback)
+     {
+         bool crossAllocatorMove(From, To)(ref From from, ref To to)
+         {
+-            static if (!hasMember!(To, "alignedAllocate"))
++            static if (!hasMember!(From, "deallocate")
++                || !hasMember!(To, "alignedAllocate"))
+             {
+                 return false;
+             }
+@@ -204,8 +211,7 @@ struct FallbackAllocator(Primary, Fallback)
+                 if (b1.length != newSize) return false;
+                 if (b.length < newSize) b1[0 .. b.length] = b[];
+                 else b1[] = b[0 .. newSize];
+-                static if (hasMember!(From, "deallocate"))
+-                    from.deallocate(b);
++                from.deallocate(b);
+                 b = b1;
+                 return true;
+             }

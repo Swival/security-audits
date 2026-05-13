@@ -1,0 +1,13 @@
+diff --git a/std/experimental/allocator/building_blocks/stats_collector.d b/std/experimental/allocator/building_blocks/stats_collector.d
+index 1d1e480ec..fe6b5247d 100644
+--- a/std/experimental/allocator/building_blocks/stats_collector.d
++++ b/std/experimental/allocator/building_blocks/stats_collector.d
+@@ -605,6 +605,8 @@ public:
+             addPerCall!(f, n, "numDeallocateAll")(1);
+             static if ((flags & Options.bytesUsed))
+                 _bytesUsed = 0;
++            static if ((flags & Options.bytesSlack))
++                _bytesSlack = 0;
+             return parent.deallocateAll();
+         }
+     }

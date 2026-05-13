@@ -1,0 +1,39 @@
+diff --git a/std/experimental/allocator/building_blocks/scoped_allocator.d b/std/experimental/allocator/building_blocks/scoped_allocator.d
+index 96859b076..0ea8b437a 100644
+--- a/std/experimental/allocator/building_blocks/scoped_allocator.d
++++ b/std/experimental/allocator/building_blocks/scoped_allocator.d
+@@ -135,15 +135,33 @@ struct ScopedAllocator(ParentAllocator)
+     */
+     bool reallocate(ref void[] b, size_t s)
+     {
++        Node* prev;
++        Node* next;
++        size_t length;
++        const hadBlock = b.ptr !is null;
+         // Remove from list
+-        if (b.ptr)
++        if (hadBlock)
+         {
+             Node* n = & parent.prefix(b);
++            prev = n.prev;
++            next = n.next;
++            length = n.length;
+             if (n.prev) n.prev.next = n.next;
+             else root = n.next;
+             if (n.next) n.next.prev = n.prev;
+         }
+         auto result = parent.reallocate(b, s);
++        if (!result && hadBlock && b.ptr)
++        {
++            Node* n = & parent.prefix(b);
++            n.prev = prev;
++            n.next = next;
++            n.length = length;
++            if (prev) prev.next = n;
++            else root = n;
++            if (next) next.prev = n;
++            return false;
++        }
+         // Add back to list
+         if (b.ptr)
+         {

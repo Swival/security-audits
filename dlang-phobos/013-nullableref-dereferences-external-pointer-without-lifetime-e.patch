@@ -1,0 +1,12 @@
+diff --git a/std/typecons.d b/std/typecons.d
+index 0d32ac07a..ff3f81c9a 100644
+--- a/std/typecons.d
++++ b/std/typecons.d
+@@ -5487,7 +5487,7 @@ sitting elsewhere in memory. This makes assignments overwrite the
+ initially assigned value. Internally `NullableRef!T` only stores a
+ pointer to `T` (i.e., $(D Nullable!T.sizeof == (T*).sizeof)).
+  */
+-struct NullableRef(T)
++@system struct NullableRef(T)
+ {
+     private T* _value;

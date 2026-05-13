@@ -1,0 +1,27 @@
+diff --git a/std/base64.d b/std/base64.d
+index 0ce81b520..326e1bd6b 100644
+--- a/std/base64.d
++++ b/std/base64.d
+@@ -1484,6 +1484,22 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
+                 }
+             }
+ 
++            static if (Padding != NoPadding)
++            {
++                foreach (i, chr; data)
++                {
++                    if (chr == Padding)
++                    {
++                        enforce(
++                            i + 2 >= data.length &&
++                            (i + 1 == data.length || data[$ - 1] == Padding),
++                            new Base64Exception("Invalid padding")
++                        );
++                        break;
++                    }
++                }
++            }
++
+             auto size = decodeLength(data.length);
+             if (size > buffer_.length)
+                 buffer_.length = size;

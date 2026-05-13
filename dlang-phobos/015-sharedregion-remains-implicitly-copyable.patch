@@ -1,0 +1,21 @@
+diff --git a/std/experimental/allocator/building_blocks/region.d b/std/experimental/allocator/building_blocks/region.d
+index 736b1858e..bc0e4cc40 100644
+--- a/std/experimental/allocator/building_blocks/region.d
++++ b/std/experimental/allocator/building_blocks/region.d
+@@ -1175,6 +1175,8 @@ shared struct SharedRegion(ParentAllocator,
+     import std.traits : hasMember;
+     import std.typecons : Ternary;
+ 
++    @disable this(this);
++
+     // state
+     /**
+     The _parent allocator. Depending on whether `ParentAllocator` holds state
+@@ -1473,6 +1475,8 @@ shared struct SharedBorrowedRegion(uint minAlign = platformAlignment,
+ 
+     import std.typecons : Ternary;
+ 
++    @disable this(this);
++
+     // state
+     private void* _current, _begin, _end;

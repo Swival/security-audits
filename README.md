@@ -17,42 +17,43 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 
 ## Audited projects
 
-| Project                                                       | Findings | Description                                    |
-| ------------------------------------------------------------- | -------: | ---------------------------------------------- |
-| [apache-httpd](apache-httpd/)                                 |       56 | Apache HTTP Server                             |
-| [boringssl](boringssl/)                                       |       12 | Google's fork of OpenSSL                       |
-| [bun-rust](bun-rust/)                                         |      105 | Bun JavaScript runtime, Rust port              |
-| [bunnycdn-cli](bunnycdn-cli/)                                 |       25 | BunnyCDN command-line client                   |
-| [bunnycdn-tokenauthentication](bunnycdn-tokenauthentication/) |        8 | BunnyCDN token authentication library          |
-| [caddy](caddy/)                                               |        8 | HTTP/2 and HTTP/3 web server with automatic HTTPS |
-| [curl](curl/)                                                 |       17 | Command-line tool and library for URL transfers |
-| [go/crypto](go/crypto/)                                       |       54 | Go standard library `crypto/*` packages        |
-| [h2o](h2o/)                                                   |       19 | HTTP/1, HTTP/2 and HTTP/3 server               |
-| [libinjection](libinjection/)                                 |        5 | SQL injection and XSS detection library        |
-| [libressl/crypto](libressl/crypto/)                           |       37 | LibreSSL libcrypto, the cryptography library   |
-| [libressl/ssl](libressl/ssl/)                                 |        3 | LibreSSL libssl, the TLS/SSL protocol library  |
-| [nginx](nginx/)                                               |       12 | High-performance HTTP server and reverse proxy |
-| [openbsd-bin](openbsd-bin/)                                   |      334 | OpenBSD userland programs and libraries        |
-| [openbsd-kernel](openbsd-kernel/)                             |       37 | OpenBSD kernel                                 |
-| [openbsd-libc](openbsd-libc/)                                 |       21 | OpenBSD C standard library                     |
-| [openbsd-libexec](openbsd-libexec/)                           |       17 | OpenBSD libexec helper programs and daemons    |
-| [openssh](openssh/)                                           |       13 | OpenBSD's OpenSSH client, server, agent, and tools |
-| [pcre2](pcre2/)                                               |        4 | Perl-compatible regular expressions library    |
-| [picotls](picotls/)                                           |       11 | TLS 1.3 implementation in C                    |
-| [pqconnect](pqconnect/)                                       |        4 | Post-quantum VPN using McEliece and X25519     |
-| [proftpd](proftpd/)                                           |       17 | FTP server for Unix-like systems               |
+| Project                                                       | Findings | Description                                                 |
+| ------------------------------------------------------------- | -------: | ----------------------------------------------------------- |
+| [apache-httpd](apache-httpd/)                                 |       56 | Apache HTTP Server                                          |
+| [boringssl](boringssl/)                                       |       12 | Google's fork of OpenSSL                                    |
+| [bun-rust](bun-rust/)                                         |      105 | Bun JavaScript runtime, Rust port                           |
+| [bunnycdn-cli](bunnycdn-cli/)                                 |       25 | BunnyCDN command-line client                                |
+| [bunnycdn-tokenauthentication](bunnycdn-tokenauthentication/) |        8 | BunnyCDN token authentication library                       |
+| [caddy](caddy/)                                               |        8 | HTTP/2 and HTTP/3 web server with automatic HTTPS           |
+| [curl](curl/)                                                 |       17 | Command-line tool and library for URL transfers             |
+| [dlang-phobos](dlang-phobos/)                                 |       74 | D standard library (Phobos)                                 |
+| [go/crypto](go/crypto/)                                       |       54 | Go standard library `crypto/*` packages                     |
+| [h2o](h2o/)                                                   |       19 | HTTP/1, HTTP/2 and HTTP/3 server                            |
+| [libinjection](libinjection/)                                 |        5 | SQL injection and XSS detection library                     |
+| [libressl/crypto](libressl/crypto/)                           |       37 | LibreSSL libcrypto, the cryptography library                |
+| [libressl/ssl](libressl/ssl/)                                 |        3 | LibreSSL libssl, the TLS/SSL protocol library               |
+| [nginx](nginx/)                                               |       12 | High-performance HTTP server and reverse proxy              |
+| [openbsd-bin](openbsd-bin/)                                   |      334 | OpenBSD userland programs and libraries                     |
+| [openbsd-kernel](openbsd-kernel/)                             |       37 | OpenBSD kernel                                              |
+| [openbsd-libc](openbsd-libc/)                                 |       21 | OpenBSD C standard library                                  |
+| [openbsd-libexec](openbsd-libexec/)                           |       17 | OpenBSD libexec helper programs and daemons                 |
+| [openssh](openssh/)                                           |       13 | OpenBSD's OpenSSH client, server, agent, and tools          |
+| [pcre2](pcre2/)                                               |        4 | Perl-compatible regular expressions library                 |
+| [picotls](picotls/)                                           |       11 | TLS 1.3 implementation in C                                 |
+| [pqconnect](pqconnect/)                                       |        4 | Post-quantum VPN using McEliece and X25519                  |
+| [proftpd](proftpd/)                                           |       17 | FTP server for Unix-like systems                            |
 | [pushpin](pushpin/)                                           |        8 | Reverse proxy for long-lived HTTP and WebSocket connections |
-| [quicly](quicly/)                                             |        2 | QUIC protocol implementation in C              |
-| [rust-stdlib](rust-stdlib/)                                   |      151 | Rust standard library and supporting crates    |
-| [tigerbeetle](tigerbeetle/)                                   |       10 | Financial transactions database                |
-| [viceroy](viceroy/)                                           |       30 | Local development server for Fastly Compute    |
-| [vsftpd](vsftpd/)                                             |        3 | Secure FTP daemon for Unix-like systems        |
-| [wasmer-wasix](wasmer-wasix/)                                 |       44 | WASIX runtime in Wasmer                        |
-| [wasmtime-wasi](wasmtime-wasi/)                               |        5 | WASI implementation in Wasmtime                |
-| [wasmtools-wasmparser](wasmtools-wasmparser/)                 |        2 | WebAssembly binary parser from `wasm-tools`    |
-| [zig-stdlib](zig-stdlib/)                                     |       78 | Zig standard library                           |
-| [zig-ziglibc](zig-ziglibc/)                                   |        9 | Zig's libc implementation                      |
-| [zlib](zlib/)                                                 |       18 | zlib compression library and ports             |
+| [quicly](quicly/)                                             |        2 | QUIC protocol implementation in C                           |
+| [rust-stdlib](rust-stdlib/)                                   |      151 | Rust standard library and supporting crates                 |
+| [tigerbeetle](tigerbeetle/)                                   |       10 | Financial transactions database                             |
+| [viceroy](viceroy/)                                           |       30 | Local development server for Fastly Compute                 |
+| [vsftpd](vsftpd/)                                             |        3 | Secure FTP daemon for Unix-like systems                     |
+| [wasmer-wasix](wasmer-wasix/)                                 |       44 | WASIX runtime in Wasmer                                     |
+| [wasmtime-wasi](wasmtime-wasi/)                               |        5 | WASI implementation in Wasmtime                             |
+| [wasmtools-wasmparser](wasmtools-wasmparser/)                 |        2 | WebAssembly binary parser from `wasm-tools`                 |
+| [zig-stdlib](zig-stdlib/)                                     |       78 | Zig standard library                                        |
+| [zig-ziglibc](zig-ziglibc/)                                   |        9 | Zig's libc implementation                                   |
+| [zlib](zlib/)                                                 |       18 | zlib compression library and ports                          |
 
 ## Reporting and disclosure
 

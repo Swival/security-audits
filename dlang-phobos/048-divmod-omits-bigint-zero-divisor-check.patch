@@ -1,0 +1,12 @@
+diff --git a/std/bigint.d b/std/bigint.d
+index 7fea64cd6..23e6e6a22 100644
+--- a/std/bigint.d
++++ b/std/bigint.d
+@@ -2293,6 +2293,7 @@ unittest
+  */
+ void divMod(const BigInt dividend, const BigInt divisor, out BigInt quotient, out BigInt remainder) pure nothrow @safe
+ {
++    divisor.checkDivByZero();
+     BigUint q, r;
+     BigUint.divMod(dividend.data, divisor.data, q, r);
+     quotient.sign = dividend.sign != divisor.sign;

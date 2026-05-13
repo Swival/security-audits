@@ -1,0 +1,20 @@
+diff --git a/std/internal/math/biguintx86.d b/std/internal/math/biguintx86.d
+index 69e0bfbdc..0a0276cd1 100644
+--- a/std/internal/math/biguintx86.d
++++ b/std/internal/math/biguintx86.d
+@@ -269,7 +269,14 @@ uint multibyteShlNoMMX(uint [] dest, const uint [] src, uint numbits) pure @safe
+         mov EBX, [ESP + LASTPARAM + 4*2]; //dest.length;
+         mov ESI, [ESP + LASTPARAM + 4*1]; //src.ptr;
+         mov ECX, EAX; // numbits;
+-
++        test EBX, EBX;
++        jnz L_nonempty;
++        xor EAX, EAX;
++        pop EBX;
++        pop EDI;
++        pop ESI;
++        ret 4*4;
++L_nonempty:
+         mov EAX, [-4+ESI + 4*EBX];
+         mov EDX, 0;
+         shld EDX, EAX, CL;

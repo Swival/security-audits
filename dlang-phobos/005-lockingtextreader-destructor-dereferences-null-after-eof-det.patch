@@ -1,0 +1,13 @@
+diff --git a/std/stdio.d b/std/stdio.d
+index 82a13929f..fc3ada7df 100644
+--- a/std/stdio.d
++++ b/std/stdio.d
+@@ -3903,7 +3903,7 @@ struct LockingTextReader
+ 
+     ~this()
+     {
+-        if (_hasChar)
++        if (_hasChar && _f.isOpen)
+             ungetc(_front, cast(FILE*)_f._p.handle);
+ 
+         // File locking has its own reference count

@@ -1,0 +1,71 @@
+diff --git a/std/outbuffer.d b/std/outbuffer.d
+index f6d4ba850..0cc28d2a9 100644
+--- a/std/outbuffer.d
++++ b/std/outbuffer.d
+@@ -13,6 +13,7 @@ Serialize data to `ubyte` arrays.
+ module std.outbuffer;
+ 
+ import core.stdc.stdarg;
++import core.stdc.string : memcpy;
+ import std.traits : isSomeString;
+ 
+ /*********************************************
+@@ -111,7 +112,7 @@ class OutBuffer
+     void write(ushort w) @trusted                /// ditto
+     {
+         reserve(ushort.sizeof);
+-        *cast(ushort *)&data[offset] = w;
++        memcpy(data.ptr + offset, &w, ushort.sizeof);
+         offset += ushort.sizeof;
+     }
+ 
+@@ -120,14 +121,14 @@ class OutBuffer
+     void write(wchar c) @trusted        /// ditto
+     {
+         reserve(wchar.sizeof);
+-        *cast(wchar *)&data[offset] = c;
++        memcpy(data.ptr + offset, &c, wchar.sizeof);
+         offset += wchar.sizeof;
+     }
+ 
+     void write(uint w) @trusted         /// ditto
+     {
+         reserve(uint.sizeof);
+-        *cast(uint *)&data[offset] = w;
++        memcpy(data.ptr + offset, &w, uint.sizeof);
+         offset += uint.sizeof;
+     }
+ 
+@@ -136,7 +137,7 @@ class OutBuffer
+     void write(ulong l) @trusted         /// ditto
+     {
+         reserve(ulong.sizeof);
+-        *cast(ulong *)&data[offset] = l;
++        memcpy(data.ptr + offset, &l, ulong.sizeof);
+         offset += ulong.sizeof;
+     }
+ 
+@@ -145,21 +146,21 @@ class OutBuffer
+     void write(float f) @trusted         /// ditto
+     {
+         reserve(float.sizeof);
+-        *cast(float *)&data[offset] = f;
++        memcpy(data.ptr + offset, &f, float.sizeof);
+         offset += float.sizeof;
+     }
+ 
+     void write(double f) @trusted               /// ditto
+     {
+         reserve(double.sizeof);
+-        *cast(double *)&data[offset] = f;
++        memcpy(data.ptr + offset, &f, double.sizeof);
+         offset += double.sizeof;
+     }
+ 
+     void write(real f) @trusted         /// ditto
+     {
+         reserve(real.sizeof);
+-        *cast(real *)&data[offset] = f;
++        memcpy(data.ptr + offset, &f, real.sizeof);
+         offset += real.sizeof;
+     }

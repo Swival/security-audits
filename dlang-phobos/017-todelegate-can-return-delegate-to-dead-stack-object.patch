@@ -1,0 +1,13 @@
+diff --git a/std/functional.d b/std/functional.d
+index 1c2e6dda5..9f5e43a4e 100644
+--- a/std/functional.d
++++ b/std/functional.d
+@@ -1811,7 +1811,7 @@ private struct DelegateFaker(F)
+  *   $(LI Ignores C-style / D-style variadic arguments.)
+  * )
+  */
+-auto toDelegate(F)(auto ref F fp)
++auto toDelegate(F)(return scope auto ref F fp) return scope
+ if (isCallable!(F))
+ {
+     static if (is(F == delegate))

@@ -1,0 +1,16 @@
+diff --git a/std/socket.d b/std/socket.d
+index 1c04e67db..699b36279 100644
+--- a/std/socket.d
++++ b/std/socket.d
+@@ -2043,9 +2043,9 @@ static if (is(sockaddr_un))
+ 
+         @property string path() @trusted const pure
+         {
+-            auto len = _nameLen - sockaddr_un.init.sun_path.offsetof;
+-            if (len == 0)
++            if (_nameLen <= sockaddr_un.init.sun_path.offsetof)
+                 return null; // An empty path may be returned from getpeername
++            auto len = _nameLen - sockaddr_un.init.sun_path.offsetof;
+             // For pathname socket address we need to strip off the terminating '\0'
+             if (sun.sun_path.ptr[0])
+                 --len;

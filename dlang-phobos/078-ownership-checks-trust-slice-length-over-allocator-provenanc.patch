@@ -1,0 +1,14 @@
+diff --git a/std/experimental/allocator/building_blocks/segregator.d b/std/experimental/allocator/building_blocks/segregator.d
+index ff089bddc..c5752b458 100644
+--- a/std/experimental/allocator/building_blocks/segregator.d
++++ b/std/experimental/allocator/building_blocks/segregator.d
+@@ -248,8 +248,7 @@ struct Segregator(size_t threshold, SmallAllocator, LargeAllocator)
+                 && hasMember!(LargeAllocator, "owns"))
+         Ternary owns(void[] b)
+         {
+-            return Ternary(b.length <= threshold
+-                ? _small.owns(b) : _large.owns(b));
++            return _small.owns(b) | _large.owns(b);
+         }
+ 
+         static if (hasMember!(SmallAllocator, "deallocate")

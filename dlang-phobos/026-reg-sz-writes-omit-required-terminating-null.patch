@@ -1,0 +1,13 @@
+diff --git a/std/windows/registry.d b/std/windows/registry.d
+index 7ee1f7afc..2dcd2069e 100644
+--- a/std/windows/registry.d
++++ b/std/windows/registry.d
+@@ -1074,7 +1074,7 @@ public:
+     {
+         auto pszTmp = value.tempCStringW();
+         const(void)* data = pszTmp;
+-        DWORD len = to!DWORD(lstrlenW(pszTmp) * wchar.sizeof);
++        DWORD len = to!DWORD((lstrlenW(pszTmp) + 1) * wchar.sizeof);
+ 
+         regSetValue(m_hkey, name,
+                     asEXPAND_SZ ? REG_VALUE_TYPE.REG_EXPAND_SZ

@@ -1,0 +1,13 @@
+diff --git a/std/experimental/allocator/common.d b/std/experimental/allocator/common.d
+index b06fb627d..675240771 100644
+--- a/std/experimental/allocator/common.d
++++ b/std/experimental/allocator/common.d
+@@ -240,7 +240,7 @@ Like `a / b` but rounds the result up, not down.
+ package size_t divideRoundUp(size_t a, size_t b)
+ {
+     assert(b);
+-    return (a + b - 1) / b;
++    return a / b + (a % b != 0 ? 1 : 0);
+ }
+ 
+ /*

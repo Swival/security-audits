@@ -1,0 +1,20 @@
+diff --git a/std/algorithm/iteration.d b/std/algorithm/iteration.d
+index ee92b012e..03e72c4ac 100644
+--- a/std/algorithm/iteration.d
++++ b/std/algorithm/iteration.d
+@@ -559,8 +559,14 @@ private struct LazyCache(R, bool bidir)
+     {
+         version (assert) if (empty) throw new RangeError();
+         source.popBack();
+-        // Reset the cache state for back
++        frontCached = false;
+         backCached = false;
++        if (source.empty)
++        {
++            // see https://issues.dlang.org/show_bug.cgi?id=15891
++            caches[0] = UE.init;
++            caches[1] = UE.init;
++        }
+     }
+ 
+     static if (isForwardRange!R)

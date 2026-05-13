@@ -1,0 +1,17 @@
+diff --git a/std/math/exponential.d b/std/math/exponential.d
+index 00403ceb8..b6622f7c9 100644
+--- a/std/math/exponential.d
++++ b/std/math/exponential.d
+@@ -818,9 +818,12 @@ private real _powImpl(real x, real y) @safe @nogc pure nothrow
+ Unqual!(Largest!(F, H)) powmod(F, G, H)(F x, G n, H m)
+ if (isUnsigned!F && isUnsigned!G && isUnsigned!H)
+ {
++    import core.exception : Exception;
+     import std.meta : AliasSeq;
+ 
+     alias T = Unqual!(Largest!(F, H));
++    if (m == 0)
++        throw new Exception("powmod modulus cannot be 0");
+     static if (T.sizeof <= 4)
+     {
+         alias DoubleT = AliasSeq!(void, ushort, uint, void, ulong)[T.sizeof];
