@@ -1,0 +1,12 @@
+diff --git a/std/experimental/allocator/building_blocks/region.d b/std/experimental/allocator/building_blocks/region.d
+index 736b1858e..af856c45d 100644
+--- a/std/experimental/allocator/building_blocks/region.d
++++ b/std/experimental/allocator/building_blocks/region.d
+@@ -108,6 +108,7 @@ struct Region(ParentAllocator,
+     TODO: The postblit of `BasicRegion` should be disabled because such objects
+     should not be copied around naively.
+     */
++    @disable this(this);
+ 
+     /**
+     If `ParentAllocator` defines `deallocate`, the region defines a destructor

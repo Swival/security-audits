@@ -1,0 +1,13 @@
+diff --git a/std/bigint.d b/std/bigint.d
+index 7fea64cd6..5a5bcc362 100644
+--- a/std/bigint.d
++++ b/std/bigint.d
+@@ -2388,6 +2388,8 @@ Returns:
+ */
+ BigInt powmod(BigInt base, BigInt exponent, BigInt modulus) pure nothrow @safe
+ {
++    modulus.checkDivByZero();
++
+     BigInt result = 1;
+ 
+     while (exponent)

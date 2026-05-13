@@ -1,0 +1,27 @@
+diff --git a/std/zip.d b/std/zip.d
+index 72d128700..0cbeca71f 100644
+--- a/std/zip.d
++++ b/std/zip.d
+@@ -411,7 +411,6 @@ final class ArchiveMember
+  */
+ final class ZipArchive
+ {
+-    import std.algorithm.comparison : max;
+     import std.bitmanip : littleEndianToNative, nativeToLittleEndian;
+     import std.conv : to;
+     import std.datetime.systime : DosFileTime;
+@@ -1195,8 +1194,13 @@ public:
+         de._compressionMethod = cast(CompressionMethod) getUshort(de.offset + 8);
+         de.time = cast(DosFileTime) getUint(de.offset + 10);
+         de._crc32 = getUint(de.offset + 14);
+-        de._compressedSize = max(getUint(de.offset + 18), de.compressedSize);
+-        de._expandedSize = max(getUint(de.offset + 22), de.expandedSize);
++        auto localCompressedSize = getUint(de.offset + 18);
++        auto localExpandedSize = getUint(de.offset + 22);
++        enforce!ZipException(localCompressedSize == de.compressedSize
++                             && localExpandedSize == de.expandedSize,
++                             "local file header size mismatch");
++        de._compressedSize = localCompressedSize;
++        de._expandedSize = localExpandedSize;
+         namelen = getUshort(de.offset + 26);
+         extralen = getUshort(de.offset + 28);

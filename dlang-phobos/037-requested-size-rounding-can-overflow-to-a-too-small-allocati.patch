@@ -1,0 +1,24 @@
+diff --git a/std/experimental/allocator/building_blocks/kernighan_ritchie.d b/std/experimental/allocator/building_blocks/kernighan_ritchie.d
+index 3d04bb6f0..d5edeeeb4 100644
+--- a/std/experimental/allocator/building_blocks/kernighan_ritchie.d
++++ b/std/experimental/allocator/building_blocks/kernighan_ritchie.d
+@@ -409,6 +409,7 @@ struct KRRegion(ParentAllocator = NullAllocator)
+     {
+         if (!n || !root) return null;
+         const actualBytes = goodAllocSize(n);
++        if (actualBytes < n) return null;
+ 
+         // Try the region first
+         if (regionMode)
+@@ -626,8 +627,9 @@ struct KRRegion(ParentAllocator = NullAllocator)
+     static size_t goodAllocSize(size_t n)
+     {
+         import std.experimental.allocator.common : roundUpToMultipleOf;
+-        return n <= Node.sizeof
+-            ? Node.sizeof : n.roundUpToMultipleOf(alignment);
++        if (n <= Node.sizeof) return Node.sizeof;
++        const result = n.roundUpToMultipleOf(alignment);
++        return result < n ? 0 : result;
+     }
+ 
+     /**

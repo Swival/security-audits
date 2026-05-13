@@ -1,0 +1,18 @@
+diff --git a/std/format/internal/read.d b/std/format/internal/read.d
+index d2620e903..047d1b6c4 100644
+--- a/std/format/internal/read.d
++++ b/std/format/internal/read.d
+@@ -29,9 +29,11 @@ void skipData(Range, Char)(ref Range input, scope const ref FormatSpec!Char spec
+ 
+     switch (spec.spec)
+     {
+-        case 'c': input.popFront(); break;
++        case 'c':
++            if (!input.empty) input.popFront();
++            break;
+         case 'd':
+-            if (input.front == '+' || input.front == '-') input.popFront();
++            if (!input.empty && (input.front == '+' || input.front == '-')) input.popFront();
+             goto case 'u';
+         case 's':
+             while (!input.empty && !isWhite(input.front)) input.popFront();

@@ -1,0 +1,51 @@
+diff --git a/std/experimental/allocator/building_blocks/affix_allocator.d b/std/experimental/allocator/building_blocks/affix_allocator.d
+index d0d0b7cb2..8135c5373 100644
+--- a/std/experimental/allocator/building_blocks/affix_allocator.d
++++ b/std/experimental/allocator/building_blocks/affix_allocator.d
+@@ -31,6 +31,7 @@ struct AffixAllocator(Allocator, Prefix, Suffix = void)
+     import std.math.traits : isPowerOf2;
+     import std.traits : hasMember;
+     import std.typecons : Ternary;
++    import core.checkedint : addu;
+ 
+     static if (hasStaticallyKnownAlignment!Allocator)
+     {
+@@ -140,6 +141,25 @@ struct AffixAllocator(Allocator, Prefix, Suffix = void)
+             }
+         }
+ 
++        private bool checkedActualAllocationSize(size_t s, out size_t result) const
++        {
++            assert(s > 0);
++            bool overflow;
++            result = addu(s, stateSize!Prefix, overflow);
++            static if (stateSize!Suffix)
++            {
++                if (!overflow)
++                {
++                    auto rem = result % Suffix.alignof;
++                    if (rem)
++                        result = addu(result, Suffix.alignof - rem, overflow);
++                }
++                if (!overflow)
++                    result = addu(result, stateSize!Suffix, overflow);
++            }
++            return !overflow;
++        }
++
+         private void[] actualAllocation(void[] b) const
+         {
+             assert(b !is null);
+@@ -251,8 +271,11 @@ struct AffixAllocator(Allocator, Prefix, Suffix = void)
+                 b = allocate(s);
+                 return b.length == s;
+             }
++            size_t actualSize;
++            if (!checkedActualAllocationSize(s, actualSize))
++                return false;
+             auto t = actualAllocation(b);
+-            const result = parent.reallocate(t, actualAllocationSize(s));
++            const result = parent.reallocate(t, actualSize);
+             if (!result) return false; // no harm done
+             b = t.ptr[stateSize!Prefix .. stateSize!Prefix + s];
+             return true;

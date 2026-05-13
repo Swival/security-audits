@@ -1,0 +1,15 @@
+diff --git a/std/base64.d b/std/base64.d
+index 0ce81b520..a978296fe 100644
+--- a/std/base64.d
++++ b/std/base64.d
+@@ -1020,7 +1020,11 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
+ 
+             immutable v3 = decodeChar(*srcptr++);
+             if (v3 == -1)
++            {
++                static if (Padding != NoPadding)
++                    enforce(decodeChar(*srcptr++) == -1, new Base64Exception("Invalid padding"));
+                 break;
++            }
+ 
+             *bufptr++ = cast(ubyte)((v2 << 4 | v3 >> 2) & 0xff);

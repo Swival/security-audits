@@ -1,0 +1,30 @@
+diff --git a/std/net/curl.d b/std/net/curl.d
+index efbb4f881..2217ebfe0 100644
+--- a/std/net/curl.d
++++ b/std/net/curl.d
+@@ -3756,10 +3756,13 @@ struct SMTP
+     {
+         ~this()
+         {
++            if (recipients !is null)
++                Curl.curl.slist_free_all(recipients);
+             if (curl.handle !is null) // work around RefCounted/emplace bug
+                 curl.shutdown();
+         }
+         Curl curl;
++        curl_slist* recipients;
+ 
+         @property void message(string msg)
+         {
+@@ -4056,7 +4059,10 @@ struct SMTP
+                 Curl.curl.slist_append(recipients_list,
+                                   recipient.tempCString().buffPtr);
+         }
+-        p.curl.set(CurlOption.mail_rcpt, recipients_list);
++        if (p.recipients !is null)
++            Curl.curl.slist_free_all(p.recipients);
++        p.recipients = recipients_list;
++        p.curl.set(CurlOption.mail_rcpt, p.recipients);
+     }
+ 
+     /**

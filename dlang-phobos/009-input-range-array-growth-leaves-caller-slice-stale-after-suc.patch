@@ -1,0 +1,15 @@
+diff --git a/std/experimental/allocator/package.d b/std/experimental/allocator/package.d
+index 097f77706..12cd72893 100644
+--- a/std/experimental/allocator/package.d
++++ b/std/experimental/allocator/package.d
+@@ -2249,9 +2249,9 @@ if (isInputRange!R)
+         {
+             if (!alloc.reallocate(buf, buf.length + T.sizeof))
+             {
+-                array = cast(T[]) buf;
+                 return false;
+             }
++            array = cast(T[]) buf;
+             import core.lifetime : emplace;
+             emplace!T(buf[$ - T.sizeof .. $], range.front);
+         }

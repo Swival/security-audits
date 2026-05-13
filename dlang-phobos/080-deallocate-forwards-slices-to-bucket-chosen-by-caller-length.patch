@@ -1,0 +1,29 @@
+diff --git a/std/experimental/allocator/building_blocks/bucketizer.d b/std/experimental/allocator/building_blocks/bucketizer.d
+index aab1f60eb..0974d33ba 100644
+--- a/std/experimental/allocator/building_blocks/bucketizer.d
++++ b/std/experimental/allocator/building_blocks/bucketizer.d
+@@ -192,17 +192,19 @@ struct Bucketizer(Allocator, size_t min, size_t max, size_t step)
+     }
+ 
+     /**
+-    This method is only defined if `Allocator` defines `deallocate`.
++    This method is only defined if `Allocator` defines `deallocate` and `owns`.
+     */
+-    static if (hasMember!(Allocator, "deallocate"))
++    static if (hasMember!(Allocator, "deallocate") && hasMember!(Allocator, "owns"))
+     bool deallocate(void[] b)
+     {
+         if (!b.ptr) return true;
+-        if (auto a = allocatorFor(b.length))
++        foreach (i, ref a; buckets)
+         {
+-            a.deallocate(b.ptr[0 .. goodAllocSize(b.length)]);
++            if (a.owns(b) != Ternary.yes) continue;
++            const actual = min - 1 + (i + 1) * step;
++            return a.deallocate(b.ptr[0 .. actual]);
+         }
+-        return true;
++        return false;
+     }
+ 
+     /**

@@ -1,0 +1,20 @@
+diff --git a/std/math/algebraic.d b/std/math/algebraic.d
+index f96f24f15..c4926733f 100644
+--- a/std/math/algebraic.d
++++ b/std/math/algebraic.d
+@@ -557,12 +557,10 @@ if (isFloatingPoint!T)
+  */
+ Unqual!(CommonType!(T1, T2)) poly(T1, T2)(T1 x, in T2[] A) @trusted pure nothrow @nogc
+ if (isFloatingPoint!T1 && isFloatingPoint!T2)
+-in
+-{
+-    assert(A.length > 0);
+-}
+-do
+ {
++    if (A.length == 0)
++        assert(0);
++
+     static if (is(immutable T2 == immutable real))
+     {
+         return polyImpl(x, A);

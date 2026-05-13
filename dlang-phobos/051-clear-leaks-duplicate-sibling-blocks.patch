@@ -1,0 +1,18 @@
+diff --git a/std/experimental/allocator/building_blocks/free_tree.d b/std/experimental/allocator/building_blocks/free_tree.d
+index fe59e2650..a1b328fd1 100644
+--- a/std/experimental/allocator/building_blocks/free_tree.d
++++ b/std/experimental/allocator/building_blocks/free_tree.d
+@@ -388,7 +388,12 @@ struct FreeTree(ParentAllocator)
+             if (!n) return;
+             recurse(n.left);
+             recurse(n.right);
+-            parent.deallocate((cast(ubyte*) n)[0 .. n.size]);
++            for (auto sis = n; sis; )
++            {
++                auto next = sis.sibling;
++                parent.deallocate((cast(ubyte*) sis)[0 .. sis.size]);
++                sis = next;
++            }
+         }
+         recurse(root);
+         root = null;

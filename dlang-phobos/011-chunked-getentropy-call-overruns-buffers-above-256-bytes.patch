@@ -1,0 +1,13 @@
+diff --git a/std/internal/entropy.d b/std/internal/entropy.d
+index 92b332325..cf65c57be 100644
+--- a/std/internal/entropy.d
++++ b/std/internal/entropy.d
+@@ -820,7 +820,7 @@ private
+             +/
+             foreach (chunk; VoidChunks(buffer, 256))
+             {
+-                const status = getentropy(buffer.ptr, buffer.length);
++                const status = getentropy(chunk.ptr, chunk.length);
+                 if (status != 0)
+                     return EntropyStatus.readError;
+             }

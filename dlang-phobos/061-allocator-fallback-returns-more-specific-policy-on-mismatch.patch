@@ -1,0 +1,19 @@
+diff --git a/std/experimental/allocator/typed.d b/std/experimental/allocator/typed.d
+index fd364ecc3..bf7fdc6e6 100644
+--- a/std/experimental/allocator/typed.d
++++ b/std/experimental/allocator/typed.d
+@@ -196,11 +196,11 @@ struct TypedAllocator(PrimaryAllocator, Policies...)
+         }
+         else
+         {
+-            foreach (i, choice; Stride2!Policies)
++            foreach_reverse (i, choice; Stride2!Policies)
+             {
+-                static if (!match(choice, flags))
++                static if (match(choice, flags))
+                 {
+-                    return extras[i - 1];
++                    return extras[i];
+                 }
+             }
+             assert(0);

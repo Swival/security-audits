@@ -1,0 +1,17 @@
+diff --git a/std/experimental/allocator/building_blocks/ascending_page_allocator.d b/std/experimental/allocator/building_blocks/ascending_page_allocator.d
+index bfb78c587..60fb36709 100644
+--- a/std/experimental/allocator/building_blocks/ascending_page_allocator.d
++++ b/std/experimental/allocator/building_blocks/ascending_page_allocator.d
+@@ -14,6 +14,12 @@ private mixin template AscendingPageAllocatorImpl(bool isShared)
+     bool deallocate(void[] buf) nothrow @nogc
+     {
+         size_t goodSize = goodAllocSize(buf.length);
++        void* end = buf.ptr + goodSize;
++        void* allocatorEnd = data + numPages * pageSize;
++
++        if (!data || !buf.ptr.alignedAt(pageSize) || buf.ptr < data || end > allocatorEnd)
++            return false;
++
+         version (Posix)
+         {
+             import core.sys.posix.sys.mman : mmap, MAP_FAILED, MAP_PRIVATE,

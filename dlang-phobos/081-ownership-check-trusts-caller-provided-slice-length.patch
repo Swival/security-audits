@@ -1,0 +1,24 @@
+diff --git a/std/experimental/allocator/building_blocks/bucketizer.d b/std/experimental/allocator/building_blocks/bucketizer.d
+index aab1f60eb..153c51693 100644
+--- a/std/experimental/allocator/building_blocks/bucketizer.d
++++ b/std/experimental/allocator/building_blocks/bucketizer.d
+@@ -183,12 +183,15 @@ struct Bucketizer(Allocator, size_t min, size_t max, size_t step)
+     Ternary owns(void[] b)
+     {
+         if (!b.ptr) return Ternary.no;
+-        if (auto a = allocatorFor(b.length))
++        Ternary result = Ternary.no;
++        foreach (i, ref bucket; buckets)
+         {
+-            const actual = goodAllocSize(b.length);
+-            return a.owns(b.ptr[0 .. actual]);
++            const actual = min + step * (i + 1) - 1;
++            auto r = bucket.owns(b.ptr[0 .. actual]);
++            if (r == Ternary.yes) return r;
++            if (r == Ternary.unknown) result = r;
+         }
+-        return Ternary.no;
++        return result;
+     }
+ 
+     /**

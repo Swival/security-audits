@@ -1,0 +1,12 @@
+diff --git a/std/experimental/allocator/building_blocks/free_list.d b/std/experimental/allocator/building_blocks/free_list.d
+index d2b320992..c8bf35090 100644
+--- a/std/experimental/allocator/building_blocks/free_list.d
++++ b/std/experimental/allocator/building_blocks/free_list.d
+@@ -1090,6 +1090,7 @@ struct SharedFreeList(ParentAllocator,
+     {
+         if (!nodesFull && freeListEligible(b.length))
+         {
++            if (b is null) return true;
+             auto newRoot = cast(shared Node*) b.ptr;
+             lock.lock();
+             newRoot.next = _root;

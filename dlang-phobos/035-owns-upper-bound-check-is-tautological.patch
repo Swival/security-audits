@@ -1,0 +1,13 @@
+diff --git a/std/experimental/allocator/building_blocks/ascending_page_allocator.d b/std/experimental/allocator/building_blocks/ascending_page_allocator.d
+index bfb78c587..c1f787a97 100644
+--- a/std/experimental/allocator/building_blocks/ascending_page_allocator.d
++++ b/std/experimental/allocator/building_blocks/ascending_page_allocator.d
+@@ -49,7 +49,7 @@ private mixin template AscendingPageAllocatorImpl(bool isShared)
+     {
+         if (!data)
+             return Ternary.no;
+-        return Ternary(buf.ptr >= data && buf.ptr < buf.ptr + numPages * pageSize);
++        return Ternary(buf.ptr >= data && buf.ptr < data + numPages * pageSize);
+     }
+ 
+     bool deallocateAll() nothrow @nogc

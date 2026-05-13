@@ -1,0 +1,11 @@
+diff --git a/std/datetime/timezone.d b/std/datetime/timezone.d
+index c58af7f33..1f665f808 100644
+--- a/std/datetime/timezone.d
++++ b/std/datetime/timezone.d
+@@ -2332,6 +2332,7 @@ public:
+                 if (gmtZone)
+                     tempTTInfo.tt_gmtoff = -tempTTInfo.tt_gmtoff;
+ 
++                _enforceValidTZFile(tempTTInfo.tt_abbrind < tzAbbrevChars.length);
+                 auto abbrevChars = tzAbbrevChars[tempTTInfo.tt_abbrind .. $];
+                 string abbrev = abbrevChars[0 .. abbrevChars.countUntil('\0')].idup;

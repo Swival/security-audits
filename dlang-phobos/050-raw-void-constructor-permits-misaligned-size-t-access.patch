@@ -1,0 +1,13 @@
+diff --git a/std/bitmanip.d b/std/bitmanip.d
+index f8a97dfbf..fa034f8bd 100644
+--- a/std/bitmanip.d
++++ b/std/bitmanip.d
+@@ -1086,6 +1086,8 @@ public:
+                 "numbits must be less than or equal to v.length * 8");
+         assert(v.length % size_t.sizeof == 0,
+                 "v.length must be a multiple of the size of size_t");
++        assert((cast(size_t) v.ptr & (size_t.alignof - 1)) == 0,
++                "v.ptr must be aligned for size_t");
+     }
+     do
+     {

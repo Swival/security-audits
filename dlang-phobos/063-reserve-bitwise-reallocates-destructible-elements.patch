@@ -1,0 +1,48 @@
+diff --git a/std/container/array.d b/std/container/array.d
+index 0ae8a6a03..a35d7ff28 100644
+--- a/std/container/array.d
++++ b/std/container/array.d
+@@ -476,7 +476,42 @@ if (!is(immutable T == immutable bool))
+                 if (overflow)
+                     assert(false, "Overflow");
+             }
+-            static if (hasIndirections!T)
++            static if (__traits(needsDestruction, T))
++            {
++                import core.lifetime : moveEmplace;
++
++                immutable oldLength = length;
++                auto newPayloadPtr = cast(T*) enforceMalloc(sz);
++                auto newPayload = newPayloadPtr[0 .. oldLength];
++                size_t moved;
++
++                static if (hasIndirections!T)
++                {
++                    memset(cast(void*) newPayload.ptr, 0, sz);
++                    GC.addRange(cast(void*) newPayload.ptr, sz);
++                }
++
++                scope (failure)
++                {
++                    foreach (ref e; newPayloadPtr[0 .. moved])
++                        .destroy(e);
++                    static if (hasIndirections!T)
++                        GC.removeRange(cast(void*) newPayload.ptr);
++                    free(cast(void*) newPayload.ptr);
++                }
++
++                foreach (i; 0 .. oldLength)
++                {
++                    moveEmplace(_payload.ptr[i], newPayloadPtr[i]);
++                    ++moved;
++                }
++
++                static if (hasIndirections!T)
++                    GC.removeRange(cast(void*) _payload.ptr);
++                free(cast(void*) _payload.ptr);
++                _payload = newPayload;
++            }
++            else static if (hasIndirections!T)
+             {
+                 /* Because of the transactional nature of this
+                  * relative to the garbage collector, ensure no

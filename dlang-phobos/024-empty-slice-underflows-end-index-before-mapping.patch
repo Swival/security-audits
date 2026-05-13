@@ -1,0 +1,16 @@
+diff --git a/std/mmfile.d b/std/mmfile.d
+index d0860ca70..1d8605612 100644
+--- a/std/mmfile.d
++++ b/std/mmfile.d
+@@ -575,6 +575,11 @@ class MmFile
+     private void ensureMapped(ulong i, ulong j)
+     {
+         debug (MMFILE) printf("MmFile.ensureMapped(%lld, %lld)\n", i, j);
++        if (i == j)
++        {
++            ensureMapped(i);
++            return;
++        }
+         if (!mapped(i) || !mapped(j-1))
+         {
+             unmap();

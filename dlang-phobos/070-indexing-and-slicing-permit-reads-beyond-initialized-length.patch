@@ -1,0 +1,23 @@
+diff --git a/std/internal/scopebuffer.d b/std/internal/scopebuffer.d
+index d9495555c..bfa972329 100644
+--- a/std/internal/scopebuffer.d
++++ b/std/internal/scopebuffer.d
+@@ -200,8 +200,8 @@ if (isAssignable!T &&
+     @system inout(T)[] opSlice(size_t lower, size_t upper) inout
+         in
+         {
+-            assert(lower <= bufLen);
+-            assert(upper <= bufLen);
++            assert(lower <= used);
++            assert(upper <= used);
+             assert(lower <= upper);
+         }
+     do
+@@ -222,7 +222,7 @@ if (isAssignable!T &&
+      */
+     ref inout(T) opIndex(size_t i) inout
+     {
+-        assert(i < bufLen);
++        assert(i < used);
+         return buf[i];
+     }

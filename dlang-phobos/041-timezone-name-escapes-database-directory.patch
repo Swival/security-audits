@@ -1,0 +1,18 @@
+diff --git a/std/datetime/timezone.d b/std/datetime/timezone.d
+index c58af7f33..dafa937e9 100644
+--- a/std/datetime/timezone.d
++++ b/std/datetime/timezone.d
+@@ -2087,11 +2087,13 @@ public:
+         import std.datetime.date : DateTimeException;
+         import std.exception : enforce;
+         import std.format : format;
+-        import std.path : asNormalizedPath, chainPath;
++        import std.path : asNormalizedPath, chainPath, isAbsolute, pathSplitter;
+         import std.range : retro;
+ 
+         name = strip(name);
+ 
++        enforce(!isAbsolute(name) && !name.pathSplitter.canFind(".."),
++                new DateTimeException(format("Invalid time zone name: %s", name)));
+         enforce(tzDatabaseDir.exists(), new DateTimeException(format("Directory %s does not exist.", tzDatabaseDir)));
+         enforce(tzDatabaseDir.isDir, new DateTimeException(format("%s is not a directory.", tzDatabaseDir)));

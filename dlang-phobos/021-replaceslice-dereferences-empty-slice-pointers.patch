@@ -1,0 +1,24 @@
+diff --git a/std/array.d b/std/array.d
+index 0f6a130ac..d9c55db6d 100644
+--- a/std/array.d
++++ b/std/array.d
+@@ -3516,7 +3516,7 @@ in
+ do
+ {
+     auto result = new T[s.length - slice.length + replacement.length];
+-    immutable so = &slice[0] - &s[0];
++    immutable so = slice.empty ? (slice.ptr ? slice.ptr - s.ptr : 0) : &slice[0] - &s[0];
+     result[0 .. so] = s[0 .. so];
+     result[so .. so + replacement.length] = replacement[];
+     result[so + replacement.length .. result.length] =
+@@ -3547,6 +3547,10 @@ do
+     int i;
+     i = cmp(r, "hebaro");
+     assert(i == 0);
++
++    r = replaceSlice(s, s[2 .. 2], "bar");
++    i = cmp(r, "hebarllo");
++    assert(i == 0);
+ }
+ 
+ /**

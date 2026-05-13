@@ -1,0 +1,11 @@
+diff --git a/std/experimental/allocator/common.d b/std/experimental/allocator/common.d
+index b06fb627d..1229105f1 100644
+--- a/std/experimental/allocator/common.d
++++ b/std/experimental/allocator/common.d
+@@ -253,6 +253,7 @@ package void[] roundStartToMultipleOf(void[] s, uint base)
+     auto p = cast(void*) roundUpToMultipleOf(
+         cast(size_t) s.ptr, base);
+     auto end = s.ptr + s.length;
++    if (end <= p) return null;
+     return p[0 .. end - p];
+ }

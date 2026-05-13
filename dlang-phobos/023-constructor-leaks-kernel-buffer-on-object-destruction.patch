@@ -1,0 +1,17 @@
+diff --git a/std/numeric.d b/std/numeric.d
+index 345d3b7a8..6ae5f0327 100644
+--- a/std/numeric.d
++++ b/std/numeric.d
+@@ -2761,6 +2761,12 @@ time and computes all matches of length 1.
+         }
+     }
+ 
++    ~this()
++    {
++        if (kl)
++            free(kl);
++    }
++
+     /**
+     Returns: `this`.
+      */

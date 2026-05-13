@@ -1,0 +1,17 @@
+diff --git a/std/windows/registry.d b/std/windows/registry.d
+index 7ee1f7afc..56b0eecf0 100644
+--- a/std/windows/registry.d
++++ b/std/windows/registry.d
+@@ -551,6 +551,12 @@ do
+     {
+         case REG_VALUE_TYPE.REG_SZ:
+         case REG_VALUE_TYPE.REG_EXPAND_SZ:
++            if (cbData == 0)
++            {
++                value = "";
++                break;
++            }
++
+             auto wstr = (cast(immutable(wchar)*)data)[0 .. cbData / wchar.sizeof];
+             assert(wstr.length > 0 && wstr[$-1] == '\0');
+             if (wstr.length && wstr[$-1] == '\0')

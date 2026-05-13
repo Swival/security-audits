@@ -1,0 +1,23 @@
+diff --git a/std/json.d b/std/json.d
+index 2875faef9..6e497d0b2 100644
+--- a/std/json.d
++++ b/std/json.d
+@@ -797,11 +797,16 @@ struct JSONValue
+     }
+ 
+     /***
+-     * Hash syntax for JSON objects.
+-     * Throws: `JSONException` if `type` is not `JSONType.object`.
++     * Hash syntax for unordered JSON objects.
++     * Throws: `JSONException` if `type` is not `JSONType.object`
++     * or the object is ordered.
+      */
+     ref inout(JSONValue) opIndex(return scope string k) inout pure @safe
+     {
++        enforce!JSONException(type == JSONType.object,
++                                "JSONValue is not an object");
++        enforce!JSONException(!store.object.isOrdered,
++                                "JSONValue object is ordered, cannot return by ref");
+         auto o = this.objectNoRef;
+         return *enforce!JSONException(k in o,
+                                         "Key not found: " ~ k);

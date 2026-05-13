@@ -1,0 +1,19 @@
+diff --git a/std/parallelism.d b/std/parallelism.d
+index bafdbb92f..a96dc0240 100644
+--- a/std/parallelism.d
++++ b/std/parallelism.d
+@@ -3305,10 +3305,10 @@ public:
+         typeof(this) opSlice(size_t lower, size_t upper)
+         {
+             assert(upper <= _length);
+-            auto newWl = this.workerLocalStorage;
+-            newWl.data += lower * newWl.elemSize;
+-            newWl.size = upper - lower;
+-            return typeof(this)(newWl);
++            auto ret = this;
++            ret.beginOffset += lower;
++            ret._length = upper - lower;
++            return ret;
+         }
+ 
+         bool empty() const @property

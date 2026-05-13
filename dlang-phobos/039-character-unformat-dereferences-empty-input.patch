@@ -1,0 +1,12 @@
+diff --git a/std/format/internal/read.d b/std/format/internal/read.d
+index d2620e903..0d5905901 100644
+--- a/std/format/internal/read.d
++++ b/std/format/internal/read.d
+@@ -154,6 +154,7 @@ if (isInputRange!Range && isSomeChar!T && !is(T == enum) && isSomeChar!(ElementT
+ 
+     if (spec.spec == 's' || spec.spec == 'c')
+     {
++        enforceFmt(!input.empty, "need more input");
+         auto result = to!T(input.front);
+         input.popFront();
+         return result;

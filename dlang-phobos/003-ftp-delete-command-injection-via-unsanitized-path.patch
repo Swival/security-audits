@@ -1,0 +1,22 @@
+diff --git a/std/net/curl.d b/std/net/curl.d
+index efbb4f881..ad47693e2 100644
+--- a/std/net/curl.d
++++ b/std/net/curl.d
+@@ -799,7 +799,7 @@ if (isCurlConn!Conn)
+     }
+     else static if (is(Conn : FTP))
+     {
+-        import std.algorithm.searching : findSplitAfter;
++        import std.algorithm.searching : canFind, findSplitAfter;
+         import std.conv : text;
+         import std.exception : enforce;
+ 
+@@ -812,6 +812,8 @@ if (isCurlConn!Conn)
+ 
+         enforce!CurlException(!t[1].empty,
+                                 text("No filename specified to delete for URL ", url));
++        enforce!CurlException(!t[1].canFind("\r") && !t[1].canFind("\n"),
++                                text("Invalid FTP delete path ", t[1]));
+         conn.addCommand("DELE " ~ t[1]);
+         conn.perform();
+     }

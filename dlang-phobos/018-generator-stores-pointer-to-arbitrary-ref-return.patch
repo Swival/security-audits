@@ -1,0 +1,37 @@
+diff --git a/std/range/package.d b/std/range/package.d
+index 3d4ec7a91..3b6fd1b2b 100644
+--- a/std/range/package.d
++++ b/std/range/package.d
+@@ -4323,6 +4323,7 @@ private:
+         alias fun = Fun[0];
+ 
+     enum returnByRef_ = (functionAttributes!fun & FunctionAttribute.ref_) ? true : false;
++    static assert(!returnByRef_, "generate does not support ref-returning callables");
+ 
+     import std.traits : hasIndirections;
+     static if (!hasIndirections!(ReturnType!fun))
+@@ -4391,7 +4392,7 @@ public:
+     assert(equal(generate(op).take(10), repeat(5).take(10)));
+ }
+ 
+-// verify ref mechanism works
++// ref-returning callables are rejected to avoid caching dangling references.
+ @system nothrow unittest
+ {
+     int[10] arr;
+@@ -4402,13 +4403,8 @@ public:
+         idx %= arr.length;
+         return arr[x];
+     }
+-    int y = 1;
+-    foreach (ref x; generate!(fun).take(20))
+-    {
+-        x += y++;
+-    }
+-    import std.algorithm.comparison : equal;
+-    assert(equal(arr[], iota(12, 32, 2)));
++
++    static assert(!__traits(compiles, generate!(fun)));
+ }
+ 
+ // assure front isn't the mechanism to make generate go to the next element.

@@ -1,0 +1,16 @@
+diff --git a/std/internal/math/biguintx86.d b/std/internal/math/biguintx86.d
+index 69e0bfbdc..f27000a64 100644
+--- a/std/internal/math/biguintx86.d
++++ b/std/internal/math/biguintx86.d
+@@ -230,6 +230,11 @@ uint multibyteIncrementAssign(char op)(uint[] dest, uint carry) pure @safe @nogc
+     asm pure nothrow @nogc @trusted {
+         naked;
+         mov ECX, [ESP + LASTPARAM + 0*4]; // dest.length;
++        test ECX, ECX;
++        jnz L0;
++        and EAX, 1;
++        ret 2*4;
++L0:
+         mov EDX, [ESP + LASTPARAM + 1*4]; // dest.ptr
+         // EAX  = carry
+ L1: ;

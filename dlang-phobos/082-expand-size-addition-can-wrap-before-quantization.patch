@@ -1,0 +1,12 @@
+diff --git a/std/experimental/allocator/building_blocks/quantizer.d b/std/experimental/allocator/building_blocks/quantizer.d
+index 3334a86fd..1f23b5731 100644
+--- a/std/experimental/allocator/building_blocks/quantizer.d
++++ b/std/experimental/allocator/building_blocks/quantizer.d
+@@ -110,6 +110,7 @@ struct Quantizer(ParentAllocator, alias roundingFunction)
+     bool expand(ref void[] b, size_t delta)
+     {
+         if (!b || delta == 0) return delta == 0;
++        if (delta > size_t.max - b.length) return false;
+         immutable allocated = goodAllocSize(b.length),
+             needed = b.length + delta,
+             neededAllocation = goodAllocSize(needed);

@@ -1,0 +1,12 @@
+diff --git a/std/outbuffer.d b/std/outbuffer.d
+index f6d4ba850..777f59c69 100644
+--- a/std/outbuffer.d
++++ b/std/outbuffer.d
+@@ -111,7 +111,7 @@ class OutBuffer
+     void write(ushort w) @trusted                /// ditto
+     {
+         reserve(ushort.sizeof);
+-        *cast(ushort *)&data[offset] = w;
++        data[offset .. offset + ushort.sizeof] = (cast(const(ubyte)*) &w)[0 .. ushort.sizeof];
+         offset += ushort.sizeof;
+     }

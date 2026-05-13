@@ -1,0 +1,15 @@
+diff --git a/std/algorithm/iteration.d b/std/algorithm/iteration.d
+index ee92b012e..0aaff567b 100644
+--- a/std/algorithm/iteration.d
++++ b/std/algorithm/iteration.d
+@@ -552,8 +552,9 @@ private struct LazyCache(R, bool bidir)
+     {
+         version (assert) if (empty) throw new RangeError();
+         source.popFront();
+-        // Reset the cache state for front
++        // Reset cached values that may no longer match the mutated source.
+         frontCached = false;
++        static if (bidir) backCached = false;
+     }
+     static if (bidir) void popBack()
+     {

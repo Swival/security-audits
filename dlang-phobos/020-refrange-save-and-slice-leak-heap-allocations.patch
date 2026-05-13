@@ -1,0 +1,27 @@
+diff --git a/std/range/package.d b/std/range/package.d
+index 3d4ec7a91..ffb8ace25 100644
+--- a/std/range/package.d
++++ b/std/range/package.d
+@@ -12612,9 +12612,9 @@ public:
+             return `import core.lifetime : emplace;` ~
+                    `alias S = typeof((() => (*_range).save)());` ~
+                    `static assert(isForwardRange!S, S.stringof ~ " is not a forward range.");` ~
+-                   `auto mem = new void[S.sizeof];` ~
++                   `auto mem = new S;` ~
+                    `emplace!S(mem, cast(S)(*_range).save);` ~
+-                   `return RefRange!S(cast(S*) mem.ptr);`;
++                   `return RefRange!S(mem);`;
+         }
+ 
+         static assert(isForwardRange!RefRange);
+@@ -12776,9 +12776,9 @@ public:
+             return `import core.lifetime : emplace;` ~
+                    `alias S = typeof((*_range)[begin .. end]);` ~
+                    `static assert(hasSlicing!S, S.stringof ~ " is not sliceable.");` ~
+-                   `auto mem = new void[S.sizeof];` ~
++                   `auto mem = new S;` ~
+                    `emplace!S(mem, cast(S)(*_range)[begin .. end]);` ~
+-                   `return RefRange!S(cast(S*) mem.ptr);`;
++                   `return RefRange!S(mem);`;
+         }
+     }

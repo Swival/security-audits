@@ -1,0 +1,65 @@
+diff --git a/std/internal/windows/advapi32.d b/std/internal/windows/advapi32.d
+index 1b26f43c3..5ab669f3b 100644
+--- a/std/internal/windows/advapi32.d
++++ b/std/internal/windows/advapi32.d
+@@ -33,6 +33,7 @@ pragma(lib, "advapi32.lib");
+     return result > 0;
+ }
+ 
++private __gshared Object advapi32Lock;
+ HMODULE hAdvapi32 = null;
+ extern (Windows)
+ {
+@@ -41,31 +42,37 @@ extern (Windows)
+         scope const REGSAM samDesired, scope const DWORD reserved) pRegDeleteKeyExW;
+ }
+ 
++shared static this()
++{
++    advapi32Lock = new Object;
++}
++
+ void loadAdvapi32()
+ {
+-    if (!hAdvapi32)
++    synchronized (advapi32Lock)
+     {
+-        hAdvapi32 = LoadLibraryA("Advapi32.dll");
+         if (!hAdvapi32)
+-            throw new Exception(`LoadLibraryA("Advapi32.dll")`);
++        {
++            auto hAdvapi32Local = LoadLibraryA("Advapi32.dll");
++            if (!hAdvapi32Local)
++                throw new Exception(`LoadLibraryA("Advapi32.dll")`);
+ 
+-        pRegDeleteKeyExW = cast(typeof(pRegDeleteKeyExW)) GetProcAddress(hAdvapi32 , "RegDeleteKeyExW");
+-        if (!pRegDeleteKeyExW)
+-            throw new Exception(`GetProcAddress(hAdvapi32 , "RegDeleteKeyExW")`);
++            auto pRegDeleteKeyExWLocal = cast(typeof(pRegDeleteKeyExW)) GetProcAddress(hAdvapi32Local, "RegDeleteKeyExW");
++            if (!pRegDeleteKeyExWLocal)
++            {
++                FreeLibrary(hAdvapi32Local);
++                throw new Exception(`GetProcAddress(hAdvapi32 , "RegDeleteKeyExW")`);
++            }
++
++            pRegDeleteKeyExW = pRegDeleteKeyExWLocal;
++            hAdvapi32 = hAdvapi32Local;
++        }
+     }
+ }
+ 
+-// It will free Advapi32.dll, which may be loaded for RegDeleteKeyEx function
++// Keep Advapi32.dll loaded until process exit so callers never observe a stale entrypoint.
+ private void freeAdvapi32()
+ {
+-    if (hAdvapi32)
+-    {
+-        if (!FreeLibrary(hAdvapi32))
+-            throw new Exception(`FreeLibrary("Advapi32.dll")`);
+-        hAdvapi32 = null;
+-
+-        pRegDeleteKeyExW = null;
+-    }
+ }
+ 
+ static ~this()
