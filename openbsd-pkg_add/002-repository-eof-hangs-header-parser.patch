@@ -1,0 +1,63 @@
+diff --git a/OpenBSD/PackageRepository/HTTP.pm b/OpenBSD/PackageRepository/HTTP.pm
+index b5a6712..cdf60da 100755
+--- a/OpenBSD/PackageRepository/HTTP.pm
++++ b/OpenBSD/PackageRepository/HTTP.pm
+@@ -98,12 +98,14 @@ sub send_header($o, $document, %extra)
+ sub get_header($o)
+ {
+ 	my $l = $o->getline;
+-	if ($l !~ m,^HTTP/1\.1\s+(\d\d\d),) {
++	if (!defined $l || $l !~ m,^HTTP/1\.1\s+(\d\d\d),) {
+ 		return undef;
+ 	}
+ 	my $h = _Proxy::Header->new;
+ 	$h->{code} = $1;
+-	while ($l = $o->getline) {
++	while (1) {
++		$l = $o->getline;
++		return undef if !defined $l;
+ 		last if $l =~ m/^$/;
+ 		if ($l =~ m/^([\w\-]+)\:\s*(.*)$/) {
+ 			$h->{$1} = $2;
+@@ -132,7 +134,9 @@ sub getline($self)
+ 			return $1;
+ 		}
+ 		my $buffer;
+-		$self->{fh}->recv($buffer, 1024);
++		return undef
++		    if !defined $self->{fh}->recv($buffer, 1024)
++		    || $buffer eq '';
+ 		$self->{buffer}.=$buffer;
+     	}
+ }
+@@ -141,7 +145,10 @@ sub retrieve($self, $sz)
+ {
+ 	while(length($self->{buffer}) < $sz) {
+ 		my $buffer;
+-		$self->{fh}->recv($buffer, $sz - length($self->{buffer}));
++		return undef
++		    if !defined $self->{fh}->recv($buffer,
++			    $sz - length($self->{buffer}))
++		    || $buffer eq '';
+ 		$self->{buffer}.=$buffer;
+ 	}
+ 	my $result= substr($self->{buffer}, 0, $sz);
+@@ -161,7 +168,9 @@ sub retrieve_and_print($self, $sz, $fh)
+ 		$self->{buffer} = '';
+ 	}
+ 	while ($retrieved < $sz) {
+-		$self->{fh}->recv($result, $sz - $retrieved);
++		last
++		    if !defined $self->{fh}->recv($result, $sz - $retrieved)
++		    || $result eq '';
+ 		print $fh $result;
+ 		$retrieved += length($result);
+ 	}
+@@ -172,6 +181,7 @@ sub retrieve_chunked($self)
+ 	my $result = '';
+ 	while (1) {
+ 		my $sz = $self->getline;
++		return undef if !defined $sz;
+ 		if ($sz =~ m/^([0-9a-fA-F]+)/) {
+ 			my $realsize = hex($1);
+ 			last if $realsize == 0;

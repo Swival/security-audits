@@ -1,0 +1,45 @@
+diff --git a/OpenBSD/Ustar.pm b/OpenBSD/Ustar.pm
+index 0fce9df..e5cc626 100644
+--- a/OpenBSD/Ustar.pm
++++ b/OpenBSD/Ustar.pm
+@@ -173,6 +173,24 @@ sub _parse_records($self, $result, $h)
+ 	}
+ }
+ 
++sub _check_path($self, $name)
++{
++	if ($name =~ m|^/|o || $name =~ m|(?:^|/)\.\.(?:/|$)|o) {
++		$self->_fatal("Unsafe archive path #1", $name);
++	}
++}
++
++sub _check_entry_paths($self, $result)
++{
++	$self->_check_path($result->{name});
++	# hardlink targets resolve under destdir; restrict them like names.
++	# symlink targets may legitimately point outside the archive, so they
++	# are intentionally not validated here (see O_NOFOLLOW protection).
++	if ($result->isHardLink) {
++		$self->_check_path($result->{linkname});
++	}
++}
++
+ sub next($self)
+ {
+ 	# get rid of the current object
+@@ -244,6 +262,7 @@ sub next($self)
+ 		my $h = $self->_read_records($size);
+ 		$result = $self->next;
+ 		$self->_parse_records($result, $h);
++		$self->_check_entry_paths($result);
+ 		return $result;
+ 	}
+ 	if (defined $types->{$type}) {
+@@ -252,6 +271,7 @@ sub next($self)
+ 		$self->_fatal("Unsupported type #1 (#2)", $type,
+ 		    $unsupported->{$type} // "unknown");
+ 	}
++	$self->_check_entry_paths($result);
+ 	if (!$result->isFile && $result->{size} != 0) {
+ 		$self->_fatal("Bad archive: non null size for #1 (#2)",
+ 		    $types->{$type}, $result->{name});

@@ -1,0 +1,80 @@
+diff --git a/OpenBSD/PackageRepository.pm b/OpenBSD/PackageRepository.pm
+index da59d8b..f653e19 100644
+--- a/OpenBSD/PackageRepository.pm
++++ b/OpenBSD/PackageRepository.pm
+@@ -812,18 +812,38 @@ sub grab_object($self, $object)
+ 	or $self->{state}->fatal("Can't run #1: #2", $self->ftp_cmd, $!);
+ }
+ 
+-sub open_read_ftp($self, $cmd, $errors = undef)
++sub open_read_ftp($self, $errors, $input, @args)
+ {
++	my ($ftp, @extra) = split(/\s+/, $self->ftp_cmd);
++	my @cmd = ($ftp, @extra, @args);
++	my ($rdfh, $wrfh);
++	if (defined $input) {
++		pipe($rdfh, $wrfh);
++	}
+ 	my $child_pid = open(my $fh, '-|');
++	$self->did_it_fork($child_pid);
+ 	if ($child_pid) {
++		if (defined $input) {
++			close($rdfh);
++			local $SIG{'PIPE'} = 'IGNORE';
++			print $wrfh $input;
++			close($wrfh);
++		}
+ 		$self->{pipe_pid} = $child_pid;
+ 		return $fh;
+ 	} else {
+ 		open STDERR, '>>', $errors if defined $errors;
++		if (defined $input) {
++			close($wrfh);
++			open(STDIN, '<&', $rdfh) or
++			    $self->{state}->fatal("Bad dup: #1", $!);
++			close($rdfh);
++		}
+ 
+ 		$self->drop_privileges_and_setup_env;
+-		exec($cmd) 
+-		or $self->{state}->fatal("Can't run #1: #2", $cmd, $!);
++		exec {$ftp} @cmd
++		or $self->{state}->fatal("Can't run #1: #2",
++		    join(" ", @cmd), $!);
+ 	}
+ }
+ 
+@@ -911,8 +931,8 @@ sub get_http_list($self, $error)
+ {
+ 	my $fullname = $self->url;
+ 	my $l = [];
+-	my $fh = $self->open_read_ftp($self->ftp_cmd." -o - $fullname", 
+-	    $error) or return;
++	my $fh = $self->open_read_ftp($error, undef, "-o", "-", $fullname)
++	    or return;
+ 	while(<$fh>) {
+ 		chomp;
+ 		for my $pkg (m/\<A[^>]*\s+HREF=\"(.*?\.tgz)\"/gio) {
+@@ -985,10 +1005,10 @@ sub urlscheme($)
+ 	return 'ftp';
+ }
+ 
+-sub _list($self, $cmd, $error)
++sub _list($self, $error, $input, @args)
+ {
+ 	my $l =[];
+-	my $fh = $self->open_read_ftp($cmd, $error) or return;
++	my $fh = $self->open_read_ftp($error, $input, @args) or return;
+ 	while(<$fh>) {
+ 		chomp;
+ 		next if m/^\d\d\d\s+\S/;
+@@ -1005,8 +1025,7 @@ sub _list($self, $cmd, $error)
+ sub get_ftp_list($self, $error)
+ {
+ 	my $fullname = $self->url;
+-	return $self->_list("echo 'nlist'| ".$self->ftp_cmd." $fullname", 
+-	    $error);
++	return $self->_list($error, "nlist\n", $fullname);
+ }
+ 
+ sub obtain_list($self, $error)

@@ -1,0 +1,20 @@
+diff --git a/OpenBSD/Ustar.pm b/OpenBSD/Ustar.pm
+index 0fce9df..b24b566 100644
+--- a/OpenBSD/Ustar.pm
++++ b/OpenBSD/Ustar.pm
+@@ -772,12 +772,14 @@ sub close($self)
+ }
+ 
+ package OpenBSD::Ustar::File;
++use Fcntl qw(O_CREAT O_NOFOLLOW O_TRUNC O_WRONLY);
+ our @ISA=qw(OpenBSD::Ustar::Object);
+ 
+ sub create($self)
+ {
+ 	$self->_make_basedir;
+-	open(my $fh, '>', $self->fullname) or
++	sysopen(my $fh, $self->fullname,
++	    O_WRONLY|O_CREAT|O_TRUNC|O_NOFOLLOW) or
+ 	    $self->_fatal("Can't write to #1: #2", $self->fullname, $!);
+ 	$self->extract_to_fh($fh);
+ }

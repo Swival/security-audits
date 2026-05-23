@@ -1,0 +1,15 @@
+diff --git a/OpenBSD/ArcCheck.pm b/OpenBSD/ArcCheck.pm
+index ce5dd35..14f4e62 100644
+--- a/OpenBSD/ArcCheck.pm
++++ b/OpenBSD/ArcCheck.pm
+@@ -167,8 +167,8 @@ sub verify_modes($o, $item)
+ 		}
+ 	}
+ 	# XXX /1
+-	$o->{mode} &= ~(S_ISUID|S_ISGID);
+-	if ($o->{mode} != $o->_strip_modes($o)) {
++	my $mode = $o->{mode} & ~(S_ISUID|S_ISGID);
++	if ($mode != ($o->_strip_modes($item) & ~(S_ISUID|S_ISGID))) {
+ 		$o->_errsay("Error: weird mode for #1: #2", $item->fullname,
+ 		    $o->_printable_mode);
+ 		    $result = 0;

@@ -1,0 +1,15 @@
+diff --git a/OpenBSD/PkgCheck.pm b/OpenBSD/PkgCheck.pm
+index 0944681..fc02bbc 100644
+--- a/OpenBSD/PkgCheck.pm
++++ b/OpenBSD/PkgCheck.pm
+@@ -705,8 +705,8 @@ sub check_permissions($self, $state, $dir)
+ 			$self->may_unlink($state, $file);
+ 			next;
+ 		}
+-		my ($perm, $uid, $gid) = (stat $file)[2, 4, 5];
+-		if (!-f $file) {
++		my ($perm, $uid, $gid) = (lstat $file)[2, 4, 5];
++		if (!-f _) {
+ 			$state->errsay("#1 should be a file", $file);
+ 			$self->may_unlink($state, $file);
+ 			next;

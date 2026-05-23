@@ -1,0 +1,17 @@
+diff --git a/OpenBSD/PackageRepository/SCP.pm b/OpenBSD/PackageRepository/SCP.pm
+index c25065e..aef83d7 100644
+--- a/OpenBSD/PackageRepository/SCP.pm
++++ b/OpenBSD/PackageRepository/SCP.pm
+@@ -37,8 +37,11 @@ sub initiate($self)
+ {
+ 	my ($rdfh, $wrfh);
+ 
++	if ($self->{host} =~ m/^-/o) {
++		$self->{state}->fatal("Invalid scp host: #1", $self->{host});
++	}
+ 	$self->{controller} = open2($rdfh, $wrfh, OpenBSD::Paths->ssh,
+-	    $self->{host}, 'perl', '-x');
++	    '--', $self->{host}, 'perl', '-x');
+ 	$self->{cmdfh} = $wrfh;
+ 	$self->{getfh} = $rdfh;
+ 	$wrfh->autoflush(1);
