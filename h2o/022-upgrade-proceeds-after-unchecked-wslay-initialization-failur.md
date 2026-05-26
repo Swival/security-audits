@@ -6,14 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/websocket.c:119`
-- `lib/websocket.c:137`
-- `lib/websocket.c:221`
-- `lib/websocket.c:222`
-- `lib/websocket.c:230`
-- `lib/websocket.c:231`
-- `lib/websocket.c:243`
-- `lib/websocket.c:245`
+- `lib/websocket.c:157` (`h2o_upgrade_to_websocket` ignores `wslay_event_context_server_init` return value)
 
 ## Summary
 `h2o_upgrade_to_websocket` called `wslay_event_context_server_init(&conn->ws_ctx, ...)` and ignored its return value. If initialization failed, the code still completed the HTTP `101` upgrade and `on_complete` still invoked `h2o_websocket_proceed(conn)`. That path unconditionally used `conn->ws_ctx`, making failed initialization reachable and causing a null or invalid context dereference during websocket processing.
@@ -28,9 +21,9 @@
 - The HTTP upgrade path otherwise reaches `on_complete`
 
 ## Proof
-- In `lib/websocket.c:119`, `h2o_upgrade_to_websocket` initialized `conn` and called `wslay_event_context_server_init(&conn->ws_ctx, ...)` without checking the return value.
-- In `lib/websocket.c:137`, `on_complete` unconditionally called `h2o_websocket_proceed(conn)` after sending the `101 Switching Protocols` response.
-- In `lib/websocket.c:221`, `lib/websocket.c:222`, `lib/websocket.c:230`, `lib/websocket.c:231`, `lib/websocket.c:243`, and `lib/websocket.c:245`, `h2o_websocket_proceed` passed `conn->ws_ctx` into `wslay_event_want_write`, `wslay_event_send`, `wslay_event_want_read`, and `wslay_event_recv` without validating the context.
+- In `lib/websocket.c:157`, `h2o_upgrade_to_websocket` initialized `conn` and called `wslay_event_context_server_init(&conn->ws_ctx, ...)` without checking the return value.
+- After the HTTP/1 upgrade completes, `on_complete` unconditionally calls `h2o_websocket_proceed(conn)`.
+- `h2o_websocket_proceed` then passes `conn->ws_ctx` into `wslay_event_want_write`, `wslay_event_send`, `wslay_event_want_read`, and `wslay_event_recv` without validating the context.
 - Upstream wslay dereferences the context in these helpers without a null guard, so an initialization failure remains exploitable as soon as websocket processing begins.
 
 ## Why This Is A Real Bug

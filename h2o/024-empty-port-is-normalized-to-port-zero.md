@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/common/url.c:202`
+- `lib/common/url.c:226` (port loop in `h2o_url_parse_hostport`)
 
 ## Summary
 - `h2o_url_parse_hostport` accepts an authority ending in a lone `:` and normalizes the missing port to `0`.
@@ -21,19 +21,16 @@
 - Parsing reaches `h2o_url_parse_hostport` through URL or authority handling.
 
 ## Proof
-- In `lib/common/url.c:202`, encountering `:` enters port parsing with an accumulator initialized to `0`.
+- In `lib/common/url.c:226`, encountering `:` enters port parsing with an accumulator initialized to `0`.
 - If the next byte is end-of-string, `/`, or `?`, the digit loop executes zero times.
 - Because no check requires at least one digit after `:`, the function assigns `*port = 0` and returns success.
 - This is externally reachable through `h2o_url_parse` and `parse_authority_and_path`, so malformed inputs like `http://127.0.0.1:/` and `http://example.com:/` survive validation.
-- Reproduction confirms downstream impact:
-  - `lib/common/socketpool.c:160` writes `htons(h2o_url_get_port(url))` into `sin_port`.
-  - `lib/common/socketpool.c:189` stringifies the parsed port as `"0"` for named hosts.
-  - `lib/core/request.c:87` parses `Host` authority through the same helper; `Host: example.com:` is treated as explicit port `0` rather than rejected.
+- Reproduction confirms downstream impact: socket-pool connection setup uses the parsed port directly for `sin_port` and for named-host stringification, and `Host` header authority parsing reuses the same helper so `Host: example.com:` is treated as explicit port `0` rather than rejected.
 
 ## Why This Is A Real Bug
 - A lone `:` in authority syntax denotes a port delimiter, so accepting zero digits is malformed parsing behavior.
 - The resulting port `0` is observably consumed by networking and routing code, changing behavior rather than failing closed.
-- The codebase already treats port `0` as invalid in related paths, including `src/httpclient.c:426` and `lib/handler/connect.c:1068`, which is consistent with rejection being the intended behavior.
+- The codebase already treats port `0` as invalid in related paths, which is consistent with rejection being the intended behavior.
 
 ## Fix Requirement
 - Require at least one decimal digit after `:` before accepting a port.

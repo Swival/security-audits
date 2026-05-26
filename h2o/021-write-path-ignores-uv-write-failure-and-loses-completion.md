@@ -6,11 +6,8 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/common/socket/uv-binding.c.h:219`
-- `lib/common/socket/uv-binding.c.h:265`
-- `lib/common/socket.c:910`
-- `lib/common/socket/uv-binding.c.h:297`
-- `include/h2o/socket.h:550`
+- `lib/common/socket/uv-binding.c.h:287` (`do_ssl_write`: `uv_write` return ignored)
+- `lib/common/socket/uv-binding.c.h:297` (`do_write`: `uv_write` return ignored)
 
 ## Summary
 `do_write` and `do_ssl_write` submit writes through `uv_write` but do not check its immediate return value. When `uv_write` fails synchronously, libuv does not invoke the completion callback, so the code never disposes queued buffers and never delivers the caller's write completion. This leaves the socket stuck in a logical writing state and can retain write-side resources until teardown.
@@ -25,9 +22,9 @@
 - A caller reaches the TCP or SSL write path through `h2o_socket_write`
 
 ## Proof
-- `h2o_socket_write` forwards caller-controlled buffers into the uv-backed write path at `lib/common/socket.c:910` and `lib/common/socket/uv-binding.c.h:297`
-- `do_write` calls `uv_write` at `lib/common/socket/uv-binding.c.h:219` without checking the return code
-- `do_ssl_write` does the same at `lib/common/socket/uv-binding.c.h:265`
+- `h2o_socket_write` forwards caller-controlled buffers into the uv-backed write path
+- `do_write` calls `uv_write` at `lib/common/socket/uv-binding.c.h:297` without checking the return code
+- `do_ssl_write` does the same at `lib/common/socket/uv-binding.c.h:287`
 - On synchronous errors such as `UV_EBADF`, `UV_EPIPE`, `UV_EINVAL`, or `UV_ENOMEM`, libuv returns immediately and does not run `on_do_write_complete` / `on_ssl_write_complete`
 - Cleanup and callback delivery are only performed from those completion handlers, so the write never completes from the caller's perspective
 - The reproduced practical trigger is `UV_ENOMEM` on the non-SSL path, where a large caller-controlled `bufcnt` can force libuv to allocate an internal iovec copy and fail immediately

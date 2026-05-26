@@ -6,9 +6,9 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/http1.c:711`
-- `lib/http1.c:822`
-- `lib/http1.c:1153`
+- `lib/http1.c:964` (`flatten_headers`, keep-alive branch)
+- `lib/http1.c:967` (`flatten_headers`, close branch)
+- `lib/http1.c:1153` (`finalostream_send_informational`)
 
 ## Summary
 `req->res.reason` is serialized into HTTP/1 status lines without CR/LF sanitization. If an application sets the reason phrase from untrusted input, attacker-controlled `\r` or `\n` bytes break the status line and inject arbitrary headers or a second response.
@@ -21,7 +21,7 @@
 - The application sets `req->res.reason` from untrusted input
 
 ## Proof
-`flatten_headers` and the HTTP/1 informational response path format the status line with `%s` using `req->res.reason` directly, with no filtering at `lib/http1.c:711`, `lib/http1.c:822`, and `lib/http1.c:1153`.
+`flatten_headers` and the HTTP/1 informational response path format the status line with `%s` using `req->res.reason` directly, with no filtering at `lib/http1.c:964`, `lib/http1.c:967`, and `lib/http1.c:1153`.
 
 A practical payload such as `OK\r\nSet-Cookie: pwn=1` produces wire output equivalent to:
 ```text

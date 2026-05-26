@@ -4,7 +4,7 @@ Security audit of the H2O HTTP/1, HTTP/2, and HTTP/3 server. Each finding includ
 
 ## Summary
 
-**Total findings: 19** -- High: 13, Medium: 6
+**Total findings: 19** -- High: 13, Medium: 6 (1 fixed upstream as of 2026-05-26)
 
 ## Findings
 
@@ -65,4 +65,4 @@ Security audit of the H2O HTTP/1, HTTP/2, and HTTP/3 server. Each finding includ
 | # | Finding | Severity |
 |---|---------|----------|
 | [001](001-streaming-redis-channel-never-marks-unsubscribe-state.md) | Streaming Redis channel never marks unsubscribe state | Medium |
-| [009](009-wrong-buffer-terminated-before-getaddrinfo.md) | Wrong service buffer left unterminated before `getaddrinfo` | High |
+| [009](009-wrong-buffer-terminated-before-getaddrinfo.md) | Wrong service buffer left unterminated before `getaddrinfo` (fixed) | High |

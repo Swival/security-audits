@@ -6,7 +6,8 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/handler/fastcgi.c:510`
+- `lib/handler/fastcgi.c:599` (pre-parse buffer reserve)
+- `lib/handler/fastcgi.c:609` (pre-parse buffer reserve, second path)
 
 ## Summary
 A FastCGI upstream can send `FCGI_STDOUT` bytes that never complete an HTTP header block, causing the receiver to keep buffering pre-parse header data without any cumulative limit. This permits unbounded memory growth and denial of service in the worker handling the connection.
@@ -19,10 +20,10 @@ A FastCGI upstream can send `FCGI_STDOUT` bytes that never complete an HTTP head
 - A FastCGI peer sends header bytes without completing the HTTP header block
 
 ## Proof
-In `lib/handler/fastcgi.c:510`, the FastCGI response path appends incoming `FCGI_STDOUT` payload into `generator->resp.receiving` while `sent_headers == 0`. Header parsing is attempted with `phr_parse_headers`; when parsing is incomplete, it returns `-2`. In that state, additional bytes are accepted and buffered again on subsequent records, with no maximum-size enforcement before parse completion.
+In `lib/handler/fastcgi.c:599` and `:609`, the FastCGI response path appends incoming `FCGI_STDOUT` payload into `generator->resp.receiving` while `sent_headers == 0`. Header parsing is attempted with `phr_parse_headers`; when parsing is incomplete, it returns `-2`. In that state, additional bytes are accepted and buffered again on subsequent records, with no maximum-size enforcement before parse completion.
 
 The reproduced path shows this remains reachable across repeated readable events:
-- `on_read` rearms I/O after each readable notification in `lib/handler/fastcgi.c:725`
+- `on_read` rearms I/O after each readable notification
 - socket readiness is triggered on arriving TCP data in `include/h2o/socket.h:342`
 - `include/h2o/socket.h:349`
 - the event-loop read limit is per event, not cumulative, in `lib/common/socket/evloop.c.h:132`

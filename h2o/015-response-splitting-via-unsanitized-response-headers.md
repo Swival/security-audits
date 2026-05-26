@@ -6,11 +6,10 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/http1.c:693`
-- `lib/core/headers.c:77`
-- `lib/core/headers.c:96`
-- `lib/handler/mruby.c:874`
-- `lib/handler/mruby.c:903`
+- `lib/http1.c:936` (`flatten_res_headers`)
+- `lib/core/headers.c:71` (`h2o_add_header`)
+- `lib/core/headers.c:77` (`h2o_add_header_by_str`)
+- `lib/handler/mruby.c` (MRuby response header insertion)
 
 ## Summary
 HTTP/1 response serialization accepted header names and values containing `\r` or `\n`. Those bytes were copied into the wire buffer and followed by a serializer-added `\r\n`, allowing response splitting and arbitrary header injection when application-controlled headers reached `req->res.headers`.
@@ -25,12 +24,12 @@ HTTP/1 response serialization accepted header names and values containing `\r` o
 - The response is emitted through the HTTP/1 header flattener
 
 ## Proof
-- `flatten_res_headers` in `lib/http1.c:693` serialized `header->name` and `header->value` with direct `memcpy` and then appended `\r\n`
+- `flatten_res_headers` in `lib/http1.c:936` serialized `header->name` and `header->value` with direct `memcpy` and then appended `\r\n`
 - No CR/LF validation occurred in that path before `flatten_headers` or `finalostream_send_informational` sent the bytes
 - Header creation helpers accepted unchecked custom names and values:
+  - `h2o_add_header` in `lib/core/headers.c:71`
   - `h2o_add_header_by_str` in `lib/core/headers.c:77`
-  - MRuby response header insertion in `lib/handler/mruby.c:874`
-  - MRuby response header insertion in `lib/handler/mruby.c:903`
+  - MRuby response header insertion in `lib/handler/mruby.c`
 - A value such as `abc\r\nSet-Cookie: injected=1` produced:
 ```text
 Header: abc\r\nSet-Cookie: injected=1\r\n

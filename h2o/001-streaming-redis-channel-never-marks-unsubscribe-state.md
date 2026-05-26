@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/handler/mruby/embedded.c.h:366`
+- `lib/handler/mruby/embedded.c.h:479`
 
 ## Summary
 `H2O::Redis::Command::Streaming::Channel#shift` advertises EOF with `return nil if @replies.empty? && @unsubscribed`, but on an `unsubscribe` reply it returned `nil` without first setting `@unsubscribed = true`. A later `shift` call on the same channel can therefore miss the EOF guard and block waiting for a reply that will never arrive.
@@ -20,7 +20,7 @@
 - Caller invokes `shift` again after that unsubscribe reply
 
 ## Proof
-- In `lib/handler/mruby/embedded.c.h:366`, `shift` first checks `return nil if @replies.empty? && @unsubscribed`
+- In `lib/handler/mruby/embedded.c.h:479`, `shift` first checks `return nil if @replies.empty? && @unsubscribed`
 - Replies arrive through `_h2o__redis_join_reply(@command)` or `@replies.shift`, so unsubscribe acknowledgements are processed by this method
 - When `kind == 'unsubscribe'`, the method returned `nil` immediately and did not set `@unsubscribed = true`
 - After consuming that unsubscribe reply, the queue is empty but `@unsubscribed` remains false

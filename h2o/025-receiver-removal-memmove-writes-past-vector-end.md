@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/handler/status.c:187`
+- `lib/handler/status.c:255` (`on_context_dispose`)
 
 ## Summary
 `on_context_dispose` removes a receiver from `self->receivers`, but its `memmove` shifts entries in the wrong direction. When the removed receiver is not the last element, the surviving tail is copied from index `i` into `i + 1` instead of from `i + 1` into `i`. This corrupts the receiver list during normal context teardown and can later route status messages through a stale receiver pointer.
@@ -19,7 +19,7 @@
 - Disposing a context while at least one later receiver remains in `self->receivers`
 
 ## Proof
-In `lib/handler/status.c:187`, the removal path executes:
+In `lib/handler/status.c:255`, the removal path executes:
 ```c
 memmove(self->receivers.entries + i + 1, self->receivers.entries + i, self->receivers.size - i - 1);
 ```
@@ -32,7 +32,7 @@ Example with receivers `[A, B, C]` and removing `B` at `i = 1`:
 - Size is then decremented to `2`
 - Logical contents become `[A, B]`, so the removed receiver remains and the surviving receiver `C` is lost
 
-A later status broadcast iterates `self->receivers.entries` and calls `h2o_multithread_send_message(...)` on the stale entry in `lib/handler/status.c:189`. The reproducer shows that the disposed context unregisters and frees the associated status state before this later send, making the stale pointer reachable and dangerous.
+A later status broadcast iterates `self->receivers.entries` and calls `h2o_multithread_send_message(...)` on the stale entry. The reproducer shows that the disposed context unregisters and frees the associated status state before this later send, making the stale pointer reachable and dangerous.
 
 ## Why This Is A Real Bug
 This is a direct, source-grounded removal bug in a live teardown path. It does not depend on undefined external state: creating multiple contexts, disposing a non-terminal one, and then issuing another status request is sufficient. The stale receiver pointer can then be dereferenced by `h2o_multithread_send_message`, after the disposed context has already unregistered and freed related state, yielding use-after-free style corruption or a crash.

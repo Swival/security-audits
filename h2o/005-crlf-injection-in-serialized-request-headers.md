@@ -6,8 +6,8 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/common/http1client.c:572`
-- `lib/common/http1client.c:879`
+- `lib/common/http1client.c:766` (`APPEND_HEADER` macro)
+- `lib/common/http1client.c:843` (call into `build_request`)
 - `lib/core/headers.c:71`
 - `lib/core/headers.c:77`
 - `src/httpclient.c:644`
@@ -24,8 +24,8 @@ The HTTP/1 request serializer writes caller-supplied header names and values dir
 - Caller supplies a header value containing `\r` or `\n`
 
 ## Proof
-- `on_connect` forwards caller-controlled headers into request startup at `lib/common/http1client.c:879`.
-- `start_request` reaches `build_request`, where `APPEND_HEADER` serializes `(h)->value.base` and `(h)->value.len` verbatim, then appends `"\r\n"` at `lib/common/http1client.c:572`.
+- `on_connect` forwards caller-controlled headers into request startup at `lib/common/http1client.c:843`.
+- `start_request` reaches `build_request`, where `APPEND_HEADER` serializes `(h)->value.base` and `(h)->value.len` verbatim, then appends `"\r\n"` at `lib/common/http1client.c:766`.
 - Shared helpers `h2o_add_header` and `h2o_add_header_by_str` only store provided buffers and lengths, with no CR/LF filtering at `lib/core/headers.c:71` and `lib/core/headers.c:77`.
 - The shipped client tool accepts arbitrary `-H name:value`, stores the bytes after the first colon, and passes them into the HTTP client via `src/httpclient.c:644` and `src/httpclient.c:893`.
 - A header value containing `\r\nInjected: x` therefore survives to HTTP/1 serialization and produces an extra header line on the wire.

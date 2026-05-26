@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/common/http1client.c:544`
+- `lib/common/http1client.c:739` (`build_request`)
 
 ## Summary
 The HTTP/1 client serialized caller-controlled `url->path` into the request target and `url->authority` into both the absolute-form request target and the `host:` header without rejecting CR (`\r`) or LF (`\n`). An attacker who can supply these URL components can inject additional request or header lines on the wire.

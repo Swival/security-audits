@@ -1,12 +1,15 @@
 # Wrong service buffer left unterminated before `getaddrinfo`
 
+## Status
+- **Fixed upstream.** As of HEAD `e27c3e6d8` (verified 2026-05-26), `lib/handler/mruby/middleware.c:357` now terminates `servname[port.len] = '\0'` correctly. The patch in this report is no longer required.
+
 ## Classification
 - Type: invariant violation
 - Severity: high
 - Confidence: certain
 
 ## Affected Locations
-- `lib/handler/mruby/middleware.c:286`
+- `lib/handler/mruby/middleware.c:286` (historical; current code at `:357` is fixed)
 
 ## Summary
 `parse_hostport` allocates separate `hostname` and `servname` buffers on the non-IPv4 slow path, but writes the terminating `'\0'` to `hostname[port.len]` instead of `servname[port.len]`. As a result, `getaddrinfo(hostname, servname, ...)` is called with an unterminated service string on reachable input from Rack environment port fields.

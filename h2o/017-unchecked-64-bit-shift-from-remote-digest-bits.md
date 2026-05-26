@@ -6,12 +6,10 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/http2/cache_digests.c:67`
-- `lib/http2/cache_digests.c:99`
-- `lib/http2/cache_digests.c:186`
-- `lib/http2/hpack.c:601`
-- `lib/http2/connection.c:1897`
-- `lib/http2/stream.c:217`
+- `lib/http2/cache_digests.c:78` (`load_digest` stores `frame.capacity_bits` without bound check)
+- `lib/http2/cache_digests.c:186` (`lookup` performs `hash >> (64 - capacity_bits)`)
+- `lib/http2/hpack.c` (request parser dispatch into digest loader)
+- `lib/http2/connection.c`, `lib/http2/stream.c` (push-decision lookup callers)
 
 ## Summary
 Remote `Cache-Digest` input is decoded into `nbits` and `pbits` without enforcing a safe shift domain before later bit operations. The original report identified the unsafe case as `nbits + pbits == 64`, but reproduction shows the reachable undefined behavior occurs when attacker-controlled input stores `capacity_bits == 0`, leading to a later `hash >> 64` in lookup. The patch closes the underlying validation gap by rejecting decoded digest widths outside the valid range before storing `capacity_bits` or using it in shifts.
@@ -27,9 +25,9 @@ Remote `Cache-Digest` input is decoded into `nbits` and `pbits` without enforcin
 - A subsequent cache-digest lookup path is reached during push eligibility checks
 
 ## Proof
-- `h2o_hpack_parse_request` passes the remote `Cache-Digest` header to `h2o_cache_digests_load_header` via `lib/http2/hpack.c:601`
-- `h2o_cache_digests_load_header` decodes attacker-controlled base64 and calls `load_digest`, which derives `nbits` and `pbits` into `frame.capacity_bits` in `lib/http2/cache_digests.c:67`
-- Reproduction confirms a crafted header such as `Cache-Digest: AAA` can produce a stored frame with `capacity_bits == 0` at `lib/http2/cache_digests.c:99`
+- `h2o_hpack_parse_request` passes the remote `Cache-Digest` header to `h2o_cache_digests_load_header`
+- `h2o_cache_digests_load_header` decodes attacker-controlled base64 and calls `load_digest`, which derives `nbits` and `pbits` into `frame.capacity_bits` at `lib/http2/cache_digests.c:78`
+- Reproduction confirms a crafted header such as `Cache-Digest: AAA` can produce a stored frame with `capacity_bits == 0`
 - Later, push-related lookup reaches `lookup`, which computes `uint64_t key = hash >> (64 - frame->capacity_bits);` at `lib/http2/cache_digests.c:186`
 - With `capacity_bits == 0`, this becomes `hash >> 64`, which is undefined behavior for 64-bit `uint64_t`
 

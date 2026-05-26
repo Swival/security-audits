@@ -6,7 +6,7 @@
 - Confidence: certain
 
 ## Affected Locations
-- `lib/http2/http2_debug_state.c:78`
+- `lib/http2/http2_debug_state.c:92` (`append_header_table_chunks`)
 
 ## Summary
 HPACK table entries are serialized into the HTTP/2 debug-state JSON without JSON escaping. Header names are validated as tokens and are not practically exploitable through this path, but header values permit `"` and `\` as well as other bytes that must be escaped in JSON. A peer can therefore inject HPACK-indexed values that make the emitted debug JSON invalid or attacker-controlled in content.
@@ -23,7 +23,7 @@ HPACK table entries are serialized into the HTTP/2 debug-state JSON without JSON
 - The debug endpoint is then queried on the same connection.
 
 ## Proof
-At `lib/http2/http2_debug_state.c:78`, `append_header_table_chunks` emits HPACK entry fields into JSON using raw string formatting with `"%.*s"` for both name and value. No JSON escaping is applied before writing those bytes into the response buffer.
+At `lib/http2/http2_debug_state.c:92`, `append_header_table_chunks` emits HPACK entry fields into JSON using raw string formatting with `"%.*s"` for both name and value. No JSON escaping is applied before writing those bytes into the response buffer.
 
 Reproduction showed:
 - Header names are constrained by `h2o_hpack_validate_header_name` and cannot practically carry quotes, backslashes, or control bytes.
