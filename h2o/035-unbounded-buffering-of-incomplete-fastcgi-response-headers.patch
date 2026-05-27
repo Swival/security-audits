@@ -1,0 +1,16 @@
+diff --git a/lib/handler/fastcgi.c b/lib/handler/fastcgi.c
+index dfe5b1825..f979bd241 100644
+--- a/lib/handler/fastcgi.c
++++ b/lib/handler/fastcgi.c
+@@ -591,6 +591,11 @@ static int handle_stdin_record(struct st_fcgi_generator_t *generator, struct st_
+     }
+ 
+     /* parse the headers using the input buffer (or keep it in response buffer and parse) */
++    if (generator->resp.receiving->size > H2O_MAX_REQLEN ||
++        header->contentLength > H2O_MAX_REQLEN - generator->resp.receiving->size) {
++        h2o_req_log_error(generator->req, MODULE_NAME, "received too large response headers");
++        return -1;
++    }
+     num_headers = sizeof(headers) / sizeof(headers[0]);
+     if (generator->resp.receiving->size == 0) {
+         parse_result = phr_parse_headers(input->bytes + FCGI_RECORD_HEADER_SIZE, header->contentLength, headers, &num_headers, 0);

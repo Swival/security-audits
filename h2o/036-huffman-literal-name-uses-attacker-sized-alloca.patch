@@ -1,0 +1,43 @@
+diff --git a/lib/http3/qpack.c b/lib/http3/qpack.c
+index 1750aa188..8ed0e0af5 100644
+--- a/lib/http3/qpack.c
++++ b/lib/http3/qpack.c
+@@ -369,12 +369,19 @@ static int insert_without_name_reference(h2o_qpack_decoder_t *qpack, int qnhuff,
+                                          const uint8_t *qv, int64_t qvlen, const char **err_desc)
+ {
+     h2o_iovec_t name;
++    char *name_buf = NULL;
+     unsigned soft_errors = 0;
+ 
+     if (qnhuff) {
+-        name.base = alloca(qnlen * 2);
+-        if ((name.len = h2o_hpack_decode_huffman(name.base, &soft_errors, qn, qnlen, 1, err_desc)) == SIZE_MAX)
++        if (qnlen > (SIZE_MAX - 1) / 2 || (name_buf = malloc((size_t)qnlen * 2 + 1)) == NULL) {
++            *err_desc = h2o_qpack_err_header_name_too_long;
+             return H2O_HTTP3_ERROR_QPACK_DECOMPRESSION_FAILED;
++        }
++        name.base = name_buf;
++        if ((name.len = h2o_hpack_decode_huffman(name.base, &soft_errors, qn, qnlen, 1, err_desc)) == SIZE_MAX) {
++            free(name_buf);
++            return H2O_HTTP3_ERROR_QPACK_DECOMPRESSION_FAILED;
++        }
+     } else {
+         if (!h2o_hpack_validate_header_name(&soft_errors, (void *)qn, qnlen, err_desc))
+             return H2O_HTTP3_ERROR_QPACK_DECOMPRESSION_FAILED;
+@@ -382,11 +389,14 @@ static int insert_without_name_reference(h2o_qpack_decoder_t *qpack, int qnhuff,
+     }
+ 
+     const h2o_token_t *token;
++    int ret;
+     if ((token = h2o_lookup_token(name.base, name.len)) != NULL) {
+-        return insert_token_header(qpack, token, qvhuff, qv, qvlen, err_desc);
++        ret = insert_token_header(qpack, token, qvhuff, qv, qvlen, err_desc);
+     } else {
+-        return insert_literal_header(qpack, name.base, name.len, qvhuff, qv, qvlen, soft_errors, err_desc);
++        ret = insert_literal_header(qpack, name.base, name.len, qvhuff, qv, qvlen, soft_errors, err_desc);
+     }
++    free(name_buf);
++    return ret;
+ }
+ 
+ static int duplicate(h2o_qpack_decoder_t *qpack, int64_t index, const char **err_desc)

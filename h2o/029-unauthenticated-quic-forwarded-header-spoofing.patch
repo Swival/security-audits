@@ -1,0 +1,25 @@
+diff --git a/src/main.c b/src/main.c
+index 42b3cfb13..4467a2919 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -4222,7 +4222,10 @@ static int rewrite_forwarded_quic_datagram(h2o_quic_ctx_t *h3ctx, struct msghdr
+ static void forwarded_quic_socket_on_read(h2o_socket_t *sock, const char *err)
+ {
+     struct listener_ctx_t *ctx = sock->data;
++    h2o_quic_preprocess_packet_cb preprocess_packet = ctx->http3.ctx.super.preprocess_packet;
++    ctx->http3.ctx.super.preprocess_packet = rewrite_forwarded_quic_datagram;
+     h2o_quic_read_socket(&ctx->http3.ctx.super, sock);
++    ctx->http3.ctx.super.preprocess_packet = preprocess_packet;
+ }
+ 
+ static void on_socketclose(void *data)
+@@ -4515,8 +4518,7 @@ H2O_NORETURN static void *run_loop(void *_thread_index)
+                                           conf.threads[thread_index].ctx.loop, listeners[i].sock, NULL, listener_config->quic.ctx,
+                                           &conf.threads[thread_index].ctx.http3.next_cid, on_http3_accept, NULL,
+                                           conf.globalconf.http3.use_gso);
+-            h2o_quic_set_forwarding_context(&listeners[i].http3.ctx.super, 0, 4, forward_quic_packets,
+-                                            rewrite_forwarded_quic_datagram);
++            h2o_quic_set_forwarding_context(&listeners[i].http3.ctx.super, 0, 4, forward_quic_packets, NULL);
+             listeners[i].http3.ctx.accept_ctx = &listeners[i].accept_ctx;
+             listeners[i].http3.ctx.send_retry = listener_config->quic.send_retry;
+             listeners[i].http3.ctx.qpack = listener_config->quic.qpack;

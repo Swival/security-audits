@@ -1,0 +1,28 @@
+diff --git a/lib/core/proxy.c b/lib/core/proxy.c
+index 4cfbc66c9..18a35fb00 100644
+--- a/lib/core/proxy.c
++++ b/lib/core/proxy.c
+@@ -472,6 +472,7 @@ static int on_body(h2o_httpclient_t *client, const char *errstr, h2o_header_t *t
+ 
+ static int on_body_piped(h2o_httpclient_t *client, const char *errstr, h2o_header_t *trailers, size_t num_trailers)
+ {
++    int generator_disposed = 0;
+     struct rp_generator_t *self = client->data;
+ 
+     self->body_bytes_read = client->bytes_read.body;
+@@ -482,9 +483,13 @@ static int on_body_piped(h2o_httpclient_t *client, const char *errstr, h2o_heade
+         self->src_req->res.trailers = (h2o_headers_t){trailers, num_trailers, num_trailers};
+     }
+ 
+-    if (errstr != NULL)
++    if (errstr != NULL) {
++        self->generator_disposed = &generator_disposed;
+         on_body_on_close(self, errstr);
+-    if (!self->sending.inflight && !self->pipe_sender.inflight)
++        if (!generator_disposed)
++            self->generator_disposed = NULL;
++    }
++    if (!generator_disposed && !self->sending.inflight && !self->pipe_sender.inflight)
+         do_send_from_pipe(self);
+ 
+     return 0;

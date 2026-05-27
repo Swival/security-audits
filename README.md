@@ -53,6 +53,7 @@ Findings are numbered and grouped by component or subsystem when there are enoug
 | [wasmer-wasix](wasmer-wasix/)                                 |       44 | WASIX runtime in Wasmer                                     |
 | [wasmtime-wasi](wasmtime-wasi/)                               |        5 | WASI implementation in Wasmtime                             |
 | [wasmtools-wasmparser](wasmtools-wasmparser/)                 |        2 | WebAssembly binary parser from `wasm-tools`                 |
+| [zig](zig/)                                                   |       50 | Zig standard library and bundled libc                       |
 | [zlib](zlib/)                                                 |       18 | zlib compression library and ports                          |
 
 ## Reporting and disclosure

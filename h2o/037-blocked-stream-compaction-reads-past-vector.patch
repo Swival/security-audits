@@ -1,0 +1,14 @@
+diff --git a/lib/http3/qpack.c b/lib/http3/qpack.c
+index 1750aa188..f04197f47 100644
+--- a/lib/http3/qpack.c
++++ b/lib/http3/qpack.c
+@@ -420,7 +420,8 @@ int h2o_qpack_decoder_handle_input(h2o_qpack_decoder_t *qpack, int64_t **unblock
+     if (qpack->blocked_streams.num_unblocked != 0) {
+         size_t remaining = qpack->blocked_streams.list.size - qpack->blocked_streams.num_unblocked;
+         if (remaining != 0)
+-            memmove(qpack->blocked_streams.list.entries, qpack->blocked_streams.list.entries + remaining,
++            memmove(qpack->blocked_streams.list.entries,
++                    qpack->blocked_streams.list.entries + qpack->blocked_streams.num_unblocked,
+                     sizeof(qpack->blocked_streams.list.entries[0]) * remaining);
+         qpack->blocked_streams.list.size = remaining;
+         qpack->blocked_streams.num_unblocked = 0;

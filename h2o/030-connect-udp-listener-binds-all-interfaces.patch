@@ -1,0 +1,13 @@
+diff --git a/src/httpclient.c b/src/httpclient.c
+index bf1ea38f8..5037b4be4 100644
+--- a/src/httpclient.c
++++ b/src/httpclient.c
+@@ -735,7 +735,7 @@ h2o_socket_t *create_udp_socket(h2o_loop_t *loop, uint16_t port)
+         exit(EXIT_FAILURE);
+     }
+     sin.sin_family = AF_INET;
+-    sin.sin_addr.s_addr = htonl(0);
++    sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+     sin.sin_port = htons(port);
+     if (bind(fd, (void *)&sin, sizeof(sin)) != 0) {
+         perror("failed to bind bind UDP socket");

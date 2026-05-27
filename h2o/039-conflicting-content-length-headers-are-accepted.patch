@@ -1,0 +1,17 @@
+diff --git a/lib/http1.c b/lib/http1.c
+index c6e9c1e7b..166db49f7 100644
+--- a/lib/http1.c
++++ b/lib/http1.c
+@@ -391,6 +391,12 @@ static const char *init_headers(h2o_mem_pool_t *pool, h2o_headers_t *headers, co
+                         host->base = (char *)src[i].value;
+                         host->len = src[i].value_len;
+                     } else if (name_token == H2O_TOKEN_CONTENT_LENGTH) {
++                        size_t j;
++                        for (j = 0; j != i; ++j) {
++                            if (src[j].name_len == src[i].name_len && h2o_memis(src[j].name, src[j].name_len, H2O_STRLIT("content-length")) &&
++                                !h2o_memis(src[j].value, src[j].value_len, src[i].value, src[i].value_len))
++                                return "conflicting content-length headers";
++                        }
+                         if (*entity_header_index == -1)
+                             *entity_header_index = i;
+                     } else if (name_token == H2O_TOKEN_TRANSFER_ENCODING) {

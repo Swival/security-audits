@@ -1,0 +1,27 @@
+diff --git a/lib/common/http1client.c b/lib/common/http1client.c
+index 3d404a4a2..bd4337376 100644
+--- a/lib/common/http1client.c
++++ b/lib/common/http1client.c
+@@ -315,21 +315,7 @@ static void on_body_chunked(h2o_socket_t *sock, const char *err)
+     h2o_timer_unlink(&client->super._timeout);
+ 
+     if (err != NULL) {
+-        if (err == h2o_socket_error_closed && !phr_decode_chunked_is_in_data(&client->_body_decoder.chunked.decoder) &&
+-            client->_seen_at_least_one_chunk) {
+-            /*
+-             * if the peer closed after a full chunk, treat this
+-             * as if the transfer had complete, browsers appear to ignore
+-             * a missing 0\r\n chunk
+-             */
+-            client->_do_keepalive = 0;
+-            client->state.res = STREAM_STATE_CLOSED;
+-            client->super.timings.response_end_at = h2o_gettimeofday(client->super.ctx->loop);
+-            call_on_body(client, h2o_httpclient_error_is_eos);
+-            close_response(client);
+-        } else {
+-            on_error(client, h2o_httpclient_error_io);
+-        }
++        on_error(client, h2o_httpclient_error_io);
+         return;
+     }
+     uint64_t size = sock->bytes_read - client->_socket_bytes_processed;

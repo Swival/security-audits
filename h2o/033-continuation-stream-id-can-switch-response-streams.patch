@@ -1,0 +1,31 @@
+diff --git a/lib/common/http2client.c b/lib/common/http2client.c
+index 36608ebef..307aeef79 100644
+--- a/lib/common/http2client.c
++++ b/lib/common/http2client.c
+@@ -73,6 +73,7 @@ struct st_h2o_http2client_conn_t {
+         h2o_http2_window_t window;
+         ssize_t (*read_frame)(struct st_h2o_http2client_conn_t *conn, const uint8_t *src, size_t len, const char **err_desc);
+         h2o_buffer_t *headers_unparsed;
++        uint32_t headers_unparsed_stream_id;
+     } input;
+     h2o_mem_pool_t rst_streams_pool;
+ };
+@@ -459,6 +460,10 @@ static ssize_t expect_continuation_of_headers(struct st_h2o_http2client_conn_t *
+         *err_desc = "expected CONTINUATION frame";
+         return H2O_HTTP2_ERROR_PROTOCOL;
+     }
++    if (frame.stream_id != conn->input.headers_unparsed_stream_id) {
++        *err_desc = "unexpected stream id in CONTINUATION frame";
++        return H2O_HTTP2_ERROR_PROTOCOL;
++    }
+ 
+     stream = get_stream(conn, frame.stream_id);
+     if (stream != NULL && stream->state.res == STREAM_STATE_CLOSED) {
+@@ -644,6 +649,7 @@ static int handle_headers_frame(struct st_h2o_http2client_conn_t *conn, h2o_http
+     if ((frame->flags & H2O_HTTP2_FRAME_FLAG_END_HEADERS) == 0) {
+         /* header is not complete, store in buffer */
+         conn->input.read_frame = is_end_stream ? expect_continuation_of_headers_eos : expect_continuation_of_headers_no_eos;
++        conn->input.headers_unparsed_stream_id = frame->stream_id;
+         h2o_buffer_init(&conn->input.headers_unparsed, &h2o_socket_buffer_prototype);
+         h2o_buffer_reserve(&conn->input.headers_unparsed, payload.headers_len);
+         memcpy(conn->input.headers_unparsed->bytes, payload.headers, payload.headers_len);

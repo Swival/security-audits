@@ -1,0 +1,37 @@
+diff --git a/src/ssl.c b/src/ssl.c
+index 2499a94cd..45e745232 100644
+--- a/src/ssl.c
++++ b/src/ssl.c
+@@ -758,20 +758,22 @@ static int ticket_redis_update_tickets(redisContext *ctx, h2o_iovec_t key, time_
+     redisReply *reply;
+     session_ticket_vector_t tickets = {NULL};
+     h2o_iovec_t tickets_serialized = {NULL};
+-    int retry = 0;
++    int retry = 0, get_is_string;
+     char errbuf[256];
+ 
+     if ((reply = redisCommand(ctx, "GET %s", key.base)) == NULL) {
+         fprintf(stderr, "[lib/ssl.c] %s:redisCommand GET failed:%s\n", __func__, ctx->errstr);
+         goto Exit;
+     }
+-    if (reply->type == REDIS_REPLY_STRING) {
++    if ((get_is_string = reply->type == REDIS_REPLY_STRING)) {
+         int r = parse_tickets(&tickets, reply->str, reply->len, errbuf);
+         freeReplyObject(reply);
+         if (r != 0) {
+             fprintf(stderr, "[lib/ssl.c] %s:failed to parse response:%s\n", __func__, errbuf);
+             goto Exit;
+         }
++    } else {
++        freeReplyObject(reply);
+     }
+     if (tickets.size > 1)
+         qsort(tickets.entries, tickets.size, sizeof(tickets.entries[0]), ticket_sort_compare);
+@@ -784,7 +786,7 @@ static int ticket_redis_update_tickets(redisContext *ctx, h2o_iovec_t key, time_
+         }
+         freeReplyObject(reply);
+ 
+-        retry = 1;
++        retry = get_is_string;
+         goto Exit;
+     }
